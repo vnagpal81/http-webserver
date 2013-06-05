@@ -1,0 +1,15 @@
+<server>
+
+	<modules>
+		<module>
+		</module>
+	</modules>
+
+	<configs>
+		<config name="HTTPPort" value="4444"></config>
+		<config name="CommandPort" value="1913"></config>
+		<config name="MaxThreads" value="1000"></config>
+		<config name="HTTPVersion" value="1.1"></config>
+	</configs>
+	
+</server>
