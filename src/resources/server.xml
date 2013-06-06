@@ -1,8 +1,7 @@
 <server>
 
 	<modules>
-		<module>
-		</module>
+		<module>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</module>
 	</modules>
 
 	<configs>

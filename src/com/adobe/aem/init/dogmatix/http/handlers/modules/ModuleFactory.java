@@ -3,6 +3,9 @@ package com.adobe.aem.init.dogmatix.http.handlers.modules;
 import java.util.HashMap;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.adobe.aem.init.dogmatix.exceptions.InvalidModuleException;
 import com.adobe.aem.init.dogmatix.util.ReflectionUtils;
 
@@ -14,6 +17,8 @@ import com.adobe.aem.init.dogmatix.util.ReflectionUtils;
  *
  */
 public class ModuleFactory {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ModuleFactory.class);
 	
 	private static HashMap<String, ModuleInstancePool> moduleInstanceCache;
 	
@@ -27,11 +32,14 @@ public class ModuleFactory {
 	 * @throws InvalidModuleException 
 	 */
 	public static void load(List<String> modules) throws InvalidModuleException {
+		logger.debug("Begin loading server modules");
 		moduleInstanceCache = new HashMap<String, ModuleInstancePool>();			
 		for(String module: modules) {
+			logger.debug("Loading module {}", module);
 			ModuleInstancePool moduleInstancePool = new ModuleInstancePool(module);
 			moduleInstanceCache.put(module, moduleInstancePool);
 		}
+		logger.debug("Finish loading server modules");
 	}
 	
 	/**

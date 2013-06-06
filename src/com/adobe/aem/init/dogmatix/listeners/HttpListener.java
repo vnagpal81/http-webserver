@@ -28,8 +28,8 @@ public class HttpListener extends Listener {
 	public HttpListener(int port, int maxThreads) {
 		super(port);
 		pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(maxThreads);
-		pool.allowCoreThreadTimeOut(true);
 		pool.setKeepAliveTime(1, TimeUnit.MINUTES);
+		pool.allowCoreThreadTimeOut(true);
 	}
 
 	@Override

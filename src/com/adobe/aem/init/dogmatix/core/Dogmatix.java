@@ -1,10 +1,10 @@
 package com.adobe.aem.init.dogmatix.core;
 
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.adobe.aem.init.dogmatix.config.ServerConfig;
+import com.adobe.aem.init.dogmatix.exceptions.InvalidConfigException;
 import com.adobe.aem.init.dogmatix.listeners.CommandListener;
 import com.adobe.aem.init.dogmatix.listeners.HttpListener;
 
@@ -33,9 +33,15 @@ public class Dogmatix {
 	 * Initiates two threads which listen for incoming HTTP requests and Command requests.
 	 * Takes optional command-line arguments which can be used to override the settings specified in file server.properties 
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
-		// read server.properties
+		// read server.xml
+		try {
+			ServerConfig.getInstance();
+		} catch (InvalidConfigException e) {
+			logger.error("Unable to load server config", e);
+			System.exit(1);
+		}
 
 		Thread http = new HttpListener(_HTTP_PORT, maxThreads);
 		Thread cmd = new CommandListener(_CMD_PORT);
