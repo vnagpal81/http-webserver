@@ -4,16 +4,13 @@
 	<groupId>com.adobe.aem.init.dogmatix</groupId>
 	<artifactId>dogmatix</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Dogmatixr</name>
+	<name>Dogmatix</name>
 	<description>A multi-threaded file based HTTP Web Server</description>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
 			<resource>
-				<directory>src</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
+				<directory>src/resources</directory>
 			</resource>
 		</resources>
 		<plugins>
@@ -21,8 +18,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.0</version>
 				<configuration>
-					<source />
-					<target />
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 		</plugins>
