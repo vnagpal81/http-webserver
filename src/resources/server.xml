@@ -1,7 +1,10 @@
 <server>
 
 	<modules>
+		<!-- 
 		<module>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</module>
+		 -->
+		<scan>com.adobe.aem.init.dogmatix.http.handlers.modules</scan>
 	</modules>
 
 	<configs>

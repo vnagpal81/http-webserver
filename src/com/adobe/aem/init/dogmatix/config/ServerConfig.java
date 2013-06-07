@@ -1,20 +1,9 @@
 package com.adobe.aem.init.dogmatix.config;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,13 +11,23 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import com.adobe.aem.init.dogmatix.exceptions.InvalidConfigException;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleFactory;
 import com.adobe.aem.init.dogmatix.http.request.Version;
+import com.adobe.aem.init.dogmatix.util.NetworkUtils;
 import com.adobe.aem.init.dogmatix.util.XmlUtils;
 
+/**
+ * A singleton Server Config holder.
+ * Single point of access for all classes in the server.
+ * <b>Must</b> be loaded before multiple threads start listening.
+ * 
+ * Currently does not support update of properties once server is up and running
+ * 
+ * @author vnagpal
+ *
+ */
 @SuppressWarnings("serial")
 public class ServerConfig extends Properties {
 
@@ -37,7 +36,7 @@ public class ServerConfig extends Properties {
 
 	private static ServerConfig serverConfigInstance = null;
 
-	public static interface TAGS {
+	public static interface CONFIGS {
 		String HTTPPort = "HTTPPORT";
 		String CommandPort = "COMMANDPORT";
 		String HTTPVersion = "HTTPVERSION";
@@ -86,64 +85,67 @@ public class ServerConfig extends Properties {
 			Document doc = XmlUtils.parse(inputXml, true);
 
 			logger.debug("Read modules from xml");
-			List<String> moduleClasses = new ArrayList<String>();
-			NodeList modules = ((Element)doc.getElementsByTagName("modules").item(0)).getElementsByTagName("module");
-			for (int i = 0; i < modules.getLength(); i++) {
-				Node module = modules.item(i);
-				moduleClasses.add(module.getTextContent());
+			List<String> moduleClasses = XmlUtils.text(doc, "modules>module", ">");
+			if(moduleClasses.size() > 0) {
+				logger.debug("Load module classes");
+				ModuleFactory.load(moduleClasses);				
 			}
-			logger.debug("Load module classes");
-			ModuleFactory.load(moduleClasses);
+			logger.debug("Read module scan path from xml");
+			List<String> scanPaths = XmlUtils.text(doc, "modules>scan", ">");
+			for(String scanPath : scanPaths) {
+				logger.debug("Scan for modules at {}", scanPath);
+				ModuleFactory.annotatedLoad(scanPath);
+			}
 
 			logger.debug("Read configs from xml");
-			NodeList configs = ((Element)doc.getElementsByTagName("configs").item(0)).getElementsByTagName("config");
+			NodeList configs = XmlUtils.lookup(doc, "configs>config", ">");
 			for (int i = 0; i < configs.getLength(); i++) {
 				Element config = (Element) configs.item(i);
 				String name = config.getAttribute("name");
 				String value = config.getAttribute("value");
 				switch (name.toUpperCase()) {
-				case TAGS.HTTPVersion:
+				case CONFIGS.HTTPVersion:
 					try {
 						Version.getVersion(value);
 					} catch (Exception e) {
 						throw new InvalidConfigException(String.format(
 								"Invalid HTTPVersion {}", value));
 					}
-					serverConfigInstance.setProperty(TAGS.HTTPVersion, value);
+					serverConfigInstance.setProperty(CONFIGS.HTTPVersion, value);
 					logger.debug("HTTPVersion set to {}", value);
 					break;
-				case TAGS.CommandPort:
+				case CONFIGS.CommandPort:
 					try {
-						if (!available(Integer.parseInt(value))) {
+						if (!NetworkUtils.available(Integer.parseInt(value))) {
 							throw new InvalidConfigException(String.format(
 									"Port {} already in use", value));
 						}
 					} catch (Exception e) {
 						throw new InvalidConfigException("Invalid Command Port");
 					}
-					serverConfigInstance.setProperty(TAGS.CommandPort, value);
+					serverConfigInstance.setProperty(CONFIGS.CommandPort, value);
 					logger.debug("CommandPort set to {}", value);
 					break;
-				case TAGS.HTTPPort:
+				case CONFIGS.HTTPPort:
 					try {
-						if (!available(Integer.parseInt(value))) {
+						if (!NetworkUtils.available(Integer.parseInt(value))) {
 							throw new InvalidConfigException(String.format(
 									"Port {} already in use", value));
 						}
 					} catch (Exception e) {
 						throw new InvalidConfigException("Invalid HTTP Port");
 					}
-					serverConfigInstance.setProperty(TAGS.HTTPPort, value);
+					serverConfigInstance.setProperty(CONFIGS.HTTPPort, value);
 					logger.debug("HTTPPort set to {}", value);
 					break;
-				case TAGS.MaxThreads:
+				case CONFIGS.MaxThreads:
 					try {
 						Integer.parseInt(value);
 					} catch (Exception e) {
 						throw new InvalidConfigException(String.format(
 								"Invalid Max Threads {}", value));
 					}
-					serverConfigInstance.setProperty(TAGS.MaxThreads, value);
+					serverConfigInstance.setProperty(CONFIGS.MaxThreads, value);
 					logger.debug("MaxThreads set to {}", value);
 					break;
 				default:
@@ -161,32 +163,24 @@ public class ServerConfig extends Properties {
 		}
 	}
 
-	private static boolean available(int port) {
-		try (Socket ignored = new Socket("localhost", port)) {
-			return false;
-		} catch (IOException ignored) {
-			return true;
-		}
-	}
-
 	// HTTP Port
 	// Command Port
 	// Max threads
 	// HTTP version
 
 	public int httpPort() {
-		return Integer.parseInt(getProperty("HTTPPort", "8080"));
+		return Integer.parseInt(getProperty(CONFIGS.HTTPPort, "8080"));
 	}
 
 	public int commandPort() {
-		return Integer.parseInt(getProperty("CommandPort", "5250"));
+		return Integer.parseInt(getProperty(CONFIGS.CommandPort, "5250"));
 	}
 
 	public int maxThreads() {
-		return Integer.parseInt(getProperty("MaxThreads", "100"));
+		return Integer.parseInt(getProperty(CONFIGS.MaxThreads, "100"));
 	}
 
 	public String httpVersion() {
-		return getProperty("HTTPVersion", "1.1");
+		return getProperty(CONFIGS.HTTPVersion, "1.1");
 	}
 }
