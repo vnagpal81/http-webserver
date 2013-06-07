@@ -121,7 +121,7 @@ public class HttpResponse {
 		headers.put(Constants.HEADERS.CONNECTION, "Keep-Alive");
 		
 		for (String name : headers.keySet()) {
-			finalResponse.append(name + "=" + headers.get(name));
+			finalResponse.append(name + ": " + headers.get(name));
 			finalResponse.append(NEW_LINE);
 		}
 		finalResponse.append(body);
