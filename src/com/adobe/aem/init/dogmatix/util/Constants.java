@@ -8,12 +8,12 @@ public interface Constants {
 
 	interface HEADERS {
 		
-		String CONTENT_TYPE = "CONTENT-TYPE";
+		String CONTENT_TYPE = "Content-Type";
 		
-		String ACCEPT = "ACCEPT";
+		String ACCEPT = "Accept";
 		
-		String CONTENT_LENGTH = "CONTENT-LENGTH";
+		String CONTENT_LENGTH = "Content-Length";
 		
-		String CONNECTION = "CONNECTION";
+		String CONNECTION = "Connection";
 	}
 }
