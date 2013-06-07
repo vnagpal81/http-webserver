@@ -50,6 +50,9 @@ public class ResourcesModule extends AbstractHttpRequestHandlerModule {
 		catch(HttpError e) {
 			response.err(e);
 		}
+		finally {
+			sendResponse(out, response);
+		}
 	}
 
 }
