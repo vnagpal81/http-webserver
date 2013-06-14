@@ -1,17 +1,20 @@
 package com.adobe.aem.init.dogmatix.http.handlers.modules;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.adobe.aem.init.dogmatix.config.ModuleConfig;
 import com.adobe.aem.init.dogmatix.exceptions.InvalidModuleException;
 import com.adobe.aem.init.dogmatix.util.ReflectionUtils;
 
 /**
  * A Factory which provides module instances on demand. Maintains an internal
- * pool of module instances for re-use. Loads the modules at server startup.
+ * pool of module instances for re-use, which saves module construction and
+ * destruction time. Loads the modules at server startup.
  * 
  * @author vnagpal
  * 
@@ -21,43 +24,66 @@ public class ModuleFactory {
 	private static final Logger logger = LoggerFactory
 			.getLogger(ModuleFactory.class);
 
-	private static HashMap<String, ModuleInstancePool> moduleInstanceCache;
+	private static HashMap<ModuleConfig, ModuleInstancePool> moduleInstanceCache;
 
-	public static AbstractHttpRequestHandlerModule getModule(String className) {
-		return moduleInstanceCache.get(className).checkOut();
+	public static AbstractHttpRequestHandlerModule getModule(
+			ModuleConfig moduleConfig) {
+		AbstractHttpRequestHandlerModule module = moduleInstanceCache.get(
+				moduleConfig).checkOut();
+		return module;
 	}
 
 	/**
-	 * Loads the modules instances. Must be called at server startup *before*
-	 * the socket starts listening. May be called again if we wish to support
+	 * Loads the modules instances. Must be called at server startup <b>before</b>
+	 * the server starts listening. May be called again if we wish to support
 	 * config reload without server restart in future.
 	 * 
 	 * @throws InvalidModuleException
 	 */
-	public static void load(List<String> modules) throws InvalidModuleException {
+	public static void load(List<ModuleConfig> moduleConfigs)
+			throws InvalidModuleException {
 		logger.debug("Begin loading server modules");
-		moduleInstanceCache = new HashMap<String, ModuleInstancePool>();
-		for (String module : modules) {
-			logger.debug("Loading module {}", module);
-			ModuleInstancePool moduleInstancePool = new ModuleInstancePool(
-					module);
-			moduleInstanceCache.put(module, moduleInstancePool);
+		if (moduleInstanceCache == null) {
+			moduleInstanceCache = new HashMap<ModuleConfig, ModuleInstancePool>();
+		}
+		for (ModuleConfig moduleConfig : moduleConfigs) {
+			if (!moduleInstanceCache.containsKey(moduleConfig)) {
+				logger.debug("Loading module {}", moduleConfig.getClassName());
+				moduleInstanceCache.put(moduleConfig, new ModuleInstancePool(moduleConfig));
+			}
 		}
 		logger.debug("Finish loading server modules");
+		logger.debug("Generate URL mappings for all modules");
+		URLMapping.map(moduleConfigs);
 	}
 
 	/**
 	 * Auto-detects and loads the modules in a specific path. Must be called at
-	 * server startup *before* the socket starts listening. Convenience method
-	 * to load all modules in a package path by annotating a class with @Module.
-	 * Inspired from Spring's Component Scan.
+	 * server startup <b>before</b> the server starts listening. Convenience method
+	 * to load all modules in a package path by annotating a class with
+	 * {@code @Module}. Inspired from Spring's Component Scan.
 	 * 
-	 * @param path package path under which to scan the modules for
+	 * @param path
+	 *            package path under which to scan the modules for
 	 * @throws InvalidModuleException
 	 */
 	public static void annotatedLoad(String path) throws InvalidModuleException {
-		load(ReflectionUtils.getClassNamesInPackageWithAnnotation(path,
-				Module.class));
+		List<Class<?>> moduleClasses = ReflectionUtils
+				.getClassesWithAnnotation(path, Module.class);
+		List<ModuleConfig> moduleConfigs = new ArrayList<ModuleConfig>();
+		for (Class<?> clazz : moduleClasses) {
+			String className = clazz.getName();
+			Module annotation = clazz.getAnnotation(Module.class);
+			String url = annotation.url();
+			ModuleConfig moduleConfig = new ModuleConfig(className, url);
+
+			Setting[] settings = annotation.settings();
+			for (Setting setting : settings) {
+				moduleConfig.addSetting(setting.name(), setting.value());
+			}
+			moduleConfigs.add(moduleConfig);
+		}
+		load(moduleConfigs);
 	}
 
 }

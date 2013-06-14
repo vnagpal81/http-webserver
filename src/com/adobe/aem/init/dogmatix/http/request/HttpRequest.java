@@ -62,12 +62,18 @@ public class HttpRequest {
 		return URI;
 	}
 	public void setURI(String uRI) {
-		URI = uRI;
+		this.URI = uRI;
 	}
 	public String getProtocol() {
 		return protocol;
 	}
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
+	}
+	public String getParam(String name) {
+		if(params == null) {
+			return null;
+		}
+		return params.get(name.toLowerCase());
 	}
 }

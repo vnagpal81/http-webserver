@@ -3,10 +3,15 @@ package com.adobe.aem.init.dogmatix.listeners;
 import java.net.*;
 import java.io.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.adobe.aem.init.dogmatix.core.Dogmatix;
 
 public abstract class Listener extends Thread {
-
+	
+	protected static Logger logger = LoggerFactory.getLogger(Listener.class);
+	
 	protected int port;
 
 	public Listener(int port) {
@@ -25,7 +30,7 @@ public abstract class Listener extends Thread {
 
 			serverSocket.close();
 		} catch (IOException e) {
-			System.out.println("Could not close socket");
+			logger.debug("Could not close socket");
 			System.exit(1);
 		}
 	}
@@ -35,11 +40,11 @@ public abstract class Listener extends Thread {
 		try {
 			serverSocket = new ServerSocket(port);
 		} catch (IOException e) {
-			System.out.println("Could not listen on port: " + port);
+			logger.debug("Could not listen on port: " + port);
 			System.exit(1);
 		}
 
-		System.out.println("Listening on port: " + port);
+		logger.debug("Listening on port: " + port);
 		return serverSocket;
 	}
 

@@ -37,6 +37,7 @@ public class Dogmatix {
 
 		// read server.xml
 		try {
+			logger.debug("Reading Server config");
 			ServerConfig.getInstance();
 		} catch (InvalidConfigException e) {
 			logger.error("Unable to load server config", e);

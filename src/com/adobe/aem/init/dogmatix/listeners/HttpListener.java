@@ -6,6 +6,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.adobe.aem.init.dogmatix.http.handlers.HttpRequestHandler;
 
 /**
@@ -22,6 +25,8 @@ import com.adobe.aem.init.dogmatix.http.handlers.HttpRequestHandler;
  *
  */
 public class HttpListener extends Listener {
+	
+	protected static Logger logger = LoggerFactory.getLogger(HttpListener.class);
 	
 	private ThreadPoolExecutor pool;
 	

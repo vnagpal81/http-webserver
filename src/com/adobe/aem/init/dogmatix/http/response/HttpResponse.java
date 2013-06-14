@@ -3,10 +3,9 @@ package com.adobe.aem.init.dogmatix.http.response;
 import static com.adobe.aem.init.dogmatix.util.Constants.NEW_LINE;
 import static com.adobe.aem.init.dogmatix.util.Constants.SERVER_HTTP_VERSION;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Hashtable;
 
 import net.sf.jmimemagic.Magic;
@@ -14,22 +13,34 @@ import net.sf.jmimemagic.MagicException;
 import net.sf.jmimemagic.MagicMatchNotFoundException;
 import net.sf.jmimemagic.MagicParseException;
 
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.adobe.aem.init.dogmatix.exceptions.HttpError;
 import com.adobe.aem.init.dogmatix.util.Constants;
 
 public class HttpResponse {
 
+	private static final Logger logger = LoggerFactory
+			.getLogger(HttpResponse.class);
+
 	private String statusLine = SERVER_HTTP_VERSION + " 200 "
-			+ Status.HttpReplies.get(200) + NEW_LINE;
+			+ Status.HttpReplies.get(200);
 	private Hashtable<String, String> headers = new Hashtable<String, String>();
 	private StringBuffer body = new StringBuffer();
 
-	public HttpResponse() {
+	private OutputStream outputStream;
 
-	}
-
-	public HttpResponse(String body) {
-		this.body.append(body);
+	/**
+	 * Force construction of HTTPResponse with an underlying OutputStream This
+	 * will ensure that the stream is never un-initialized
+	 * 
+	 * @param out
+	 */
+	public HttpResponse(OutputStream out) {
+		assert (out != null);
+		this.outputStream = out;
 	}
 
 	public String getStatusLine() {
@@ -71,60 +82,75 @@ public class HttpResponse {
 
 	public HttpResponse status(int code) {
 		statusLine = SERVER_HTTP_VERSION + " " + code + " "
-				+ Status.HttpReplies.get(code) + NEW_LINE;
+				+ Status.HttpReplies.get(code);
 		return this;
 	}
 
 	public HttpResponse append(InputStream in) {
-		int rollBackTo = body.length();
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-		String line;
+		int resetTo = body.length();
 		try {
-			while ((line = reader.readLine()) != null) {
-				body.append(line);
-			}
-		} catch (IOException e) {
-			body.delete(rollBackTo, body.length());
+			body.append(IOUtils.toString(in, "UTF-8"));
+		} catch (Exception e) {
+			body.delete(resetTo, body.length());
 		}
 		return this;
 	}
 
 	public HttpResponse err(HttpError error) {
-		return status(error.getStatus()).append(error.getMessage());
+		HttpResponse response = status(error.getStatus());
+		if(error.getMessage() != null) {
+			response = response.append(error.getMessage());
+		}
+		return response;
 	}
 
 	public String publish() {
 		StringBuffer finalResponse = new StringBuffer();
-		
+
 		if (!statusLine.isEmpty()) {
 			finalResponse.append(statusLine);
 			finalResponse.append(NEW_LINE);
 		}
-		
+
 		if (!headers.containsKey(Constants.HEADERS.CONTENT_LENGTH)) {
 			headers.put(Constants.HEADERS.CONTENT_LENGTH,
 					String.valueOf(body.length()));
 		}
-	
-		if (!headers.containsKey(Constants.HEADERS.CONTENT_TYPE)) {
+
+		if (body.length()>0 && !headers.containsKey(Constants.HEADERS.CONTENT_TYPE)) {
 			try {
 				headers.put(Constants.HEADERS.CONTENT_TYPE, Magic
 						.getMagicMatch(body.toString().getBytes())
 						.getMimeType());
 			} catch (MagicParseException | MagicMatchNotFoundException
 					| MagicException e) {
-				//log
+				logger.error("Error while determining content type");
 			}
 		}
-		
-		//if server config dictates SERVER_HTTP_VERSION is 1.1
+
+		// if server config dictates SERVER_HTTP_VERSION is 1.1
 		headers.put(Constants.HEADERS.CONNECTION, "Keep-Alive");
-		
+
 		for (String name : headers.keySet()) {
 			finalResponse.append(name + ": " + headers.get(name));
 			finalResponse.append(NEW_LINE);
 		}
-		finalResponse.append(body);
+
+		finalResponse.append(NEW_LINE);
+
+		if(body.length()>0) {
+			finalResponse.append(body);
+		}
+		
 		return finalResponse.toString();
+	}
+
+	public void flush() {
+		String responseStr = publish();
+		PrintWriter out = new PrintWriter(outputStream, true);
+		out.println(responseStr);
+		out.close();
+		logger.debug("Response sent back");
+		logger.debug(responseStr);
 	}
 }

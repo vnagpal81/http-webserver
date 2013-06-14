@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.adobe.aem.init.dogmatix.exceptions.InvalidConfigException;
@@ -19,14 +18,13 @@ import com.adobe.aem.init.dogmatix.util.NetworkUtils;
 import com.adobe.aem.init.dogmatix.util.XmlUtils;
 
 /**
- * A singleton Server Config holder.
- * Single point of access for all classes in the server.
- * <b>Must</b> be loaded before multiple threads start listening.
+ * A singleton Server Config holder. Single point of access for all classes in
+ * the server. <b>Must</b> be loaded before server threads start listening.
  * 
  * Currently does not support update of properties once server is up and running
  * 
  * @author vnagpal
- *
+ * 
  */
 @SuppressWarnings("serial")
 public class ServerConfig extends Properties {
@@ -37,10 +35,10 @@ public class ServerConfig extends Properties {
 	private static ServerConfig serverConfigInstance = null;
 
 	public static interface CONFIGS {
-		String HTTPPort = "HTTPPORT";
-		String CommandPort = "COMMANDPORT";
-		String HTTPVersion = "HTTPVERSION";
-		String MaxThreads = "MAXTHREADS";
+		String HTTPPort = "HTTPPort";
+		String CommandPort = "CommandPort";
+		String HTTPVersion = "HTTPVersion";
+		String MaxThreads = "MaxThreads";
 	}
 
 	private ServerConfig() {
@@ -58,7 +56,8 @@ public class ServerConfig extends Properties {
 	}
 
 	/**
-	 * @source http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
+	 * @source 
+	 *         http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
 	 * 
 	 */
 	private static void buildServerConfig() throws InvalidConfigException {
@@ -66,7 +65,7 @@ public class ServerConfig extends Properties {
 		try {
 			logger.debug("Create ServerConfig Object");
 			serverConfigInstance = new ServerConfig();
-			
+
 			logger.debug("Read server.xml from classpath");
 			InputStream xmlStream = ServerConfig.class.getClassLoader()
 					.getResourceAsStream("server.xml");
@@ -75,7 +74,7 @@ public class ServerConfig extends Properties {
 			logger.debug("Read server.xsd from classpath");
 			InputStream xsdStream = ServerConfig.class.getClassLoader()
 					.getResourceAsStream("server.xsd");
-			
+
 			logger.debug("Validate XML against server.xsd");
 			if (!XmlUtils.validate(inputXml.toString(), xsdStream)) {
 				throw new InvalidConfigException("Xml not well formed");
@@ -85,14 +84,23 @@ public class ServerConfig extends Properties {
 			Document doc = XmlUtils.parse(inputXml, true);
 
 			logger.debug("Read modules from xml");
-			List<String> moduleClasses = XmlUtils.text(doc, "modules>module", ">");
-			if(moduleClasses.size() > 0) {
+			NodeList modules = XmlUtils.lookup(doc, "modules>module", ">");
+			List<ModuleConfig> moduleConfigs = new ArrayList<ModuleConfig>();
+			for (int i = 0; i < modules.getLength(); i++) {
+				Element module = (Element) modules.item(i);
+				String className = XmlUtils.text(module, "class", null).get(0);
+				String url = XmlUtils.text(module, "url", null).get(0);
+				ModuleConfig moduleConfig = new ModuleConfig(className, url);
+				// read module level settings
+				moduleConfigs.add(moduleConfig);
+			}
+			if (moduleConfigs.size() > 0) {
 				logger.debug("Load module classes");
-				ModuleFactory.load(moduleClasses);				
+				ModuleFactory.load(moduleConfigs);
 			}
 			logger.debug("Read module scan path from xml");
 			List<String> scanPaths = XmlUtils.text(doc, "modules>scan", ">");
-			for(String scanPath : scanPaths) {
+			for (String scanPath : scanPaths) {
 				logger.debug("Scan for modules at {}", scanPath);
 				ModuleFactory.annotatedLoad(scanPath);
 			}
@@ -103,7 +111,7 @@ public class ServerConfig extends Properties {
 				Element config = (Element) configs.item(i);
 				String name = config.getAttribute("name");
 				String value = config.getAttribute("value");
-				switch (name.toUpperCase()) {
+				switch (name) {
 				case CONFIGS.HTTPVersion:
 					try {
 						Version.getVersion(value);
@@ -111,7 +119,8 @@ public class ServerConfig extends Properties {
 						throw new InvalidConfigException(String.format(
 								"Invalid HTTPVersion {}", value));
 					}
-					serverConfigInstance.setProperty(CONFIGS.HTTPVersion, value);
+					serverConfigInstance
+							.setProperty(CONFIGS.HTTPVersion, value);
 					logger.debug("HTTPVersion set to {}", value);
 					break;
 				case CONFIGS.CommandPort:
@@ -123,7 +132,8 @@ public class ServerConfig extends Properties {
 					} catch (Exception e) {
 						throw new InvalidConfigException("Invalid Command Port");
 					}
-					serverConfigInstance.setProperty(CONFIGS.CommandPort, value);
+					serverConfigInstance
+							.setProperty(CONFIGS.CommandPort, value);
 					logger.debug("CommandPort set to {}", value);
 					break;
 				case CONFIGS.HTTPPort:

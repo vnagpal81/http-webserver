@@ -4,13 +4,17 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 /**
- * An abstract object pool. 
+ * An abstract object pool.
+ * 
+ * Reusable pool of objects of type T. New objects are created on demand and if
+ * all objects in the pool are currently in use. Objects lying idle in the pool
+ * are subject to expire and hence can be garbage collected to save memory.
  * 
  * @author http://sourcemaking.com/design_patterns/object_pool/java
- *
+ * 
  * @param <T>
  * 
- * Generic parameter of the type of objects in the pool
+ *            Generic parameter of the type of objects in the pool
  */
 
 public abstract class ObjectPool<T> {

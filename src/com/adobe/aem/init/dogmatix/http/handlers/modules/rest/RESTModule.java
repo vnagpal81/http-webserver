@@ -1,10 +1,9 @@
 package com.adobe.aem.init.dogmatix.http.handlers.modules.rest;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
 
 import com.adobe.aem.init.dogmatix.exceptions.HttpError;
+import com.adobe.aem.init.dogmatix.http.handlers.HttpContext;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.Module;
 import com.adobe.aem.init.dogmatix.http.request.HttpRequest;
@@ -13,7 +12,7 @@ import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 import com.adobe.aem.init.dogmatix.util.Matcher;
 import com.adobe.aem.init.dogmatix.util.ReflectionUtils;
 
-@Module
+@Module(url="rest/*")
 public class RESTModule extends AbstractHttpRequestHandlerModule {
 
 	private Map<String, Handler> urlMapping;
@@ -27,10 +26,10 @@ public class RESTModule extends AbstractHttpRequestHandlerModule {
 	}
 	
 	@Override
-	public void consume(InputStream in, OutputStream out) {
+	public void consume(HttpContext ctx) {
 		try {
-			HttpRequest request = parseRequest(in);
-			HttpResponse response = new HttpResponse();
+			HttpRequest request = ctx.getRequest();
+			HttpResponse response = ctx.getResponse();
 
 			// Deduce HTTP Method
 			Method httpMethod = request.getMethod();

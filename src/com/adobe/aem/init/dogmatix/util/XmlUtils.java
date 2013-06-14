@@ -132,8 +132,31 @@ public class XmlUtils {
 	 * @return Node(s) found at the given path
 	 */
 	public static NodeList lookup(Document doc, String xPath, String separator) {
+		return lookup(doc.getDocumentElement(), xPath, separator);
+	}
+	
+	/**
+	 * Traverses the DOM tree to lookup the XPath.
+	 * 
+	 * A sample XPath would look like "Parent > Child > Grandchild" for a DOM tree as following:
+	 * 
+	 * <pre>
+	 * <Parent>
+	 * 		<Child>
+	 * 			<Grandchild>
+	 * 			</Grandchild>
+	 * 		</Child>
+	 * </Parent>
+	 * </pre>
+	 * 
+	 * @param e The DOM element to look under
+	 * @param xPath A path to lookup
+	 * @param separator String separator used to break up level hierarchy with in the path
+	 * @return Node(s) found at the given path
+	 */
+	public static NodeList lookup(Element e, String xPath, String separator) {
 		String[] trail = xPath.split(separator);
-		Element parent = doc.getDocumentElement();
+		Element parent = e;
 		for(int i = 0; i < trail.length - 1; i++) {
 			parent = (Element) parent.getElementsByTagName(trail[i].trim()).item(0);
 		}
@@ -149,7 +172,19 @@ public class XmlUtils {
 	 * @return List<String> List of string representations of the Node(s) found at the given path
 	 */
 	public static List<String> text(Document doc, String xPath, String separator) {
-		NodeList nodes = lookup(doc, xPath, separator);
+		return text(doc.getDocumentElement(), xPath, separator);
+	}
+	
+	/**
+	 * Gives the string representation of the XML element at the specified XPath in the DOM tree
+	 * 
+	 * @param e The DOM Element to look under
+	 * @param xPath A path to lookup
+	 * @param separator String separator used to break up level hierarchy with in the path
+	 * @return List<String> List of string representations of the Node(s) found at the given path
+	 */
+	public static List<String> text(Element e, String xPath, String separator) {
+		NodeList nodes = lookup(e, xPath, separator);
 		List<String> texts = new ArrayList<String>();
 		for(int i = 0; i < nodes.getLength(); i++) {
 			texts.add(nodes.item(i).getTextContent());

@@ -1,8 +1,9 @@
 package com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
 
-import java.util.Date;
 
 public class Metadata {
+	
+	private String name;
 
 	private long size;
 	
@@ -13,6 +14,16 @@ public class Metadata {
 	private long createdOn;
 	
 	private long lastModifiedOn;
+	
+	private boolean leafNode;
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public long getSize() {
 		return size;
@@ -53,4 +64,13 @@ public class Metadata {
 	public void setLastModifiedOn(long lastModifiedOn) {
 		this.lastModifiedOn = lastModifiedOn;
 	}
+
+	public boolean isLeafNode() {
+		return leafNode;
+	}
+
+	public void setLeafNode(boolean leafNode) {
+		this.leafNode = leafNode;
+	}
+	
 }

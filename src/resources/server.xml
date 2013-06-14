@@ -1,9 +1,21 @@
 <server>
 
-	<modules>
+	<modules> 
 		<!-- 
-		<module>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</module>
-		 -->
+		<module>
+			<class>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</class>
+			<url>files/**</url>
+			<property name="repository">local</property>
+			<property name="baseDir">C:\\temp</property>
+			<property name="uploadLimit">5000</property>
+			<property name="track">false</property>
+			<property name="downloadParam">download</property>
+			<property name="defaultDirPath">index.html</property>
+			<property name="redirectToDefault">true</property>
+			<property name="notFound">404.html</property>
+			<property name="redirectToNotFound">true</property>
+		</module>
+		-->
 		<scan>com.adobe.aem.init.dogmatix.http.handlers.modules</scan>
 	</modules>
 
