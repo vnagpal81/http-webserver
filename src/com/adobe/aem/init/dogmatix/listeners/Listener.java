@@ -1,56 +1,63 @@
 package com.adobe.aem.init.dogmatix.listeners;
 
-import java.net.*;
-import java.io.*;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.adobe.aem.init.dogmatix.core.Dogmatix;
-
 public abstract class Listener extends Thread {
-	
+
 	protected static Logger logger = LoggerFactory.getLogger(Listener.class);
-	
+
 	protected int port;
+	protected ServerSocket serverSocket;
 
 	public Listener(int port) {
 		this.port = port;
 	}
 
 	public void run() {
+		// create a server side socket to listen for
+		// incoming transport on this port
+		listen(this.port);
 
-		ServerSocket serverSocket = listen(this.port);
-
-		try {
-			while (this.isListening()) {
-				Socket socket = serverSocket.accept();
-				process(socket);
+		if (serverSocket != null) {
+			while(!isInterrupted()) {
+				// Accept incoming requests on the server socket until
+				// Thread is manually interrupted or an I/O error is
+				// encountered
+				try {
+					Socket socket = serverSocket.accept();
+					process(socket);
+				} catch (IOException e) {
+					logger.debug("Intentionally closing socket listening on {}", this.port);
+					interrupt();
+				} 
 			}
-
-			serverSocket.close();
-		} catch (IOException e) {
-			logger.debug("Could not close socket");
-			System.exit(1);
+			logger.debug("Exiting listener thread");
+			
 		}
 	}
 
-	protected ServerSocket listen(int port) {
-		ServerSocket serverSocket = null;
+	protected void listen(int port) {
 		try {
 			serverSocket = new ServerSocket(port);
+			logger.debug("Listening on port: " + port);
 		} catch (IOException e) {
-			logger.debug("Could not listen on port: " + port);
-			System.exit(1);
+			logger.error("Could not listen on port: " + port);
 		}
-
-		logger.debug("Listening on port: " + port);
-		return serverSocket;
-	}
-
-	protected boolean isListening() {
-		return Dogmatix.isListening();
 	}
 
 	protected abstract void process(Socket socket) throws IOException;
+
+	public void stopListening() {
+		try {
+			serverSocket.close();
+		} catch (IOException e) {
+			logger.debug("Intentionally closing socket listening on {}", this.port);
+		}
+	}
 }

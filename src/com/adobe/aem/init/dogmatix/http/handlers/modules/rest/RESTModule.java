@@ -26,7 +26,7 @@ public class RESTModule extends AbstractHttpRequestHandlerModule {
 	}
 	
 	@Override
-	public void consume(HttpContext ctx) {
+	public boolean consume(HttpContext ctx) {
 		try {
 			HttpRequest request = ctx.getRequest();
 			HttpResponse response = ctx.getResponse();
@@ -60,6 +60,7 @@ public class RESTModule extends AbstractHttpRequestHandlerModule {
 		catch(HttpError e) {
 			
 		}
+		return false;
 	}
 
 	protected Handler getHandler(HttpRequest request, HttpResponse response) {

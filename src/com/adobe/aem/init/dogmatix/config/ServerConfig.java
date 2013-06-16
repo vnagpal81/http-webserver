@@ -39,6 +39,8 @@ public class ServerConfig extends Properties {
 		String CommandPort = "CommandPort";
 		String HTTPVersion = "HTTPVersion";
 		String MaxThreads = "MaxThreads";
+		String ShutdownGraceTime = "ShutdownGraceTime";
+		String StopCommand = "StopCommand";
 	}
 
 	private ServerConfig() {
@@ -158,6 +160,20 @@ public class ServerConfig extends Properties {
 					serverConfigInstance.setProperty(CONFIGS.MaxThreads, value);
 					logger.debug("MaxThreads set to {}", value);
 					break;
+				case CONFIGS.ShutdownGraceTime:
+					try {
+						Integer.parseInt(value);
+					} catch(Exception e) {
+						throw new InvalidConfigException(String.format(
+								"Invalid Shutdown Grace Time {}", value));
+					}
+					serverConfigInstance.setProperty(CONFIGS.ShutdownGraceTime, value);
+					logger.debug("ShutdownGraceTime set to {} seconds", value);
+					break;
+				case CONFIGS.StopCommand:
+					serverConfigInstance.setProperty(CONFIGS.StopCommand, value);
+					logger.debug("StopCommand set to {}", value);
+					break;
 				default:
 					throw new InvalidConfigException(String.format(
 							"Unknown config parameter {}", name));
@@ -177,6 +193,8 @@ public class ServerConfig extends Properties {
 	// Command Port
 	// Max threads
 	// HTTP version
+	// Graceful Shutdown time
+	// Stop Command
 
 	public int httpPort() {
 		return Integer.parseInt(getProperty(CONFIGS.HTTPPort, "8080"));
@@ -192,5 +210,13 @@ public class ServerConfig extends Properties {
 
 	public String httpVersion() {
 		return getProperty(CONFIGS.HTTPVersion, "1.1");
+	}
+	
+	public int shutdownGraceTime() {
+		return Integer.parseInt(getProperty(CONFIGS.ShutdownGraceTime, "60"));
+	}
+
+	public String stopCommand() {
+		return getProperty(CONFIGS.StopCommand, "stop");
 	}
 }

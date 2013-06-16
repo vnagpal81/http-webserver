@@ -55,7 +55,7 @@ public class ResourcesModule extends AbstractHttpRequestHandlerModule {
 	}
 
 	@Override
-	public void consume(HttpContext ctx) {
+	public boolean consume(HttpContext ctx) {
 		HttpResponse response = ctx.getResponse();
 		
 		try {
@@ -76,6 +76,8 @@ public class ResourcesModule extends AbstractHttpRequestHandlerModule {
 		catch(HttpError e) {
 			response.err(e);
 		}
+		
+		return false;
 	}
 
 }

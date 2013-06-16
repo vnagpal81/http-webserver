@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.adobe.aem.init.dogmatix.config.ModuleConfig;
+import com.adobe.aem.init.dogmatix.core.ReusableSocket;
 import com.adobe.aem.init.dogmatix.exceptions.HttpError;
 import com.adobe.aem.init.dogmatix.exceptions.InvalidHeaderException;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule;
@@ -32,16 +33,18 @@ public class HttpRequestHandler implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(HttpRequestHandler.class);
 	
-	private Socket socket;	
+	private ReusableSocket socket;	
 
 	public HttpRequestHandler(Socket socket) {
-		this.socket = socket;
+		this.socket = new ReusableSocket(socket);
 	}
 
 	public void run() {
 
 		try {
 			logger.debug("Incoming Request...");
+			
+			HttpContext ctx = new HttpContext();
 			
 			OutputStream out = this.socket.getOutputStream();
 			InputStream in = this.socket.getInputStream();
@@ -51,7 +54,9 @@ public class HttpRequestHandler implements Runnable {
 			try {
 				logger.debug("Trying to parse the request");
 				HttpRequest request = parseRequest(in);
-				HttpContext ctx = new HttpContext(request, response);
+				
+				ctx.setRequest(request);
+				ctx.setResponse(response);
 				
 				HeaderInterceptor[] headerInterceptors = {new KeepAlive()};
 				boolean processed = false;
@@ -64,30 +69,33 @@ public class HttpRequestHandler implements Runnable {
 					}
 				}
 				
-				//Determine URL
-				String url = request.getURI();
-				
-				//Map from config and get Module
-				ModuleConfig config = URLMapping.getModuleConfig(url);
-				
-				if(config == null) {
-					throw new HttpError(404);
+				if(!processed) {
+					//Determine URL
+					String url = request.getURI();
+					
+					//Map from config and get Module
+					ModuleConfig config = URLMapping.getModuleConfig(url);
+					
+					if(config == null) {
+						throw new HttpError(404);
+					}
+					
+					//Get Module Instance from ModuleFactory
+					AbstractHttpRequestHandlerModule module = ModuleFactory.getModule(config);
+	
+					//Delegate Request handling to module.consume() which will also build the Response
+					processed = module.consume(ctx);
 				}
 				
-				//Get Module Instance from ModuleFactory
-				AbstractHttpRequestHandlerModule module = ModuleFactory.getModule(config);
-
-				//Delegate Request handling to module.consume() which will also build the Response
-				module.consume(ctx);
-				
-				//Post process the request
-				for(int i = 0; i < headerInterceptors.length; i++) {
-					processed = headerInterceptors[i].preProcess(ctx);
-					if(processed) {
-						break;
+				if(!processed) {
+					//Post process the request
+					for(int i = 0; i < headerInterceptors.length; i++) {
+						processed = headerInterceptors[i].postProcess(ctx);
+						if(processed) {
+							break;
+						}
 					}
 				}
-
 			}
 			catch(HttpError e) {
 				response.err(e);

@@ -31,6 +31,8 @@ public class HttpResponse {
 	private StringBuffer body = new StringBuffer();
 
 	private OutputStream outputStream;
+	
+	private boolean flushed = false;
 
 	/**
 	 * Force construction of HTTPResponse with an underlying OutputStream This
@@ -146,10 +148,14 @@ public class HttpResponse {
 	}
 
 	public void flush() {
+		if(flushed) {
+			return;
+		}
 		String responseStr = publish();
 		PrintWriter out = new PrintWriter(outputStream, true);
 		out.println(responseStr);
 		out.close();
+		flushed = true;
 		logger.debug("Response sent back");
 		logger.debug(responseStr);
 	}

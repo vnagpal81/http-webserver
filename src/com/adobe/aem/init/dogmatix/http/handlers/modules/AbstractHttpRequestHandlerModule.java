@@ -27,7 +27,8 @@ public abstract class AbstractHttpRequestHandlerModule {
 	 * consume the requests wrapped in context.
 	 * 
 	 * @param context Object wrapper for request and response
+	 * @return 
 	 */
-	public abstract void consume(HttpContext context);
+	public abstract boolean consume(HttpContext context);
 
 }

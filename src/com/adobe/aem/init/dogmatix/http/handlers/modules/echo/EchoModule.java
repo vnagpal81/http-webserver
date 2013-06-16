@@ -8,7 +8,8 @@ import com.adobe.aem.init.dogmatix.http.handlers.modules.Module;
 public class EchoModule extends AbstractHttpRequestHandlerModule {
 
 	@Override
-	public void consume(HttpContext context) {
+	public boolean consume(HttpContext context) {
+		return false;
 		
 	}
 

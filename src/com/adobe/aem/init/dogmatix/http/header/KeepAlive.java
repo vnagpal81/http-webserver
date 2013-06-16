@@ -20,9 +20,9 @@ public class KeepAlive implements HeaderInterceptor {
 
 	@Override
 	public boolean postProcess(HttpContext ctx) {
-		if (ctx.getRequest().getHeader(Constants.HEADERS.CONNECTION)
-				.equalsIgnoreCase("Keep-Alive")) {
-
+		String connection = ctx.getRequest().getHeader(Constants.HEADERS.CONNECTION);
+		if (connection != null && connection.equalsIgnoreCase("Keep-Alive")) {
+			ctx.put("persistent", true);
 			return true;
 		}
 		return false;
