@@ -136,11 +136,8 @@ public class ServerConfig extends Properties {
 					break;
 				case CONFIGS.CommandPort:
 					try {
-						if (!NetworkUtils.available(Integer.parseInt(value))) {
-							throw new InvalidConfigException(String.format(
-									"Port {} already in use", value));
-						}
-					} catch (Exception e) {
+						Integer.parseInt(value);
+					} catch (NumberFormatException e) {
 						throw new InvalidConfigException("Invalid Command Port");
 					}
 					serverConfigInstance
@@ -149,11 +146,8 @@ public class ServerConfig extends Properties {
 					break;
 				case CONFIGS.HTTPPort:
 					try {
-						if (!NetworkUtils.available(Integer.parseInt(value))) {
-							throw new InvalidConfigException(String.format(
-									"Port {} already in use", value));
-						}
-					} catch (Exception e) {
+						Integer.parseInt(value);
+					} catch (NumberFormatException e) {
 						throw new InvalidConfigException("Invalid HTTP Port");
 					}
 					serverConfigInstance.setProperty(CONFIGS.HTTPPort, value);

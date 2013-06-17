@@ -14,10 +14,12 @@ import com.adobe.aem.init.dogmatix.listeners.CommandListener;
 import com.adobe.aem.init.dogmatix.listeners.HttpListener;
 import com.adobe.aem.init.dogmatix.listeners.Listener;
 import com.adobe.aem.init.dogmatix.util.Constants;
+import com.adobe.aem.init.dogmatix.util.NetworkUtils;
 
 /**
  * A loyal HTTP server that does what you ask it to do. Dedicated to the Asterix
- * animal character 
+ * animal character
+ * 
  * @see <a href="http://en.wikipedia.org/wiki/Dogmatix">Dogmatix</a>
  * 
  * @author vnagpal
@@ -51,6 +53,23 @@ public class Dogmatix {
 			System.exit(-1);
 		}
 
+		//if server needs to be stopped, send a GET request to http://localhost:{cmdPort}/stop
+		if (commandLineArguments.containsKey("action")) {
+			String action = commandLineArguments.get("action");
+			if (action.equalsIgnoreCase("stop")) {
+				boolean alive = true;
+				while(alive){
+					alive = NetworkUtils.ping("http://localhost:"
+							+ config.commandPort() + "/stop");
+					
+					System.out.println("Sending STOP signal to Dogmatix");
+					
+					if(alive) Thread.sleep(1000);
+				}
+				System.exit(0);
+			}
+		}
+
 		Listener http = new HttpListener(config);
 		Listener cmd = new CommandListener(config, http);
 
@@ -72,10 +91,11 @@ public class Dogmatix {
 	}
 
 	/**
-	 * Parse and process the command line arguments. 
-	 * Stores any value against a data option in a map to be re-used later.
+	 * Parse and process the command line arguments. Stores any value against a
+	 * data option in a map to be re-used later.
 	 * 
-	 * @param args String array of whitespace separated command line args
+	 * @param args
+	 *            String array of whitespace separated command line args
 	 */
 	private static void parse(String[] args) {
 		if (args.length > 0) {
@@ -85,19 +105,37 @@ public class Dogmatix {
 					System.out.println("Invalid option");
 					help();
 				}
+				if (option.equals("-a") || option.equals("--action")) {
+					//Perform an action
+					try {
+						commandLineArguments.put("action", args[++i]);	
+					}
+					catch(Exception e) {
+						System.out.println("Missing action");
+						help();
+					}
+					//Need to perform an action. No logs will be generated.
+					LogManager.getRootLogger().setLevel(Level.OFF);
+				}
 				if (option.equals("-h") || option.equals("--help")) {
 					help();
 				}
 				if (option.equals("-d") || option.equals("--debug")) {
-					//Change the log level to DEBUG in case of log4j
+					// Change the log level to DEBUG in case of log4j
 					LogManager.getRootLogger().setLevel(Level.DEBUG);
 				}
 				if (option.equals("-f") || option.equals("--file")) {
-					//Use an alternate user defined server.xml
-					commandLineArguments.put("server.xml", args[++i]);
+					// Use an alternate user defined server.xml
+					try {
+						commandLineArguments.put("server.xml", args[++i]);			
+					}
+					catch(Exception e) {
+						System.out.println("Missing filename");
+						help();
+					}
 				}
 				if (option.equals("-v") || option.equals("--version")) {
-					//Displays server version information and exits
+					// Displays server version information and exits
 					System.out.println("Dogmatix HTTP Web-Server Ver. "
 							+ Constants.VERSION
 							+ " (c) Varun Nagpal (vnagpal@adobe.com)");
@@ -114,6 +152,7 @@ public class Dogmatix {
 		System.out.println("usage: java -jar <jar-filename> [options]");
 		System.out.println("");
 		System.out.println("Options:");
+		System.out.println("\t-a,--action <action>\tPerform an action out of (stop)");
 		System.out.println("\t-d,--debug\t\tSets the log level to DEBUG");
 		System.out
 				.println("\t-f,--file <filename>\tAlternate path for the server settings XML file");

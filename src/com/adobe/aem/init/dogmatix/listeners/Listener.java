@@ -3,10 +3,11 @@ package com.adobe.aem.init.dogmatix.listeners;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.adobe.aem.init.dogmatix.util.NetworkUtils;
 
 public abstract class Listener extends Thread {
 
@@ -38,14 +39,15 @@ public abstract class Listener extends Thread {
 				} 
 			}
 			logger.debug("Exiting listener thread");
-			
 		}
 	}
 
 	protected void listen(int port) {
 		try {
-			serverSocket = new ServerSocket(port);
-			logger.debug("Listening on port: " + port);
+			if(NetworkUtils.available(port)) {
+				serverSocket = new ServerSocket(port);
+				logger.debug("Listening on port: " + port);
+			}
 		} catch (IOException e) {
 			logger.error("Could not listen on port: " + port);
 		}
