@@ -1,5 +1,7 @@
 package com.adobe.aem.init.dogmatix.config;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,10 +49,10 @@ public class ServerConfig extends Properties {
 
 	}
 
-	public static ServerConfig getInstance() throws InvalidConfigException {
+	public static ServerConfig getInstance(String filename) throws InvalidConfigException {
 
 		if (serverConfigInstance == null) {
-			buildServerConfig();
+			buildServerConfig(filename);
 		}
 
 		return serverConfigInstance;
@@ -62,15 +64,22 @@ public class ServerConfig extends Properties {
 	 *         http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
 	 * 
 	 */
-	private static void buildServerConfig() throws InvalidConfigException {
+	private static void buildServerConfig(String filename) throws InvalidConfigException {
 		// read server.xml
 		try {
 			logger.debug("Create ServerConfig Object");
 			serverConfigInstance = new ServerConfig();
 
-			logger.debug("Read server.xml from classpath");
-			InputStream xmlStream = ServerConfig.class.getClassLoader()
-					.getResourceAsStream("server.xml");
+			InputStream xmlStream;
+			if(filename == null) {
+				logger.debug("Read server.xml from classpath");
+				xmlStream = ServerConfig.class.getClassLoader()
+						.getResourceAsStream("server.xml");				
+			}
+			else {
+				logger.debug("Read server.xml from {}", filename);
+				xmlStream = new FileInputStream(filename);
+			}
 			String inputXml = XmlUtils.read(xmlStream);
 
 			logger.debug("Read server.xsd from classpath");
