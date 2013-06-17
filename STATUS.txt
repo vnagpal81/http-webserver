@@ -1,0 +1,31 @@
+			 ============================
+                         Domgatix 1.0 Patch Proposals
+                         ============================
+
+
+RELEASE SHOWSTOPPERS:
+
+* Connection Keep Alive implementation
+  HTTP/1.1 rfc mandates the honouring of the 'Connection : keep-alive' header via persistent TCP sockets.
+
+* Unit Test Cases
+  JUnit based Test Cases to test existing server functionality
+
+* HTTP Methods support
+  Support to be added for PUT/POST/DELETE/HEAD/CONNECT within the ResourcesModule
+
+
+PATCHES/ISSUES THAT ARE STALLED:
+
+* Echo Module
+
+* Proxy Module
+
+* REST Module
+
+* Resources Module Storage - FTP/S3/Remote
+
+* HTTP Headers handling
+  The basic framework is in place. Need to add header interceptors for each of the HTTP header processing on the request.
+
+

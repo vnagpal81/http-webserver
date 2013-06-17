@@ -1,0 +1,43 @@
+			 ==================================
+                         Domgatix 1.0 Extension Capabilites
+                         ==================================
+
+The implementation of HTTP/1.1 rfc is very rudimentary in the current version. 
+However, code has been architected with extension capabilities for further development.
+
+Hooks and plugins points at various places in the source tree can be read below.
+
+Source code is configured as an Eclipse project. 
+Files in the project root - .classpath and .project will be used by Eclipse IDE when imported 
+into the IDE.
+
+For building instructions, see BUILDING.txt.
+
+(0) Modules
+
+ * On the lines of Apache HTTP web server, modules can be configured in Dogmatix via the 
+   default server.xml
+   
+ * A module is responsible for consuming the HTTP request and writing back an appropriate 
+   HTTP response.
+    
+ * Any custom module MUST extend the class
+   com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule
+
+(1) Headers
+
+ * HTTP/1.1 rfc defines Request headers very explicitly and the logic behind handling them.
+   http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+
+ * Handling of headers is done via interceptors in the code. 
+   This is inspired by the ServletFilter and Spring Framework's HandlerInterceptor mechanisms.
+
+ * Since, not all headers are being detected and processed yet, custom implementations can be 
+   plugged in.
+
+ * A header interceptor implementation is MUST implement the interface 
+   com.adobe.aem.init.dogmatix.http.header.HeaderInterceptor
+
+ * Pre-processing (before a module consumes the request) and Post-processing hooks (after a 
+   module consumes the request) need to be implemented in a header interceptor which operates 
+   on an HTTP context.
