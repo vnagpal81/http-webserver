@@ -6,6 +6,7 @@
 	<version>1.0</version>
 	<name>Dogmatix</name>
 	<description>A multi-threaded file based HTTP Web Server</description>
+	<packaging>jar</packaging>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
@@ -15,6 +16,7 @@
 		</resources>
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.0</version>
 				<configuration>
@@ -22,21 +24,11 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>com.adobe.aem.init.dogmatix.core.Dogmatix</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2-beta-4</version>
+				<version>2.2-beta-5</version>
 				<configuration>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
@@ -46,9 +38,12 @@
 							<mainClass>com.adobe.aem.init.dogmatix.core.Dogmatix</mainClass>
 						</manifest>
 					</archive>
+					<appendAssemblyId>false</appendAssemblyId>
+					<descriptor>src/assembly/zip.xml</descriptor>
 				</configuration>
 				<executions>
 					<execution>
+						<id>jar-with-dependencies</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
@@ -91,4 +86,25 @@
 			<version>3.2.3.RELEASE</version>
 		</dependency>
 	</dependencies>
+
+	<developers>
+		<developer>
+			<id>vnagpal</id>
+			<name>Varun Nagpal</name>
+			<email>vnagpal@adobe.com</email>
+			<url></url>
+			<organization>Adobe</organization>
+			<organizationUrl>http://adobe.com</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>+5:30</timezone>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git://github.com/vnagpal81/http-webserver.git</connection>
+		<developerConnection>scm:git://github.com/vnagpal81/http-webserver.git</developerConnection>
+		<url>https://github.com/vnagpal81/http-webserver</url>
+	</scm>
 </project>
