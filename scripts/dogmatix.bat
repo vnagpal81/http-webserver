@@ -1,6 +1,10 @@
 @ECHO OFF
 rem Code borrowed from Apache Tomcat bin/*.bat
 
+if not exist setenv.bat goto setenvDone
+setenv.bat
+:setenvDone
+
 rem Make sure prerequisite environment variables are set
 if not "%JAVA_HOME%" == "" goto gotJdkHome
 if not "%JRE_HOME%" == "" goto gotJreHome
