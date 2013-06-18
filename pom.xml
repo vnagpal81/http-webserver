@@ -30,7 +30,7 @@
 							<addClasspath>true</addClasspath>
 						</manifest>
 						<manifestEntries>
-							<Class-Path>conf/ lib/*.jar</Class-Path>
+							<Class-Path>../conf/</Class-Path>
 						</manifestEntries>
 					</archive>
 				</configuration>
