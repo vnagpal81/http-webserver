@@ -9,7 +9,16 @@
 	<packaging>jar</packaging>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-
+		<!-- 
+		<resources>
+			<resource>
+				<includes>
+					<include>log4j.xml</include>
+				</includes>
+				<directory>src/resources</directory>
+			</resource>
+		</resources>
+		-->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
