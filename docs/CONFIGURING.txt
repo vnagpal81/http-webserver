@@ -1,0 +1,106 @@
+	    ============================================
+            Configuring The Dogmatix 1.0 HTTP Web Server
+            ============================================
+
+
+The server can be configured using either an XML file or in-source metadata using 
+Java Annotations http://docs.oracle.com/javase/7/docs/api/java/text/Annotation.html
+
+(1) Configuration using server.xml
+
+ * A default server.xml is provided with the binary distribution
+ * You are allowed to override the server.xml with any custom XML file at any path. This
+   can be specified at startup using the -f or --file <filename> option. For more details,
+   see RUNNING.txt
+ * Overriding will ignore the default values and hence, should be complete in itself.
+ * Any server.xml defined should adhere to the schema definition server.xsd, also bundled
+   along with the binary distribution. This XSD is also used to validate the XML config at
+   server startup time, failing which the launch is halted.
+ * The XML has 2 sections - <modules/> & <configs/>
+
+(2) Modules
+
+ * This section instructs the server to load modules which will handle the HTTP requests.
+ * Alternately, you can also specify a package in the <scan/> element under which the server
+   will reflectively look for classes annotated with @Module java annotation. For details on 
+   how to configure modules (via XML or Annotations), read below.
+ * A module is uniquely identified by its Class and URL. This implies that the same module can
+   consume requests from 2 different URLs while still exhibiting separate handling behaviour.
+   This is defined via the extra <property/> tags that follow.
+ * Each <property /> XML tag is a String-String Key-Value pair which influences the module 
+   implementation logic and hence, the keys are module dependent.
+ * The URL specification is a regular expression of the path to be matched against request URI.
+   
+   Quoting Spring Framework documentation -
+   
+   The mapping matches URLs using the following rules:
+	? matches one character
+	* matches zero or more characters
+	** matches zero or more 'directories' in a path
+   Some examples:
+	com/t?st.html - matches com/test.jsp but also com/tast.html or com/txst.html
+	com/*.html - matches all .html files in the com directory
+	com/**/test.html - matches all test.html files underneath the com path
+	org/spring/**/*.html - matches all .html files underneath the org/spring path
+	org/**/servlet/bla.html - matches org/spring/servlet/bla.html 
+		but also org/spring/testing/servlet/bla.html and org/spring/bla.html
+
+ * Developers are encouraged to write their own modules and add to the source. For contributing
+   to the source tree, see EXTENDING.txt
+
+(2.1) Configuration using Java Annotations
+
+ * The equivalent of the above is the annotation 
+   @Module( url="", settings={ @Setting( name="", value=""), } )
+ * Since this is a class-level annotation, it has to be used on each module class.
+ * The annotations MUST be used along with the component scan feature as described above.
+ 
+ NOTE: Conflicts between XML and Annotation configurations i.e. Same URL/Class encountered in 
+       both, the annotated configuration will take precedence over the XML.
+
+(4) Configs
+
+ * This section covers the Global server level settings and are, therefore, specified only 
+   in XML.
+ * Configs are well defined and are limited to the following:
+
+	HTTPPort		A valid system port on which the server listens for incoming 
+				HTTP requests. It should be available at the time of startup.
+				(Default is 4444)
+
+	CommandPort		A valid system port on which the server listens for 
+				commands. Commands are actions requests sent as HTTP GETs. 
+				Upon receiving a command request the server is expected to 
+				perform an action. Currently, it is only used to instruct 
+				the server to shutdown.
+				(Default is 1913)
+
+	MaxThreads		Maximum number of threads allowed in the JVM instance that 
+				the server is running in before it starts rejecting further 
+				incoming requests. Very broadly, it translates into the 
+				concurrency limit. This should not be tampered with unless 
+				you know what you are doing. A low value might result in a 
+				high rate of request rejections. A high value might result 
+				in frequent OutOfMemory exceptions.
+				(Default is 1000)
+
+	HTTPVersion		The protocol the server should adhere to while entertaining 
+				HTTP requests and building HTTP responses. Currently, it is 
+				used to keep-alive TCP connections as per 1.1 spec.
+				(Default is 1.1)
+
+	ShutdownGraceTime	The waiting period in seconds, before halting the server 
+				forcefully. This time is to be utilized by threads to exit 
+				gracefully while releasing any blocked I/O resources.
+				May be increased if your application has frequent long 
+				I/O blocking operations, like 3rp party web service requests. 
+				If too high, will cause a delay in server shutdown and have 
+				no other effect on its operation whatsoever.
+				(Default is 60)
+
+	StopCommand		Linked to the CommandListener, the Stop command is the command
+				to look for in the GET request which will be received on the 
+				CommandPort for shutting down the server. This has been made 
+				configurable for an installation to have the flexibility in 
+				declaring its own protocol. It is case-insensitive.
+				(Default is STOP)
