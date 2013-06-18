@@ -34,9 +34,9 @@ public class ModuleFactory {
 	}
 
 	/**
-	 * Loads the modules instances. Must be called at server startup <b>before</b>
-	 * the server starts listening. May be called again if we wish to support
-	 * config reload without server restart in future.
+	 * Loads the modules instances. Must be called at server startup
+	 * <b>before</b> the server starts listening. May be called again if we wish
+	 * to support config reload without server restart in future.
 	 * 
 	 * @throws InvalidModuleException
 	 */
@@ -49,7 +49,8 @@ public class ModuleFactory {
 		for (ModuleConfig moduleConfig : moduleConfigs) {
 			if (!moduleInstanceCache.containsKey(moduleConfig)) {
 				logger.debug("Loading module {}", moduleConfig.getClassName());
-				moduleInstanceCache.put(moduleConfig, new ModuleInstancePool(moduleConfig));
+				moduleInstanceCache.put(moduleConfig, new ModuleInstancePool(
+						moduleConfig));
 			}
 		}
 		logger.debug("Finish loading server modules");
@@ -59,8 +60,8 @@ public class ModuleFactory {
 
 	/**
 	 * Auto-detects and loads the modules in a specific path. Must be called at
-	 * server startup <b>before</b> the server starts listening. Convenience method
-	 * to load all modules in a package path by annotating a class with
+	 * server startup <b>before</b> the server starts listening. Convenience
+	 * method to load all modules in a package path by annotating a class with
 	 * {@code @Module}. Inspired from Spring's Component Scan.
 	 * 
 	 * @param path

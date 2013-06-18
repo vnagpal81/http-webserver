@@ -27,28 +27,29 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-
 /**
- * Util class exposing routines for XML parsing, reading, validation and traversing.
+ * Util class exposing routines for XML parsing, reading, validation and
+ * traversing.
  * 
  * @author vnagpal
- *
+ * 
  */
 public class XmlUtils {
-	
+
 	private static final Logger logger = LoggerFactory
 			.getLogger(XmlUtils.class);
-	
+
 	/**
-	 * Reads the XML input file line by line and returns a String containing the contents
+	 * Reads the XML input file line by line and returns a String containing the
+	 * contents
 	 * 
-	 * @param is the inputStream pointing to the XML source
+	 * @param is
+	 *            the inputStream pointing to the XML source
 	 * @return the XML file content in a String
 	 * @throws IOException
 	 */
 	public static String read(InputStream is) throws IOException {
-		BufferedReader reader = new BufferedReader(
-				new InputStreamReader(is));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 		String line;
 		StringBuffer inputXml = new StringBuffer();
 		while ((line = reader.readLine()) != null) {
@@ -57,14 +58,17 @@ public class XmlUtils {
 		}
 		return inputXml.toString();
 	}
-	
-	
+
 	/**
 	 * Validates the inputXml string against an XML Schema Definition file
 	 * 
-	 * @param inputXml XML string to validate
-	 * @param xsd the inputStream pointing to the XSD file containing the schema definition
-	 * @return true if the XML confirms to the schema defined in a valid XSD, false otherwise.
+	 * @param inputXml
+	 *            XML string to validate
+	 * @param xsd
+	 *            the inputStream pointing to the XSD file containing the schema
+	 *            definition
+	 * @return true if the XML confirms to the schema defined in a valid XSD,
+	 *         false otherwise.
 	 */
 	public static boolean validate(String inputXml, InputStream xsd) {
 		boolean isValid = true;
@@ -88,23 +92,33 @@ public class XmlUtils {
 
 		return isValid;
 	}
-	
+
 	/**
 	 * Convert a String with XML content into a Document object model.
 	 * 
-	 * @param inputXml the string to parse
-	 * @param normalize boolean to instruct parser to normalize the DOM tree. If true, coalesces the Text Nodes. {@code Node.normalize()}
-	 * @return the org.w3c.Document DOM tree representation of the XML string passed in
-	 * @throws SAXException thrown when the document builder SAX parser encounters any error
-	 * @throws IOException thrown if any I/O error occurs while reading the input XML
-	 * @throws ParserConfigurationException thrown if any error encountered while configuring the parser in the document builder
+	 * @param inputXml
+	 *            the string to parse
+	 * @param normalize
+	 *            boolean to instruct parser to normalize the DOM tree. If true,
+	 *            coalesces the Text Nodes. {@code Node.normalize()}
+	 * @return the org.w3c.Document DOM tree representation of the XML string
+	 *         passed in
+	 * @throws SAXException
+	 *             thrown when the document builder SAX parser encounters any
+	 *             error
+	 * @throws IOException
+	 *             thrown if any I/O error occurs while reading the input XML
+	 * @throws ParserConfigurationException
+	 *             thrown if any error encountered while configuring the parser
+	 *             in the document builder
 	 */
-	public static Document parse(String inputXml, boolean normalize) throws SAXException, IOException, ParserConfigurationException {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-				.newInstance();
+	public static Document parse(String inputXml, boolean normalize)
+			throws SAXException, IOException, ParserConfigurationException {
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(new InputSource(new StringReader(inputXml)));
-		if(normalize) {
+		Document doc = dBuilder.parse(new InputSource(
+				new StringReader(inputXml)));
+		if (normalize) {
 			logger.debug("Normalize XML Document");
 			// optional, but recommended
 			// read this -
@@ -117,7 +131,8 @@ public class XmlUtils {
 	/**
 	 * Traverses the DOM tree to lookup the XPath.
 	 * 
-	 * A sample XPath would look like "Parent > Child > Grandchild" for a DOM tree as following:
+	 * A sample XPath would look like "Parent > Child > Grandchild" for a DOM
+	 * tree as following:
 	 * 
 	 * <pre>
 	 * <Parent>
@@ -128,19 +143,24 @@ public class XmlUtils {
 	 * </Parent>
 	 * </pre>
 	 * 
-	 * @param doc The DOM tree to traverse
-	 * @param xPath A path to lookup
-	 * @param separator String separator used to break up level hierarchy with in the path
+	 * @param doc
+	 *            The DOM tree to traverse
+	 * @param xPath
+	 *            A path to lookup
+	 * @param separator
+	 *            String separator used to break up level hierarchy with in the
+	 *            path
 	 * @return Node(s) found at the given path
 	 */
 	public static NodeList lookup(Document doc, String xPath, String separator) {
 		return lookup(doc.getDocumentElement(), xPath, separator);
 	}
-	
+
 	/**
 	 * Traverses the DOM tree to lookup the XPath.
 	 * 
-	 * A sample XPath would look like "Parent > Child > Grandchild" for a DOM tree as following:
+	 * A sample XPath would look like "Parent > Child > Grandchild" for a DOM
+	 * tree as following:
 	 * 
 	 * <pre>
 	 * <Parent>
@@ -151,69 +171,89 @@ public class XmlUtils {
 	 * </Parent>
 	 * </pre>
 	 * 
-	 * @param e The DOM element to look under
-	 * @param xPath A path to lookup
-	 * @param separator String separator used to break up level hierarchy with in the path
+	 * @param e
+	 *            The DOM element to look under
+	 * @param xPath
+	 *            A path to lookup
+	 * @param separator
+	 *            String separator used to break up level hierarchy with in the
+	 *            path
 	 * @return Node(s) found at the given path
 	 */
 	public static NodeList lookup(Element e, String xPath, String separator) {
-		String[] trail = {xPath};
-		if(separator != null) {
+		String[] trail = { xPath };
+		if (separator != null) {
 			trail = xPath.split(separator);
 		}
 		Element parent = e;
-		for(int i = 0; i < trail.length - 1; i++) {
-			parent = (Element) parent.getElementsByTagName(trail[i].trim()).item(0);
+		for (int i = 0; i < trail.length - 1; i++) {
+			parent = (Element) parent.getElementsByTagName(trail[i].trim())
+					.item(0);
 		}
-		return parent.getElementsByTagName(trail[trail.length-1].trim());
+		return parent.getElementsByTagName(trail[trail.length - 1].trim());
 	}
-	
+
 	/**
-	 * Gives the string representation of the XML element at the specified XPath in the DOM tree
+	 * Gives the string representation of the XML element at the specified XPath
+	 * in the DOM tree
 	 * 
-	 * @param doc The DOM tree to traverse
-	 * @param xPath A path to lookup
-	 * @param separator String separator used to break up level hierarchy with in the path
-	 * @return List<String> List of string representations of the Node(s) found at the given path
+	 * @param doc
+	 *            The DOM tree to traverse
+	 * @param xPath
+	 *            A path to lookup
+	 * @param separator
+	 *            String separator used to break up level hierarchy with in the
+	 *            path
+	 * @return List<String> List of string representations of the Node(s) found
+	 *         at the given path
 	 */
 	public static List<String> text(Document doc, String xPath, String separator) {
 		return text(doc.getDocumentElement(), xPath, separator);
 	}
-	
+
 	/**
-	 * Gives the string representation of the XML element at the specified XPath in the DOM tree
+	 * Gives the string representation of the XML element at the specified XPath
+	 * in the DOM tree
 	 * 
-	 * @param e The DOM Element to look under
-	 * @param xPath A path to lookup
-	 * @param separator String separator used to break up level hierarchy with in the path
-	 * @return List<String> List of string representations of the Node(s) found at the given path
+	 * @param e
+	 *            The DOM Element to look under
+	 * @param xPath
+	 *            A path to lookup
+	 * @param separator
+	 *            String separator used to break up level hierarchy with in the
+	 *            path
+	 * @return List<String> List of string representations of the Node(s) found
+	 *         at the given path
 	 */
 	public static List<String> text(Element e, String xPath, String separator) {
 		NodeList nodes = lookup(e, xPath, separator);
 		List<String> texts = new ArrayList<String>();
-		for(int i = 0; i < nodes.getLength(); i++) {
+		for (int i = 0; i < nodes.getLength(); i++) {
 			texts.add(nodes.item(i).getTextContent());
 		}
 		return texts;
 	}
-	
+
 	/**
-	 * Converts XML {@code <property name=""></property>} tags to Properties object.
+	 * Converts XML {@code <property name=""></property>} tags to Properties
+	 * object.
+	 * 
 	 * @see java.util.XmlUtils.importProperties()
 	 * 
-	 * @param entries List of property nodes in the DOM
+	 * @param entries
+	 *            List of property nodes in the DOM
 	 */
 	public static Properties importProperties(NodeList entries) {
 		Properties props = new Properties();
-        int numEntries = entries.getLength();
-        for (int i = 0; i < numEntries; i++) {
-            Element entry = (Element)entries.item(i);
-            if (entry.hasAttribute("name")) {
-                Node n = entry.getFirstChild();
-                String val = (n == null) ? "" : n.getNodeValue();
-                props.setProperty(entry.getAttribute("name"), val);
-            }
-        }
-        return props;
-    }
+		int numEntries = entries.getLength();
+		for (int i = 0; i < numEntries; i++) {
+			Element entry = (Element) entries.item(i);
+			if (entry.hasAttribute("name")) {
+				Node n = entry.getFirstChild();
+				String val = (n == null) ? "" : n.getNodeValue();
+				props.setProperty(entry.getAttribute("name"), val);
+			}
+		}
+		return props;
+	}
 }

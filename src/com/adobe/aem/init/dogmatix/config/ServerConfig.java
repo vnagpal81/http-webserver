@@ -1,6 +1,5 @@
 package com.adobe.aem.init.dogmatix.config;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import org.w3c.dom.NodeList;
 import com.adobe.aem.init.dogmatix.exceptions.InvalidConfigException;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleFactory;
 import com.adobe.aem.init.dogmatix.http.request.Version;
-import com.adobe.aem.init.dogmatix.util.NetworkUtils;
 import com.adobe.aem.init.dogmatix.util.XmlUtils;
 
 /**
@@ -49,7 +47,8 @@ public class ServerConfig extends Properties {
 
 	}
 
-	public static ServerConfig getInstance(String filename) throws InvalidConfigException {
+	public static ServerConfig getInstance(String filename)
+			throws InvalidConfigException {
 
 		if (serverConfigInstance == null) {
 			buildServerConfig(filename);
@@ -64,19 +63,19 @@ public class ServerConfig extends Properties {
 	 *         http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
 	 * 
 	 */
-	private static void buildServerConfig(String filename) throws InvalidConfigException {
+	private static void buildServerConfig(String filename)
+			throws InvalidConfigException {
 		// read server.xml
 		try {
 			logger.debug("Create ServerConfig Object");
 			serverConfigInstance = new ServerConfig();
 
 			InputStream xmlStream;
-			if(filename == null) {
+			if (filename == null) {
 				logger.debug("Read server.xml from classpath");
 				xmlStream = ServerConfig.class.getClassLoader()
-						.getResourceAsStream("server.xml");				
-			}
-			else {
+						.getResourceAsStream("server.xml");
+			} else {
 				logger.debug("Read server.xml from {}", filename);
 				xmlStream = new FileInputStream(filename);
 			}
@@ -106,11 +105,13 @@ public class ServerConfig extends Properties {
 				logger.debug("URL : {}", url);
 				ModuleConfig moduleConfig = new ModuleConfig(className, url);
 				// read module level settings
-				Properties settings = XmlUtils.importProperties(XmlUtils.lookup(module, "property", null));
+				Properties settings = XmlUtils.importProperties(XmlUtils
+						.lookup(module, "property", null));
 				moduleConfig.setSettings(settings);
-				if(logger.isDebugEnabled()) {
-					for(String name : settings.stringPropertyNames()) {
-						logger.debug("Setting : {} = {}", name, settings.getProperty(name));
+				if (logger.isDebugEnabled()) {
+					for (String name : settings.stringPropertyNames()) {
+						logger.debug("Setting : {} = {}", name,
+								settings.getProperty(name));
 					}
 				}
 				moduleConfigs.add(moduleConfig);
@@ -176,15 +177,17 @@ public class ServerConfig extends Properties {
 				case CONFIGS.ShutdownGraceTime:
 					try {
 						Integer.parseInt(value);
-					} catch(Exception e) {
+					} catch (Exception e) {
 						throw new InvalidConfigException(String.format(
 								"Invalid Shutdown Grace Time {}", value));
 					}
-					serverConfigInstance.setProperty(CONFIGS.ShutdownGraceTime, value);
+					serverConfigInstance.setProperty(CONFIGS.ShutdownGraceTime,
+							value);
 					logger.debug("ShutdownGraceTime set to {} seconds", value);
 					break;
 				case CONFIGS.StopCommand:
-					serverConfigInstance.setProperty(CONFIGS.StopCommand, value);
+					serverConfigInstance
+							.setProperty(CONFIGS.StopCommand, value);
 					logger.debug("StopCommand set to {}", value);
 					break;
 				default:
@@ -224,12 +227,16 @@ public class ServerConfig extends Properties {
 	public String httpVersion() {
 		return getProperty(CONFIGS.HTTPVersion, "1.1");
 	}
-	
+
 	public int shutdownGraceTime() {
 		return Integer.parseInt(getProperty(CONFIGS.ShutdownGraceTime, "60"));
 	}
 
 	public String stopCommand() {
 		return getProperty(CONFIGS.StopCommand, "stop");
+	}
+
+	public String stopURL() {
+		return "http://localhost:" + commandPort() + "/" + stopCommand();
 	}
 }

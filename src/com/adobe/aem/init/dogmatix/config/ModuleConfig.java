@@ -48,6 +48,13 @@ public class ModuleConfig {
 		}
 		return this.settings.getProperty(name);
 	}
+	
+	public String getSetting(String name, String defaultValue) {
+		if(this.settings == null) {
+			return null;
+		}
+		return this.settings.getProperty(name, defaultValue);
+	}
 
 	@Override
 	public boolean equals(Object obj) {

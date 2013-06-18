@@ -12,7 +12,8 @@ import com.adobe.aem.init.dogmatix.util.ObjectPool;
  * Each request to this module will be served by a re-usable instance in the
  * pool. Since instances can be used by multiple requests, they must be
  * stateless. If no instances are free in the pool, new ones are created as
- * required.
+ * required. Objects in the pool are also expired after a default idle time 
+ * of 30 seconds so as to free memory.
  * 
  * @author vnagpal
  * 
@@ -69,7 +70,7 @@ public class ModuleInstancePool extends
 
 	@Override
 	public void expire(AbstractHttpRequestHandlerModule o) {
-
+		//no-op
 	}
 
 }

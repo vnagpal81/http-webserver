@@ -36,7 +36,7 @@ public class Dogmatix {
 	 * Entry point into the server. Initiates two threads which listen for
 	 * incoming HTTP requests and Command requests. Takes optional command-line
 	 * arguments which can be used to override the settings specified in file
-	 * server.properties
+	 * server.xml
 	 */
 	public static void main(String[] args) throws Exception {
 
@@ -53,18 +53,20 @@ public class Dogmatix {
 			System.exit(-1);
 		}
 
-		//if server needs to be stopped, send a GET request to http://localhost:{cmdPort}/stop
+		// if server needs to be stopped, send a GET request to
+		// http://localhost:{cmdPort}/stop
 		if (commandLineArguments.containsKey("action")) {
 			String action = commandLineArguments.get("action");
-			if (action.equalsIgnoreCase("stop")) {
+			if (action.equalsIgnoreCase(config.stopCommand())) {
 				boolean alive = true;
-				while(alive){
-					alive = NetworkUtils.ping("http://localhost:"
-							+ config.commandPort() + "/stop");
-					
+				while (alive) {
+					alive = NetworkUtils.ping(config.stopURL());
+
 					System.out.println("Sending STOP signal to Dogmatix");
-					
-					if(alive) Thread.sleep(1000);
+
+					// retry after 1 sec
+					if (alive)
+						Thread.sleep(1000);
 				}
 				System.exit(0);
 			}
@@ -80,6 +82,8 @@ public class Dogmatix {
 
 		logger.info("Woof Woof.. Dogmatix at your service!");
 
+		// Do not exit main thread. Wait for listeners to finish. Just being
+		// nice.
 		try {
 			cmd.join();
 			http.join();
@@ -106,15 +110,14 @@ public class Dogmatix {
 					help();
 				}
 				if (option.equals("-a") || option.equals("--action")) {
-					//Perform an action
+					// Perform an action
 					try {
-						commandLineArguments.put("action", args[++i]);	
-					}
-					catch(Exception e) {
+						commandLineArguments.put("action", args[++i]);
+					} catch (Exception e) {
 						System.out.println("Missing action");
 						help();
 					}
-					//Need to perform an action. No logs will be generated.
+					// Need to perform an action. No logs will be generated.
 					LogManager.getRootLogger().setLevel(Level.OFF);
 				}
 				if (option.equals("-h") || option.equals("--help")) {
@@ -127,9 +130,8 @@ public class Dogmatix {
 				if (option.equals("-f") || option.equals("--file")) {
 					// Use an alternate user defined server.xml
 					try {
-						commandLineArguments.put("server.xml", args[++i]);			
-					}
-					catch(Exception e) {
+						commandLineArguments.put("server.xml", args[++i]);
+					} catch (Exception e) {
 						System.out.println("Missing filename");
 						help();
 					}
@@ -152,7 +154,8 @@ public class Dogmatix {
 		System.out.println("usage: java -jar <jar-filename> [options]");
 		System.out.println("");
 		System.out.println("Options:");
-		System.out.println("\t-a,--action <action>\tPerform an action out of (stop)");
+		System.out
+				.println("\t-a,--action <action>\tPerform an action out of (stop)");
 		System.out.println("\t-d,--debug\t\tSets the log level to DEBUG");
 		System.out
 				.println("\t-f,--file <filename>\tAlternate path for the server settings XML file");
