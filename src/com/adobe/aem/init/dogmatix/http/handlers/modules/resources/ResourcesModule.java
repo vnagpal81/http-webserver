@@ -14,7 +14,7 @@ import com.adobe.aem.init.dogmatix.http.request.HttpRequest;
 import com.adobe.aem.init.dogmatix.http.request.Method;
 import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 
-/*@Module(url="files/**", settings={
+@Module(url="files/**", settings={
 		@Setting(name = ResourcesModule.SETTINGS.REPOSITORY, value = "local"),
 		@Setting(name = ResourcesModule.SETTINGS.BASE_DIR, value = "C:\\temp"),
 		@Setting(name = ResourcesModule.SETTINGS.UPLOAD_LIMIT, value = "5000"),
@@ -24,7 +24,7 @@ import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 		@Setting(name = ResourcesModule.SETTINGS.REDIRECT_TO_DEFAULT, value = "true"),
 		@Setting(name = ResourcesModule.SETTINGS.NOT_FOUND, value = "404.html"),
 		@Setting(name = ResourcesModule.SETTINGS.REDIRECT_TO_NOT_FOUND, value = "true"),
-})*/
+})
 public class ResourcesModule extends AbstractHttpRequestHandlerModule {
 	
 	public interface SETTINGS {
