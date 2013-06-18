@@ -9,11 +9,7 @@
 	<packaging>jar</packaging>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<resources>
-			<resource>
-				<directory>src/resources</directory>
-			</resource>
-		</resources>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -24,7 +20,21 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.adobe.aem.init.dogmatix.core.Dogmatix</mainClass>
+							<addClasspath>true</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Class-Path>conf/ lib/*.jar</Class-Path>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -33,11 +43,6 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-					<archive>
-						<manifest>
-							<mainClass>com.adobe.aem.init.dogmatix.core.Dogmatix</mainClass>
-						</manifest>
-					</archive>
 					<appendAssemblyId>false</appendAssemblyId>
 					<descriptor>src/assembly/zip.xml</descriptor>
 				</configuration>
