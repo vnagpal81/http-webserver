@@ -32,20 +32,21 @@ rem Note that NT requires a window name argument when using start.
 rem Also note the quoting as JAVA_HOME may contain spaces.
 set _RUNJAVA="%JRE_HOME%\bin\java"
 
-
 set BASEDIR=%DOGMATIX_HOME%
 if exist %BASEDIR% goto baseDirSet
 set BASEDIR=%CD%\..
 
 :baseDirSet
-set VERSION=1.0-jar-with-dependencies
-set JAR_FILE=%BASEDIR%\target\dogmatix-%VERSION%.jar
+set VERSION=1.0
+set JAR_FILE=%BASEDIR%\lib\dogmatix-%VERSION%.jar
 
 if exist "%JAR_FILE%" goto doAction
 echo Binary Distribution not found at %JAR_FILE%
 goto exit
 
 :doAction
+set _EXECJAVA=%_RUNJAVA% -jar %JAR_FILE%
+
 if ""%1"" == ""start"" goto doStart
 if ""%1"" == ""stop"" goto doStop
 if ""%1"" == ""version"" goto doVersion
@@ -58,7 +59,7 @@ echo   version           What version are you running?
 goto exit
 
 :doStart
-set _EXECJAVA=%_RUNJAVA% -jar %JAR_FILE%
+set DOGMATIX_OPTS=
 echo Starting Server...
 goto execCmd
 
