@@ -98,11 +98,21 @@ public class ServerConfig extends Properties {
 			NodeList modules = XmlUtils.lookup(doc, "modules>module", ">");
 			List<ModuleConfig> moduleConfigs = new ArrayList<ModuleConfig>();
 			for (int i = 0; i < modules.getLength(); i++) {
+				logger.debug("Reading module..");
 				Element module = (Element) modules.item(i);
 				String className = XmlUtils.text(module, "class", null).get(0);
+				logger.debug("Classname : {}", className);
 				String url = XmlUtils.text(module, "url", null).get(0);
+				logger.debug("URL : {}", url);
 				ModuleConfig moduleConfig = new ModuleConfig(className, url);
 				// read module level settings
+				Properties settings = XmlUtils.importProperties(XmlUtils.lookup(module, "property", null));
+				moduleConfig.setSettings(settings);
+				if(logger.isDebugEnabled()) {
+					for(String name : settings.stringPropertyNames()) {
+						logger.debug("Setting : {} = {}", name, settings.getProperty(name));
+					}
+				}
 				moduleConfigs.add(moduleConfig);
 			}
 			if (moduleConfigs.size() > 0) {

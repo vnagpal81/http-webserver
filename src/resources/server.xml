@@ -1,7 +1,7 @@
 <server>
 
 	<modules> 
-		<!-- 
+		
 		<module>
 			<class>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</class>
 			<url>files/**</url>
@@ -15,7 +15,7 @@
 			<property name="notFound">404.html</property>
 			<property name="redirectToNotFound">true</property>
 		</module>
-		-->
+		
 		<scan>com.adobe.aem.init.dogmatix.http.handlers.modules</scan>
 	</modules>
 

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -155,7 +157,10 @@ public class XmlUtils {
 	 * @return Node(s) found at the given path
 	 */
 	public static NodeList lookup(Element e, String xPath, String separator) {
-		String[] trail = xPath.split(separator);
+		String[] trail = {xPath};
+		if(separator != null) {
+			trail = xPath.split(separator);
+		}
 		Element parent = e;
 		for(int i = 0; i < trail.length - 1; i++) {
 			parent = (Element) parent.getElementsByTagName(trail[i].trim()).item(0);
@@ -191,4 +196,24 @@ public class XmlUtils {
 		}
 		return texts;
 	}
+	
+	/**
+	 * Converts XML {@code <property name=""></property>} tags to Properties object.
+	 * @see java.util.XmlUtils.importProperties()
+	 * 
+	 * @param entries List of property nodes in the DOM
+	 */
+	public static Properties importProperties(NodeList entries) {
+		Properties props = new Properties();
+        int numEntries = entries.getLength();
+        for (int i = 0; i < numEntries; i++) {
+            Element entry = (Element)entries.item(i);
+            if (entry.hasAttribute("name")) {
+                Node n = entry.getFirstChild();
+                String val = (n == null) ? "" : n.getNodeValue();
+                props.setProperty(entry.getAttribute("name"), val);
+            }
+        }
+        return props;
+    }
 }
