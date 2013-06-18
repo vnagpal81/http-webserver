@@ -8,6 +8,9 @@ import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 @SuppressWarnings("serial")
 public class HttpContext extends HashMap<String, Object> {
 	
+	public static final String SOCKET_HANDLE = "SOCKET_HANDLE";
+	public static final String SOCKET_PERSIST = "SOCKET_PERSIST";
+	
 	private HttpRequest request;
 	private HttpResponse response;
 	

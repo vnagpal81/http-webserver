@@ -22,7 +22,6 @@ import com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHand
 import com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleFactory;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.URLMapping;
 import com.adobe.aem.init.dogmatix.http.header.HeaderInterceptor;
-import com.adobe.aem.init.dogmatix.http.header.KeepAlive;
 import com.adobe.aem.init.dogmatix.http.request.HttpRequest;
 import com.adobe.aem.init.dogmatix.http.request.Method;
 import com.adobe.aem.init.dogmatix.http.request.Version;
@@ -58,8 +57,9 @@ public class HttpRequestHandler implements Runnable {
 
 				ctx.setRequest(request);
 				ctx.setResponse(response);
+				ctx.put(HttpContext.SOCKET_HANDLE, this.socket);
 
-				HeaderInterceptor[] headerInterceptors = { new KeepAlive() };
+				HeaderInterceptor[] headerInterceptors = {/* new KeepAlive() */};
 				boolean processed = false;
 
 				// Pre process the request
@@ -107,8 +107,6 @@ public class HttpRequestHandler implements Runnable {
 		} catch (Exception e) {
 			logger.error("Error while handling HTTP request", e);
 		} finally {
-			// If server config dictates SERVER_HTTP_VERSION = 1.1 do not close
-			// the socket streams yet
 			try {
 				cleanup();
 			} catch (IOException e) {
@@ -118,7 +116,13 @@ public class HttpRequestHandler implements Runnable {
 	}
 
 	private void cleanup() throws IOException {
-		this.socket.close();
+		if(!this.socket.isPersist()) {
+			this.socket.close();
+		}
+		else {
+			this.socket.setCount(this.socket.getCount()+1);
+			this.socket.setLastAccess(System.currentTimeMillis());
+		}
 	}
 
 	/**

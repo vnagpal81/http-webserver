@@ -46,6 +46,10 @@ public class ServerConfig extends Properties {
 	private ServerConfig() {
 
 	}
+	
+	public static ServerConfig getInstance() {
+		return serverConfigInstance;
+	}
 
 	public static ServerConfig getInstance(String filename)
 			throws InvalidConfigException {

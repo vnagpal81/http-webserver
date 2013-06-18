@@ -29,5 +29,7 @@ public interface Constants {
 		String CONNECTION = "Connection";
 		
 		String CONTENT_DISPOSITION = "Content-Disposition";
+
+		String KEEP_ALIVE = "Keep-Alive";
 	}
 }

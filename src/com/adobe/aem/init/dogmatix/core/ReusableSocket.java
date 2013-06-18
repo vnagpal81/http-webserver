@@ -11,7 +11,9 @@ public class ReusableSocket {
 	
 	private int count;
 	
-	private boolean idle;
+	private long lastAccess;
+	
+	private boolean persist;
 
 	public ReusableSocket(Socket socket) {
 		this.socket = socket;
@@ -32,15 +34,15 @@ public class ReusableSocket {
 	public void setCount(int count) {
 		this.count = count;
 	}
-
-	public boolean isIdle() {
-		return idle;
-	}
-
-	public void setIdle(boolean idle) {
-		this.idle = idle;
-	}
 	
+	public long getLastAccess() {
+		return lastAccess;
+	}
+
+	public void setLastAccess(long lastAccess) {
+		this.lastAccess = lastAccess;
+	}
+
 	public OutputStream getOutputStream() throws IOException {
 		return this.socket.getOutputStream();
 	}
@@ -52,4 +54,14 @@ public class ReusableSocket {
 	public void close() throws IOException {
 		this.socket.close();
 	}
+
+	public boolean isPersist() {
+		return persist;
+	}
+
+	public void setPersist(boolean persist) {
+		this.persist = persist;
+	}
+	
+	
 }
