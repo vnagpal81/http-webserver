@@ -53,24 +53,7 @@ public class Dogmatix {
 			System.exit(-1);
 		}
 
-		// if server needs to be stopped, send a GET request to
-		// http://localhost:{cmdPort}/stop
-		if (commandLineArguments.containsKey("action")) {
-			String action = commandLineArguments.get("action");
-			if (action.equalsIgnoreCase(config.stopCommand())) {
-				boolean alive = true;
-				while (alive) {
-					alive = NetworkUtils.ping(config.stopURL());
-
-					System.out.println("Sending STOP signal to Dogmatix");
-
-					// retry after 1 sec
-					if (alive)
-						Thread.sleep(1000);
-				}
-				System.exit(0);
-			}
-		}
+		doAction(config);
 
 		Listener http = new HttpListener(config);
 		Listener cmd = new CommandListener(config, http);
@@ -80,6 +63,8 @@ public class Dogmatix {
 		http.start();
 		cmd.start();
 
+		ServerStatistics.serverStarted();
+		
 		logger.info("Woof Woof.. Dogmatix at your service!");
 
 		// Do not exit main thread. Wait for listeners to finish. Just being
@@ -162,5 +147,34 @@ public class Dogmatix {
 		System.out.println("\t-h,--help\t\tDisplay help information");
 		System.out.println("\t-v,--version\t\tDisplay version information");
 		System.exit(0);
+	}
+	
+	/**
+	 * If requested any action, perform the action.
+	 * Possible actions are 
+	 * <ul>
+	 * 	<li>Stop</li>
+	 * </ul>
+	 */
+	private static void doAction(ServerConfig config) throws Exception {
+		// if server needs to be stopped, send a GET request to
+		// http://localhost:{cmdPort}/stop
+		if (commandLineArguments.containsKey("action")) {
+			String action = commandLineArguments.get("action");
+			if (action.equalsIgnoreCase(config.stopCommand())) {
+				boolean alive = true;
+				while (alive) {
+					alive = NetworkUtils.ping(config.stopURL());
+
+					System.out.println("Sending STOP signal to Dogmatix");
+
+					// retry after 1 sec
+					if (alive) {
+						Thread.sleep(1000);
+					}
+				}
+				System.exit(0);
+			}
+		}
 	}
 }

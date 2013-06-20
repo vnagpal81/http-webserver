@@ -3,6 +3,8 @@ package com.adobe.aem.init.dogmatix.listeners;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.adobe.aem.init.dogmatix.config.ServerConfig;
+import com.adobe.aem.init.dogmatix.core.ServerStatistics;
 
 public class CommandListener extends Listener {
 	
@@ -43,12 +46,20 @@ public class CommandListener extends Listener {
 		String[] cmd = inputLine.split("\\s");
 		String command = cmd[1].substring(1);
 		logger.debug("Received command {}", command);
-
-		cleanup(socket);
 		
 		if(command.toLowerCase().contains(serverConfig.stopCommand().toLowerCase())) {
+			cleanup(socket);
+			
 			//stopListening();
 			System.exit(0);
+		}
+		else if(command.toLowerCase().contains("stats")) {
+			//send server statistics in response
+			OutputStream outputStream = socket.getOutputStream();
+			PrintWriter out = new PrintWriter(outputStream, true);
+			out.println(ServerStatistics.getStatsAsJSON());
+			
+			cleanup(socket);
 		}
 
 	}	
@@ -71,6 +82,5 @@ public class CommandListener extends Listener {
 	
 	private void cleanup(Socket socket) throws IOException {
 		socket.getOutputStream().close();
-		
 	}
 }

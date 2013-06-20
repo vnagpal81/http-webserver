@@ -256,4 +256,8 @@ public class ServerConfig extends Properties {
 	public String stopURL() {
 		return "http://localhost:" + commandPort() + "/" + stopCommand();
 	}
+	
+	public String toJSON() {
+		return null;
+	}
 }
