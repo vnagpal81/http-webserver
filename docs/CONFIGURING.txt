@@ -55,8 +55,8 @@ Java Annotations http://docs.oracle.com/javase/7/docs/api/java/text/Annotation.h
  * Since this is a class-level annotation, it has to be used on each module class.
  * The annotations MUST be used along with the component scan feature as described above.
  
- NOTE: Conflicts between XML and Annotation configurations i.e. Same URL/Class encountered in 
-       both, the annotated configuration will take precedence over the XML.
+ NOTE: In case of conflicts between XML and Annotation configurations i.e. same URL/Class 
+       encountered in both, the XML configuration will take precedence over annotations.
 
 (4) Configs
 
