@@ -54,12 +54,14 @@ set _EXECJAVA=%_RUNJAVA% -jar %JAR_FILE%
 if ""%1"" == ""start"" goto doStart
 if ""%1"" == ""stop"" goto doStop
 if ""%1"" == ""version"" goto doVersion
+if ""%1"" == ""help"" goto doHelp
 
 echo Usage:  dogmatix ( commands ... )
 echo commands:
 echo   start             Start Dogmatix server
 echo   stop              Stop Dogmatix server
 echo   version           What version are you running?
+echo   help              Displays server help info
 goto exit
 
 :doStart
@@ -77,6 +79,9 @@ goto execCmd
 :doVersion
 set DOGMATIX_OPTS=-v
 goto execCmd
+
+:doHelp
+set DOGMATIX_OPTS=-h
 
 :execCmd
 rem Get remaining unshifted command line arguments and save them in the
