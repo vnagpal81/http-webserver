@@ -1,4 +1,4 @@
-			 ============================
+			 			 ============================
                          Domgatix 1.0 HTTP Web Server
                          ============================
 
@@ -11,11 +11,11 @@ even source code from various open source libraries especially Apache httpd and 
 The nomenclature Dogmatix is based on the canine character in the comix (sic) Asterix attributing 
 the server's capabilities to that of a loyal dog's.
 
-* For downloading the source and building the binary, see BUILDING.txt
-* For configuring the behaviour of a runtime server instance, see CONFIGURING.txt
-* For launching/stalling the server and other runtime options, see RUNNING.txt
-* For extending the server capabilities by editing the source, see EXTENDING.txt
-* To check the current dev status of the project and list of TODOs, see STATUS.txt
+* For downloading the source and building the binary, see docs/BUILDING.txt
+* For configuring the behaviour of a runtime server instance, see docs/CONFIGURING.txt
+* For launching/stalling the server and other runtime options, see docs/RUNNING.txt
+* For extending the server capabilities by editing the source, see docs/EXTENDING.txt
+* To check the current dev status of the project and list of TODOs, see docs/STATUS.txt
 
 ============
 Inspirations
