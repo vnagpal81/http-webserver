@@ -37,7 +37,7 @@
 				Base directory path in case local storage is used.
 				[OPTIONAL] If not specified defaults to 'resources' directory under server root
 			-->
-			<property name="baseDir">C:\\temp</property>
+			<!-- <property name="baseDir">C:\\temp</property> -->
 			
 			<!-- 
 				Max upload size in case of POST requests. Units are bytes.
@@ -72,7 +72,7 @@
 				If defaultDirPath is not specified then this is ignored.
 				[OPTIONAL] If not specified defaults to 'true'
 			-->
-			<property name="redirectToDefault">true</property>
+			<property name="redirectToDefault">false</property>
 			
 			<!-- 
 				The file to default to in case requested resource is not found.
@@ -88,7 +88,7 @@
 				If notFound is not specified then this is ignored.
 				[OPTIONAL] If not specified defaults to 'true'
 			-->
-			<property name="redirectToNotFound">true</property>
+			<property name="redirectToNotFound">false</property>
 		</module>
 		
 		<!-- 

@@ -113,7 +113,9 @@ public class HttpRequestHandler implements Runnable {
 			
 		} finally {
 			try {
-				cleanup();
+				//cleanup();
+				logger.debug("Closing socket");
+				this.socket.close();
 			} catch (IOException e) {
 				logger.error("Unable to close socket connection");
 			}
@@ -122,9 +124,11 @@ public class HttpRequestHandler implements Runnable {
 
 	private void cleanup() throws IOException {
 		if(!this.socket.isPersist()) {
+			logger.debug("Closing socket");
 			this.socket.close();
 		}
 		else {
+			logger.debug("Persisting the socket : Count - {}", this.socket.getCount()+1);
 			this.socket.setCount(this.socket.getCount()+1);
 			this.socket.setLastAccess(System.currentTimeMillis());
 		}

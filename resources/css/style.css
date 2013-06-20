@@ -23,7 +23,7 @@ div.error {
 }
 
 #reader {
-	scroll:auto;
+	overflow:auto;
 	height:500px;
 }
 

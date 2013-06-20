@@ -1,0 +1,53 @@
+<html>
+
+	<head>
+		<script type="text/javascript" src="jquery.js"></script>
+		<script type="text/javascript">
+			var draggable;
+			var original;
+			$(document).ready(function(){
+				$(document).on("mousemove", function(e) {
+					if(draggable) {
+						draggable.css("position","fixed");
+						draggable.css("top",e.pageY+5);
+						draggable.css("left",e.pageX+5);
+					}
+				});
+				$(".draggable").on("mousedown", function(e) {
+					original = $(e.target);
+					draggable = original.clone();
+					draggable.appendTo("body");
+					draggable.css("position","fixed");
+					draggable.css("top",e.pageY);
+					draggable.css("left",e.pageX);
+					e.preventDefault();
+				});
+				$(document).on("mouseup", function(e) {
+					var target = $(e.target);
+					if(draggable) {
+						if(target.hasClass("droppable")) {
+							original.detach().appendTo(target);
+							draggable.remove();
+							draggable = undefined;
+						}
+						else {
+							draggable.remove();
+							draggable = undefined;
+						}
+					}
+				});
+			});
+		</script>
+	</head>
+
+	<body>
+		<div id="from" left="0" top="0" style="border:3px solid black; height: 400px; width: 400px; cursor:pointer;">
+			<span style="border:1px solid red;" class="draggable">RED</span>
+			<span style="border:1px solid green;" class="draggable">GREEN</span>
+			<span style="border:1px solid yellow;" class="draggable">YELLOW</span>
+			<span style="border:1px solid blue;" class="draggable">BLUE</span>
+		</div>
+		<div id="to" left="0" top="500" style="border:3px solid black; height: 400px; width: 400px;" class="droppable">Drop here</div>
+	</body>
+
+</html>

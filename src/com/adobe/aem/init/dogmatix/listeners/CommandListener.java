@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.adobe.aem.init.dogmatix.config.ServerConfig;
 import com.adobe.aem.init.dogmatix.core.ServerStatistics;
+import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
+import com.adobe.aem.init.dogmatix.util.Constants;
 
 public class CommandListener extends Listener {
 	
@@ -48,17 +50,30 @@ public class CommandListener extends Listener {
 		logger.debug("Received command {}", command);
 		
 		if(command.toLowerCase().contains(serverConfig.stopCommand().toLowerCase())) {
+			OutputStream outputStream = socket.getOutputStream();
+			HttpResponse response = new HttpResponse(outputStream);
+			response
+			.status(200)
+			.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
+			.append("callbackShutdown({})")
+			.flush();
+			
 			cleanup(socket);
 			
 			//stopListening();
 			System.exit(0);
 		}
 		else if(command.toLowerCase().contains("stats")) {
+			String callbackFunc = command.split("\\?")[1];
 			//send server statistics in response
 			OutputStream outputStream = socket.getOutputStream();
-			PrintWriter out = new PrintWriter(outputStream, true);
-			out.println(ServerStatistics.getStatsAsJSON());
-			
+			HttpResponse response = new HttpResponse(outputStream);
+			response
+			.status(200)
+			.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
+			.append("callbackServerStats("+ServerStatistics.getStatsAsJSON()+")")
+			.flush();
+			//out.close();
 			cleanup(socket);
 		}
 

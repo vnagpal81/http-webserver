@@ -26,6 +26,6 @@ public class Matcher {
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(pathMatcher.extractPathWithinPattern("files/**","files/1/2/aem.txt"));
+		System.out.println(pathMatcher.extractPathWithinPattern("*","favicon.ico"));
 	}
 }

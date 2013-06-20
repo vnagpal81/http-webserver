@@ -20,34 +20,32 @@
 				"SUCCESS":"#C7E8C3",
 			};
 			var _server_stats = {};
+
+			var callbackServerStats = function(json) { 
+				_server_stats = json;
+				displayServerStats();
+			};
 			
 			var loadServerStats = function() {
-				$.ajax({
-					url: statsUrl,
-					async: false,
-					data: {},
-					type: 'GET',
-					dataType: 'json',
-					success: function(data) {
-						_server_stats = data;
-						displayServerStats();
-					},
-					error: function(data) {
-						notify("Error getting server stats!", _NOTIFICATION_TYPE.ERROR);
-					}
-				});
+				$.getJSON(statsUrl + '?callback=?');
+				
 			};
 
 			var displayServerStats = function() {
-				$("#statsbody").html("<td>Running since</td><td>" + _server_stats.duration + "</td><td>Memory used</td><td>" + _server_stats.memory + "</td>");
+				$("#statsbody").html("<tr><td>Running since</td><td>" + _server_stats.duration + "</td></tr><tr><td>Memory used</td><td>" + _server_stats.memory + "</td></tr>");
 			};
 
 			var notify = function(msg, background) {
 				$("#status").html(msg);
 				$("#status").css("background-color", background);
-			}
+			};
+			
+			var callbackShutdown = function(json) {
+				notify("Server stopped!", _NOTIFICATION_TYPE.SUCCESS);
+			};
 
 			$(document).ready(function() {
+				$("#shutdown").removeAttr("disabled");//this is done because browser tends to cache button's state
 				
 				$("#status").click(function() {
 					$("#status").html("&nbsp;");
@@ -61,22 +59,10 @@
 				$("#shutdown").click(function() {
 					var btn_shutdown = $(this);
 					btn_shutdown.attr("disabled","disabled");
-					btn_shutdown.attr("value", "Shutting down...");
-					$.ajax({
-						url: stopUrl,
-						async: false,
-						data: {},
-						type: 'GET',
-						dataType: 'text',
-						success: function(data) {
-							notify("Server stopped!", _NOTIFICATION_TYPE.SUCCESS);
-						},
-						error: function(data) {
-							notify("Error shutting down server!", _NOTIFICATION_TYPE.ERROR);
-							btn_shutdown.removeAttr("disabled");
-							btn_shutdown.val("Shutdown");
-						}
-					});
+					btn_shutdown.html("Shutting down...");
+					
+					$.getJSON(stopUrl + '?callback=?');
+					
 					return false;
 				});
 
@@ -101,33 +87,34 @@
 		<h2 align="center">Administrative Console</h2>
 
 		<table border="2" width="100%" >
-		<tr>
-			<td id="menu" width="25%">
-				<ul>
-					<li>&gt;&gt; <a href="index.html">Home</a></li>
-					<li class="current">&gt;&gt; <a href="admin.html">Administrative Console</a></li>
-					<li>&gt;&gt; <a href="examples/">Examples</a></li>
-					<li>&gt;&gt; <a href="docs/">Documentation</a></li>
-					<li>&gt;&gt; <a href="contact.html">Contact</a></li>
-				</ul>
-			</td>
-			<td class="center">
-				<p>Server stats:</p>
-				<table id="stats" align="center" border="1" width="33%">
-					<thead>
-						<th>Parameter</th>
-						<th>Value</th>
-					</thead>
-					<tbody id="statsbody">
-						<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
-					</tbody>
-				</table>
-				<br/>
-				<table align="center" width="33%">
-					<tr><td><button id="refresh">Refresh</button></td><td align="right"><button id="shutdown">Shutdown</button></td></tr>
-				</table>
-				<div id="status" width="100%" class="error clickable" title="Click to clear"></div>
-			</td>
-		</tr>
+			<tr>
+				<td id="menu" width="25%">
+					<ul>
+						<li>&gt;&gt; <a href="index.html">Home</a></li>
+						<li class="current">&gt;&gt; <a href="admin.html">Administrative Console</a></li>
+						<li>&gt;&gt; <a href="examples/">Examples</a></li>
+						<li>&gt;&gt; <a href="docs/">Documentation</a></li>
+						<li>&gt;&gt; <a href="contact.html">Contact</a></li>
+					</ul>
+				</td>
+				<td class="center">
+					<p>Server stats:</p>
+					<table id="stats" align="center" border="1" width="33%">
+						<thead>
+							<th>Parameter</th>
+							<th>Value</th>
+						</thead>
+						<tbody id="statsbody">
+							<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+						</tbody>
+					</table>
+					<br/>
+					<table align="center" width="33%">
+						<tr><td><button id="refresh">Refresh</button></td><td align="right"><button id="shutdown">Shutdown</button></td></tr>
+					</table>
+					<div id="status" width="100%" class="error clickable" title="Click to clear"></div>
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>
