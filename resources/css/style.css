@@ -26,3 +26,8 @@ div.error {
 	scroll:auto;
 	height:500px;
 }
+
+#accordion h3 {
+	background-color:gray;
+	cursor:pointer;
+}

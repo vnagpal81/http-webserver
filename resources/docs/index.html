@@ -23,16 +23,20 @@
 			};
 
 			$(document).ready(function() {
-				$("#rfc").click(function(){
+				$("#rfc").click(function(e) {
+					e.preventDefault();
 					getReadingMaterial("rfc2616.txt");
 				});
-				$("#build").click(function(){
+				$("#build").click(function(e) {
+					e.preventDefault();
 					getReadingMaterial("BUILDING.txt");
 				});
-				$("#config").click(function(){
+				$("#config").click(function(e) {
+					e.preventDefault();
 					getReadingMaterial("CONFIGURING.txt");
 				});
-				$("#run").click(function(){
+				$("#run").click(function(e) {
+					e.preventDefault();
 					getReadingMaterial("RUNNING.txt");
 				});
 			});
@@ -55,16 +59,16 @@
 
 		<table border="2" width="100%" >
 		<tr>
-			<td id="menu" width="25%">
+			<td id="menu" width="15%">
 				<ul id="menulist">
-					<li>&gt;&gt; <a href="index.html">Home</a></li>
-					<li>&gt;&gt; <a href="admin.html">Administrative Console</a></li>
-					<li>&gt;&gt; <a href="examples/">Examples</a></li>
-					<li class="current">&gt;&gt; <a href="docs/">Documentation</a></li>
-					<li>&gt;&gt; <a href="contact.html">Contact</a></li>
+					<li>&gt;&gt; <a href="../index.html">Home</a></li>
+					<li>&gt;&gt; <a href="../admin.html">Administrative Console</a></li>
+					<li>&gt;&gt; <a href="../examples/">Examples</a></li>
+					<li class="current">&gt;&gt; <a href="../docs/">Documentation</a></li>
+					<li>&gt;&gt; <a href="../contact.html">Contact</a></li>
 				</ul>
 			</td>
-			<td id="submenu" width="25%">
+			<td id="submenu" width="15%">
 				<ul id="submenulist">
 					<li>&gt;&gt; <a id="rfc" href="#">RFC 2616</a></li>
 					<li>&gt;&gt; <a href="javadocs/index.html" target="_blank">Source Javadocs</a></li>
