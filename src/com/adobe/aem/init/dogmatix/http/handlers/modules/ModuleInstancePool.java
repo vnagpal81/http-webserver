@@ -43,23 +43,24 @@ public class ModuleInstancePool extends
 	}
 
 	@Override
-	protected AbstractHttpRequestHandlerModule create() {
+	protected AbstractHttpRequestHandlerModule create() throws InvalidModuleException {
 		try {
-			logger.debug("Creating instance of {}",
-					this.moduleConfig.getClassName());
-			AbstractHttpRequestHandlerModule moduleObj = (AbstractHttpRequestHandlerModule) Class
-					.forName(moduleConfig.getClassName()).newInstance();
+			logger.debug("Creating instance of {}",	this.moduleConfig.getClassName());
+			AbstractHttpRequestHandlerModule moduleObj = 
+					(AbstractHttpRequestHandlerModule) Class.forName(moduleConfig.getClassName()).newInstance();
+			
 			logger.debug("Setting the config {}", moduleConfig);
 			moduleObj.setConfig(moduleConfig);
+			
 			logger.debug("Initializing module instance");
 			moduleObj.init();
-			logger.debug("Adding new object to pool for {}",
-					this.moduleConfig.getClassName());
+			
+			logger.debug("Adding new object to pool for {}", this.moduleConfig.getClassName());
 			return moduleObj;
 		} catch (Exception e) {
 			logger.error("Error adding new object to pool for {} : {}",
 					this.moduleConfig.getClassName(), e.getMessage());
-			return null;
+			throw new InvalidModuleException(moduleConfig.getClassName(), e);
 		}
 	}
 

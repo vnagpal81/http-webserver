@@ -41,6 +41,7 @@ public class ServerConfig extends Properties {
 		String MaxThreads = "MaxThreads";
 		String ShutdownGraceTime = "ShutdownGraceTime";
 		String StopCommand = "StopCommand";
+		String KeepAliveTimeout = "KeepAliveTimeout";
 	}
 
 	private ServerConfig() {
@@ -96,6 +97,13 @@ public class ServerConfig extends Properties {
 
 			logger.debug("Parse XML into Document object");
 			Document doc = XmlUtils.parse(inputXml, true);
+			
+			logger.debug("Read module scan path from xml");
+			List<String> scanPaths = XmlUtils.text(doc, "modules>scan", ">");
+			for (String scanPath : scanPaths) {
+				logger.debug("Scan for modules at {}", scanPath);
+				ModuleFactory.annotatedLoad(scanPath);
+			}
 
 			logger.debug("Read modules from xml");
 			NodeList modules = XmlUtils.lookup(doc, "modules>module", ">");
@@ -123,12 +131,6 @@ public class ServerConfig extends Properties {
 			if (moduleConfigs.size() > 0) {
 				logger.debug("Load module classes");
 				ModuleFactory.load(moduleConfigs);
-			}
-			logger.debug("Read module scan path from xml");
-			List<String> scanPaths = XmlUtils.text(doc, "modules>scan", ">");
-			for (String scanPath : scanPaths) {
-				logger.debug("Scan for modules at {}", scanPath);
-				ModuleFactory.annotatedLoad(scanPath);
 			}
 
 			logger.debug("Read configs from xml");
@@ -193,6 +195,17 @@ public class ServerConfig extends Properties {
 					serverConfigInstance
 							.setProperty(CONFIGS.StopCommand, value);
 					logger.debug("StopCommand set to {}", value);
+					break;
+				case CONFIGS.KeepAliveTimeout:
+					try {
+						Integer.parseInt(value);
+					} catch (Exception e) {
+						throw new InvalidConfigException(String.format(
+								"Invalid Keep Alive Timeout {}", value));
+					}
+					serverConfigInstance
+							.setProperty(CONFIGS.KeepAliveTimeout, value);
+					logger.debug("KeepAliveTimeout set to {}", value);
 					break;
 				default:
 					throw new InvalidConfigException(String.format(

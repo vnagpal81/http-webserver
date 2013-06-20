@@ -36,4 +36,11 @@ public class S3Repository implements Repository {
 		return null;
 	}
 
+	@Override
+	public FileInputStream lookin(String parentPath, String fileName)
+			throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

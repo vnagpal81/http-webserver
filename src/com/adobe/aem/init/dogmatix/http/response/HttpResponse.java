@@ -1,7 +1,6 @@
 package com.adobe.aem.init.dogmatix.http.response;
 
 import static com.adobe.aem.init.dogmatix.util.Constants.NEW_LINE;
-import static com.adobe.aem.init.dogmatix.util.Constants.SERVER_HTTP_VERSION;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.adobe.aem.init.dogmatix.config.ServerConfig;
 import com.adobe.aem.init.dogmatix.exceptions.HttpError;
 import com.adobe.aem.init.dogmatix.util.Constants;
 
@@ -24,9 +24,8 @@ public class HttpResponse {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(HttpResponse.class);
-
-	private String statusLine = SERVER_HTTP_VERSION + " 200 "
-			+ Status.HttpReplies.get(200);
+	
+	private int status = 200;
 	private Hashtable<String, String> headers = new Hashtable<String, String>();
 	private StringBuffer body = new StringBuffer();
 
@@ -43,10 +42,6 @@ public class HttpResponse {
 	public HttpResponse(OutputStream out) {
 		assert (out != null);
 		this.outputStream = out;
-	}
-
-	public String getStatusLine() {
-		return statusLine;
 	}
 
 	public Hashtable<String, String> getHeaders() {
@@ -83,15 +78,15 @@ public class HttpResponse {
 	}
 
 	public HttpResponse status(int code) {
-		statusLine = SERVER_HTTP_VERSION + " " + code + " "
-				+ Status.HttpReplies.get(code);
+		status = code;
 		return this;
 	}
 
-	public HttpResponse append(InputStream in) {
+	public HttpResponse append(InputStream in, String charset) {
+		if(charset == null) charset = "UTF-8";
 		int resetTo = body.length();
 		try {
-			body.append(IOUtils.toString(in, "UTF-8"));
+			body.append(IOUtils.toString(in, charset));
 		} catch (Exception e) {
 			body.delete(resetTo, body.length());
 		}
@@ -105,14 +100,20 @@ public class HttpResponse {
 		}
 		return response;
 	}
+	
+	public HttpResponse err(int code) {
+		return err(new HttpError(code));
+	}
 
-	public String publish() {
+	@Override
+	public String toString() {
 		StringBuffer finalResponse = new StringBuffer();
-
-		if (!statusLine.isEmpty()) {
-			finalResponse.append(statusLine);
-			finalResponse.append(NEW_LINE);
-		}
+		
+		String statusLine = "HTTP/" + ServerConfig.getInstance().httpVersion()
+				+ " " + status + " " + Status.HttpReplies.get(status);
+		
+		finalResponse.append(statusLine);
+		finalResponse.append(NEW_LINE);
 
 		if (!headers.containsKey(Constants.HEADERS.CONTENT_LENGTH)) {
 			headers.put(Constants.HEADERS.CONTENT_LENGTH,
@@ -129,9 +130,6 @@ public class HttpResponse {
 				logger.error("Error while determining content type");
 			}
 		}
-
-		// if server config dictates SERVER_HTTP_VERSION is 1.1
-		headers.put(Constants.HEADERS.CONNECTION, "Keep-Alive");
 
 		for (String name : headers.keySet()) {
 			finalResponse.append(name + ": " + headers.get(name));
@@ -151,12 +149,16 @@ public class HttpResponse {
 		if(flushed) {
 			return;
 		}
-		String responseStr = publish();
+		String responseStr = toString();
 		PrintWriter out = new PrintWriter(outputStream, true);
 		out.println(responseStr);
 		out.close();
 		flushed = true;
 		logger.debug("Response sent back");
 		logger.debug(responseStr);
+	}
+
+	public int getStatus() {
+		return status;
 	}
 }

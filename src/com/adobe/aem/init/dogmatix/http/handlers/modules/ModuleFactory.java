@@ -27,7 +27,7 @@ public class ModuleFactory {
 	private static HashMap<ModuleConfig, ModuleInstancePool> moduleInstanceCache;
 
 	public static AbstractHttpRequestHandlerModule getModule(
-			ModuleConfig moduleConfig) {
+			ModuleConfig moduleConfig) throws Exception {
 		AbstractHttpRequestHandlerModule module = moduleInstanceCache.get(
 				moduleConfig).checkOut();
 		return module;

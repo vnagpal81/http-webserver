@@ -22,13 +22,26 @@ public interface Repository {
 	 * Gets the request file handle as an input stream. The caller method bears
 	 * the responsibility of retrying the lookup in case of connection failure
 	 * 
-	 * @param uri
+	 * @param filePath
 	 *            requested file path
-	 * @return the file as input stream. returns null if not found.
+	 * @return the file as input stream
 	 * @throws IOException
-	 *             if not able to connect to the repo
+	 *             if not able to connect to the repo or if file not found
 	 */
-	FileInputStream lookup(String uri) throws IOException;
+	FileInputStream lookup(String filePath) throws IOException;
+	
+	/**
+	 * Convenience method to lookup a file within a folder.
+	 * Gets the request file handle as an input stream. The caller method bears
+	 * the responsibility of retrying the lookup in case of connection failure
+	 * 
+	 * @param parentPath path of the folder to look in
+	 * @param fileName requested file 
+	 * @return the file as input stream 
+	 * @throws IOException
+	 * 				 if not able to connect to the repo or if file not found
+	 */
+	FileInputStream lookin(String parentPath, String fileName) throws IOException;
 
 	/**
 	 * Creates a new file in the repository

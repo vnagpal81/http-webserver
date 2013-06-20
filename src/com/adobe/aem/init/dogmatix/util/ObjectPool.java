@@ -28,13 +28,13 @@ public abstract class ObjectPool<T> {
 		unlocked = new Hashtable<T, Long>();
 	}
 
-	protected abstract T create();
+	protected abstract T create() throws Exception;
 
 	public abstract boolean validate(T o);
 
 	public abstract void expire(T o);
 
-	public synchronized T checkOut() {
+	public synchronized T checkOut() throws Exception {
 		long now = System.currentTimeMillis();
 		T t;
 		if (unlocked.size() > 0) {

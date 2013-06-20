@@ -9,4 +9,11 @@ public class InvalidModuleException extends Exception {
 		this.moduleName = moduleName;
 	}
 
+	public InvalidModuleException(String moduleName, Throwable cause) {
+		super(cause);
+		this.moduleName = moduleName;
+	}
+	
+	
+
 }

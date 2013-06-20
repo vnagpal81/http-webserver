@@ -1,6 +1,9 @@
 package com.adobe.aem.init.dogmatix.http.handlers.modules;
 
+import java.util.Properties;
+
 import com.adobe.aem.init.dogmatix.config.ModuleConfig;
+import com.adobe.aem.init.dogmatix.exceptions.InvalidModuleConfigException;
 import com.adobe.aem.init.dogmatix.http.handlers.HttpContext;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.rest.RESTModule;
@@ -16,6 +19,8 @@ import com.adobe.aem.init.dogmatix.http.handlers.modules.rest.RESTModule;
  * @see RESTModule
  */
 public abstract class AbstractHttpRequestHandlerModule {
+	
+	protected static Properties DEFAULTS = new Properties();
 
 	/**
 	 * Each module is configured via XML or class-level Annotation. It is the
@@ -43,9 +48,12 @@ public abstract class AbstractHttpRequestHandlerModule {
 	 * 
 	 * @throws Exception
 	 */
-	protected void init() throws Exception {
+	protected void init() throws InvalidModuleConfigException {
 		assert (config != null);
 		// initialize child instance using module config
+		Properties moduleSettings = new Properties(DEFAULTS);
+		moduleSettings.putAll(config.getSettings());
+		config.setSettings(moduleSettings);
 	}
 
 	/**

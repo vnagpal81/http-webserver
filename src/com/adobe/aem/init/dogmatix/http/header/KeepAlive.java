@@ -17,52 +17,39 @@ import com.adobe.aem.init.dogmatix.util.Constants;
  * 
  */
 public class KeepAlive implements HeaderInterceptor {
+	
+	private int timeout = -1;
+	private int max = -1;
 
 	@Override
 	public boolean preProcess(HttpContext ctx) {
+		if(!isValid(ctx, true)) {
+			return true;
+		}
 		return false;
 	}
 
 	@Override
 	public boolean postProcess(HttpContext ctx) {
-		ReusableSocket socket = (ReusableSocket) ctx
-				.get(HttpContext.SOCKET_HANDLE);
+		if (!applicable(ctx))
+			return false;
+
+		ReusableSocket socket = (ReusableSocket) ctx.getSocket();
 		String connection = ctx.getRequest().getHeader(
 				Constants.HEADERS.CONNECTION);
 		boolean keepAlive = connection != null
 				&& connection.equalsIgnoreCase("Keep-Alive");
 
-		int timeout = -1;
-		int max = -1;
-		String keepAliveHeader = ctx.getRequest().getHeader(
-				Constants.HEADERS.KEEP_ALIVE);
-		if (StringUtils.hasText(keepAliveHeader)) {
-			for (String part : keepAliveHeader.split(",")) {
-				if (part.toLowerCase().contains("timeout")
-						&& part.contains("=")) {
-					try {
-						timeout = Integer.parseInt(part.split("=")[1]);
-					} catch (NumberFormatException e) {
-						// log
-					}
-				} else if (part.toLowerCase().contains("max")
-						&& part.contains("=")) {
-					try {
-						max = Integer.parseInt(part.split("=")[1]);
-					} catch (NumberFormatException e) {
-						// log
-					}
-				}
-			}
-		}
 		ServerConfig serverConfig = ServerConfig.getInstance();
-		Version version = Version.valueOf(serverConfig.httpVersion());
+		Version version = Version.getVersion(serverConfig.httpVersion());
 
+		//keep alive behaviour is protocol version specific
 		switch (version) {
 		case VERSION_0_9:
 			break;
 		case VERSION_1_0:
 			if (keepAlive) {
+				ctx.getResponse().addHeader(Constants.HEADERS.CONNECTION, "Keep-Alive");
 				socket.setPersist(true);
 			}
 			break;
@@ -80,10 +67,13 @@ public class KeepAlive implements HeaderInterceptor {
 							.getLastAccess()) / 1000;
 					if (idleTime >= timeout) {
 						socket.setPersist(false);
-					}
-					else {
+					} else {
 						socket.setPersist(true);
 					}
+				}
+				
+				if(socket.isPersist()) {
+					ctx.getResponse().addHeader(Constants.HEADERS.CONNECTION, "Keep-Alive");
 				}
 			}
 			break;
@@ -91,6 +81,56 @@ public class KeepAlive implements HeaderInterceptor {
 			break;
 		}
 		return false;
+	}
+
+	/**
+	 * Checks if keep-alive behaviour should be applied to this context or not.
+	 * If response is 3xx(redirection), 4xx(client error) or 5xx(server error)
+	 * server should not keep-alive. OTOH, if response is 1xx(informational) or
+	 * 2xx(success), server may keep-alive depending on its policy and request
+	 * headers.
+	 */
+	@Override
+	public boolean applicable(HttpContext ctx) {
+		return ctx.getResponse().getStatus() < 300;
+	}
+
+	/**
+	 * Validates Header syntax and initializes 'timeout' and 'max' values
+	 */
+	@Override
+	public boolean isValid(HttpContext ctx, boolean writeResponse) {
+		String keepAliveHeader = ctx.getRequest().getHeader(
+				Constants.HEADERS.KEEP_ALIVE);
+		if (StringUtils.hasText(keepAliveHeader)) {
+			for (String part : keepAliveHeader.split(",")) {
+				if (part.toLowerCase().contains("timeout")
+						&& part.contains("=")) {
+					try {
+						timeout = Integer.parseInt(part.split("=")[1]);
+					} catch (NumberFormatException e) {
+						// log
+						if(writeResponse) {
+							ctx.getResponse().err(400);
+						}
+						return false;
+					}
+				} else if (part.toLowerCase().contains("max")
+						&& part.contains("=")) {
+					try {
+						max = Integer.parseInt(part.split("=")[1]);
+					} catch (NumberFormatException e) {
+						// log
+						if(writeResponse) {
+							ctx.getResponse().err(400);
+						}
+						return false;
+					}
+				}
+			}
+		}
+		
+		return true;
 	}
 
 }

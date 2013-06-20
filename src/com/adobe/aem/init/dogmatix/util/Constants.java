@@ -13,9 +13,9 @@ public interface Constants {
 
 	int MAX_HEADER_FIELD_VALUE_LENGTH = 500;
 
-	public static final List<String> SUPPORTED_OPTIONS = Arrays.asList("-a", "--action", "-d", "--debug", "-f", "--file", "-h", "--help", "-v", "--version");
+	List<String> SUPPORTED_OPTIONS = Arrays.asList("-a", "--action", "-d", "--debug", "-f", "--file", "-h", "--help", "-v", "--version");
 
-	public static final String VERSION = "1.0";
+	String VERSION = "1.0";
 
 
 	interface HEADERS {
@@ -31,5 +31,12 @@ public interface Constants {
 		String CONTENT_DISPOSITION = "Content-Disposition";
 
 		String KEEP_ALIVE = "Keep-Alive";
+
+		String LOCATION = "Location";
+
+		String HOST = "Host";
 	}
+	
+	String REDIRECT_HTML = "<html><head><title>Moved</title></head><body><h1>Moved</h1><p>This page has moved to <a href=\"%s\">%s</a>.</p></body></html>";
+	
 }
