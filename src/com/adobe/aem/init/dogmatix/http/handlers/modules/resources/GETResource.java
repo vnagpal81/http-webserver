@@ -17,6 +17,34 @@ import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 import com.adobe.aem.init.dogmatix.util.Constants;
 import com.adobe.aem.init.dogmatix.util.Matcher;
 
+/**
+ * A resource request processor which processes GET requests for a 
+ * resources module.
+ * 
+ * Delegates the actual CRUD operations to a repository as configured in
+ * the module level settings.
+ * 
+ * A URL is as follows:
+ * 
+ * http://www.example.com:80/assets/menu/submenu/images/1.png?type=icon
+ *   ^           ^        ^  |-------------^-----------|  ^      ^
+ *   |           |        |                |              |      |
+ * protocol   hostname   port             path           file   query
+ * 
+ * Depending on user agents, the GET request URI will contain the whole URL
+ * or just the path+file+query.
+ * 
+ * In case of latter, the former part of the URL has to be extracted from the 
+ * request headers. But this is only needed in case of a redirect.
+ * 
+ * If serving the GET request, we need to follow the logic below:
+ * 
+ * 1) Separate Path, File and Query from the request URI using String split
+ * 2) From Path, extract the URL pattern which is used to map the Module 
+ * 	  serving the request. The pattern is only a mapping key and is not part 
+ * 	  of the actual file path
+ * 3) Construct the actual file path from the extracted path above + filename 
+ */
 public class GETResource extends ResourcesRequestProcessor {
 
 	Logger logger = LoggerFactory.getLogger(GETResource.class);
@@ -31,6 +59,8 @@ public class GETResource extends ResourcesRequestProcessor {
 	@Override
 	public void processRequest(HttpRequest request, HttpResponse response)
 			throws HttpError {
+		
+		
 		logger.debug("Processing GET Resource request");
 		String uri = new String(request.getURI());
 		try {
