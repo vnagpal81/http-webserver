@@ -1,0 +1,23 @@
+td.center {
+	text-align: center;
+}
+
+#menu li.current {
+	background-color: #B7E3AF;
+}
+
+#menu ul {
+	list-style:none;
+}
+
+div.error {
+	color:white;
+}
+
+.hidden {
+	display:none;
+}
+
+.clickable {
+	cursor:pointer;
+}
