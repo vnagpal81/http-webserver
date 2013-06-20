@@ -37,7 +37,7 @@
 				Base directory path in case local storage is used.
 				[OPTIONAL] If not specified defaults to 'resources' directory under server root
 			-->
-			<!-- <property name="baseDir">C:\\temp</property> -->
+			<property name="baseDir">C:\\temp</property>
 			
 			<!-- 
 				Max upload size in case of POST requests. Units are bytes.

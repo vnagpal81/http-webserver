@@ -115,7 +115,7 @@ public class GETResource extends ResourcesRequestProcessor {
 		FileInputStream fis = repository.lookup(file);
 
 		// Write file to response stream
-		response.append(fis, null);
+		response.append(fis);
 		fis.close();
 		response.addHeader(Constants.HEADERS.CONTENT_TYPE, info.getType());
 	}

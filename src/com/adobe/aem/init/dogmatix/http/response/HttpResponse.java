@@ -2,6 +2,8 @@ package com.adobe.aem.init.dogmatix.http.response;
 
 import static com.adobe.aem.init.dogmatix.util.Constants.NEW_LINE;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -12,7 +14,6 @@ import net.sf.jmimemagic.MagicException;
 import net.sf.jmimemagic.MagicMatchNotFoundException;
 import net.sf.jmimemagic.MagicParseException;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class HttpResponse {
 	
 	private int status = 200;
 	private Hashtable<String, String> headers = new Hashtable<String, String>();
-	private StringBuffer body = new StringBuffer();
+	private ByteArrayOutputStream body = new ByteArrayOutputStream();
 
 	private OutputStream outputStream;
 	
@@ -53,17 +54,8 @@ public class HttpResponse {
 		return this;
 	}
 
-	public StringBuffer getBody() {
-		return body;
-	}
-
-	public HttpResponse body(StringBuffer body) {
-		this.body = body;
-		return this;
-	}
-
 	public HttpResponse append(Object o) {
-		body.append(o);
+		body.write(o.toString().getBytes(), 0, o.toString().length());
 		return this;
 	}
 
@@ -73,7 +65,7 @@ public class HttpResponse {
 	}
 
 	public HttpResponse write(byte[] chunk) {
-		body.append(chunk);
+		body.write(chunk, 0, chunk.length);
 		return this;
 	}
 
@@ -82,14 +74,17 @@ public class HttpResponse {
 		return this;
 	}
 
-	public HttpResponse append(InputStream in, String charset) {
-		if(charset == null) charset = "UTF-8";
-		int resetTo = body.length();
-		try {
-			body.append(IOUtils.toString(in, charset));
-		} catch (Exception e) {
-			body.delete(resetTo, body.length());
+	public HttpResponse append(InputStream in) {
+		byte[] buffer = new byte[8192];
+	    int bytesRead = -1;
+	    try {
+			while ((bytesRead = in.read(buffer)) != -1) {
+				body.write(buffer, 0, bytesRead);
+			}
+		} catch (IOException e) {
+			//log
 		}
+		
 		return this;
 	}
 
@@ -104,23 +99,21 @@ public class HttpResponse {
 	public HttpResponse err(int code) {
 		return err(new HttpError(code));
 	}
-
-	@Override
+	
 	public String toString() {
-		StringBuffer finalResponse = new StringBuffer();
-		
+		StringBuffer stringResponse = new StringBuffer();
 		String statusLine = "HTTP/" + ServerConfig.getInstance().httpVersion()
 				+ " " + status + " " + Status.HttpReplies.get(status);
 		
-		finalResponse.append(statusLine);
-		finalResponse.append(NEW_LINE);
+		stringResponse.append(statusLine);
+		stringResponse.append(NEW_LINE);
 
 		if (!headers.containsKey(Constants.HEADERS.CONTENT_LENGTH)) {
 			headers.put(Constants.HEADERS.CONTENT_LENGTH,
-					String.valueOf(body.length()));
+					String.valueOf(body.size()));
 		}
 
-		if (body.length()>0 && !headers.containsKey(Constants.HEADERS.CONTENT_TYPE)) {
+		if (body.size()>0 && !headers.containsKey(Constants.HEADERS.CONTENT_TYPE)) {
 			try {
 				headers.put(Constants.HEADERS.CONTENT_TYPE, Magic
 						.getMagicMatch(body.toString().getBytes())
@@ -132,30 +125,47 @@ public class HttpResponse {
 		}
 
 		for (String name : headers.keySet()) {
-			finalResponse.append(name + ": " + headers.get(name));
-			finalResponse.append(NEW_LINE);
+			String headerLine = name + ": " + headers.get(name);
+			stringResponse.append(headerLine);
+			stringResponse.append(NEW_LINE);
 		}
 
-		finalResponse.append(NEW_LINE);
-
-		if(body.length()>0) {
-			finalResponse.append(body);
-		}
+		stringResponse.append(NEW_LINE);
 		
-		return finalResponse.toString();
+		return stringResponse.toString();
 	}
 
-	public void flush() {
+	public byte[] getBytes() throws IOException {
+		ByteArrayOutputStream finalResponse = new ByteArrayOutputStream();
+		
+		byte[] initial = toString().getBytes();
+		
+		finalResponse.write(initial, 0, initial.length);
+
+		if(body.size()>0) {
+			finalResponse.write(body.toByteArray(), 0, body.size());
+		}
+		
+		return finalResponse.toByteArray();
+	}
+
+	public void flush() throws IOException {
 		if(flushed) {
 			return;
 		}
-		String responseStr = toString();
-		PrintWriter out = new PrintWriter(outputStream, true);
-		out.println(responseStr);
-		out.close();
-		flushed = true;
+		try {
+			outputStream.write(getBytes());
+		}
+		catch(Exception e) {
+			//log
+			throw e;
+		}
+		finally {
+			flushed = true;
+		}
 		logger.debug("Response sent back");
-		logger.debug(responseStr);
+		logger.debug(toString());
+		logger.debug("<Response body>");
 	}
 
 	public int getStatus() {

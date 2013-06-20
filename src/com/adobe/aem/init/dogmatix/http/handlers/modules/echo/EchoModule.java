@@ -27,7 +27,7 @@ public class EchoModule extends AbstractHttpRequestHandlerModule {
 		response.append(request.getRaw());
 		response.append(Constants.NEW_LINE);
 		response.append(config.getSetting(EchoModule.SETTINGS.FOOTER, ""));
-		context.getResponse().body(response);
+		context.getResponse().append(response);
 
 		return false;
 
