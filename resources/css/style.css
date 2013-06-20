@@ -2,7 +2,7 @@ td.center {
 	text-align: center;
 }
 
-#menu li.current {
+#menu li.current, #submenu li.current {
 	background-color: #B7E3AF;
 }
 
@@ -20,4 +20,9 @@ div.error {
 
 .clickable {
 	cursor:pointer;
+}
+
+#reader {
+	scroll:auto;
+	height:500px;
 }
