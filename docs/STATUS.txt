@@ -17,8 +17,6 @@ RELEASE SHOWSTOPPERS:
 
 PATCHES/ISSUES THAT ARE STALLED:
 
-* Echo Module
-
 * Proxy Module
 
 * REST Module

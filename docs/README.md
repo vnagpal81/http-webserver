@@ -45,3 +45,15 @@ http://www.artima.com/designtechniques/threadsafety.html
 
 
 Apart from these, the source code wherever it is borrowed, has been attributed so in the docs.
+
+===========
+Limitations
+===========
+
+The server implementation (ver. 1.0) currently does NOT support the following:
+
+(1) Any of the modules except Resources or Echo
+
+(2) Any of the HTTP methods except GET Resource
+
+(3) Connection: Keep-Alive header implementation of persistent TCP connections.
