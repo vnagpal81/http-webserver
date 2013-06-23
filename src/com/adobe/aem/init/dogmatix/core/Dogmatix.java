@@ -1,7 +1,6 @@
 package com.adobe.aem.init.dogmatix.core;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -27,10 +26,7 @@ import com.adobe.aem.init.dogmatix.util.NetworkUtils;
  */
 public class Dogmatix {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(Dogmatix.class);
-
-	private static Map<String, String> commandLineArguments = new HashMap<String, String>();
+	private static final Logger logger = LoggerFactory.getLogger(Dogmatix.class);
 
 	/**
 	 * Entry point into the server. Initiates two threads which listen for
@@ -40,42 +36,47 @@ public class Dogmatix {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		parse(args);
+		Properties commandLineArguments = parse(args);
 
 		// read server.xml
 		ServerConfig config = null;
 		try {
 			logger.debug("Reading Server config");
-			config = ServerConfig.getInstance(commandLineArguments
-					.get("server.xml"));
+			config = ServerConfig.getInstance(commandLineArguments.getProperty("server.xml"));
 		} catch (InvalidConfigException e) {
 			logger.error("Unable to load server config", e);
 			System.exit(-1);
 		}
 
-		doAction(config);
-
-		Listener http = new HttpListener(config);
-		Listener cmd = new CommandListener(config, http);
-
-		Runtime.getRuntime().addShutdownHook(new Finisher(cmd));
-
-		http.start();
-		cmd.start();
-
-		ServerStatistics.serverStarted();
-		
-		logger.info("Woof Woof.. Dogmatix at your service!");
-
-		// Do not exit main thread. Wait for listeners to finish. Just being
-		// nice.
-		try {
-			cmd.join();
-			http.join();
-		} catch (InterruptedException e) {
-			logger.error("Error stopping server", e);
-			System.exit(-1);
+		//Either perform an action or continue with server startup
+		if(commandLineArguments.containsKey("action")) {
+			doAction(config, commandLineArguments.getProperty("action"));
 		}
+		else {
+			Listener http = new HttpListener(config);
+			Listener cmd = new CommandListener(config, http);
+
+			Runtime.getRuntime().addShutdownHook(new Finisher(cmd));
+
+			http.start();
+			cmd.start();
+
+			ServerStatistics.serverStarted();
+			
+			logger.info("Woof Woof.. Dogmatix at your service!");
+
+			// Do not exit main thread. Wait for listeners to finish. Just being
+			// nice.
+			try {
+				cmd.join();
+				http.join();
+			} catch (InterruptedException e) {
+				logger.error("Error stopping server", e);
+				System.exit(-1);
+			}
+		}
+
+		System.exit(0);
 
 	}
 
@@ -85,8 +86,10 @@ public class Dogmatix {
 	 * 
 	 * @param args
 	 *            String array of whitespace separated command line args
+	 * @return 
 	 */
-	private static void parse(String[] args) {
+	private static Properties parse(String[] args) {
+		Properties commandLineArguments = new Properties();
 		if (args.length > 0) {
 			for (int i = 0; i < args.length; i++) {
 				String option = args[i];
@@ -108,9 +111,15 @@ public class Dogmatix {
 				if (option.equals("-h") || option.equals("--help")) {
 					help();
 				}
-				if (option.equals("-d") || option.equals("--debug")) {
-					// Change the log level to DEBUG in case of log4j
-					LogManager.getRootLogger().setLevel(Level.DEBUG);
+				if (option.equals("-l") || option.equals("--level")) {
+					// Change the log level to specified level in case of log4j
+					try {
+						LogManager.getRootLogger().setLevel(Level.toLevel(args[++i]));
+					} catch (Exception e) {
+						System.out.println("Missing/Invalid log level");
+						help();
+					}
+					
 				}
 				if (option.equals("-f") || option.equals("--file")) {
 					// Use an alternate user defined server.xml
@@ -130,6 +139,7 @@ public class Dogmatix {
 				}
 			}
 		}
+		return commandLineArguments;
 	}
 
 	/**
@@ -141,7 +151,7 @@ public class Dogmatix {
 		System.out.println("Options:");
 		System.out
 				.println("\t-a,--action <action>\tPerform an action out of (stop)");
-		System.out.println("\t-d,--debug\t\tSets the log level to DEBUG");
+		System.out.println("\t-l,--level <loglevel>\tSets the log level");
 		System.out
 				.println("\t-f,--file <filename>\tAlternate path for the server settings XML file");
 		System.out.println("\t-h,--help\t\tDisplay help information");
@@ -156,25 +166,22 @@ public class Dogmatix {
 	 * 	<li>Stop</li>
 	 * </ul>
 	 */
-	private static void doAction(ServerConfig config) throws Exception {
+	private static void doAction(ServerConfig config, String action) throws Exception {
 		// if server needs to be stopped, send a GET request to
-		// http://localhost:{cmdPort}/stop
-		if (commandLineArguments.containsKey("action")) {
-			String action = commandLineArguments.get("action");
-			if (action.equalsIgnoreCase(config.stopCommand())) {
-				boolean alive = true;
-				while (alive) {
-					alive = NetworkUtils.ping(config.stopURL());
+		// http://localhost:{cmdPort}/{stopCommand}
+		if (action.equalsIgnoreCase(config.stopCommand())) {
+			boolean alive = true;
+			while (alive) {
+				alive = NetworkUtils.ping(config.stopURL());
 
-					System.out.println("Sending STOP signal to Dogmatix");
+				System.out.println("Sending STOP signal to Dogmatix");
 
-					// retry after 1 sec
-					if (alive) {
-						Thread.sleep(1000);
-					}
+				// retry after 1 sec
+				if (alive) {
+					Thread.sleep(1000);
 				}
-				System.exit(0);
 			}
+			System.exit(0);
 		}
 	}
 }

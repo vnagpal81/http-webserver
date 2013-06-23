@@ -29,29 +29,108 @@ import com.adobe.aem.init.dogmatix.util.XmlUtils;
 @SuppressWarnings("serial")
 public class ServerConfig extends Properties {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(ServerConfig.class);
+	private static final Logger logger = LoggerFactory.getLogger(ServerConfig.class);
 
+	/**
+	 * Single instance shared across the application.
+	 */
 	private static ServerConfig serverConfigInstance = null;
 
+	/**
+	 * Possible configuration keys in the server XML settings file
+	 * 
+	 */
 	public static interface CONFIGS {
+		/**
+		 * A valid system port on which the server listens for incoming 
+		 * HTTP requests. It should be available at the time of startup.
+		 * [REQUIRED]
+		 */
 		String HTTPPort = "HTTPPort";
+		
+		/**
+		 * A valid system port on which the server listens for commands. 
+		 * Commands are actions requests sent as HTTP GETs. Upon receiving 
+		 * a command request the server is expected to perform an action. 
+		 * Currently, it is only used to instruct the server to shutdown and
+		 * fetch the server runtime statistics.
+		 * [REQUIRED]
+		 */
 		String CommandPort = "CommandPort";
-		String HTTPVersion = "HTTPVersion";
+		
+		/**
+		 * Maximum number of threads allowed in the JVM instance that the server 
+		 * is running in before it starts rejecting further incoming requests. 
+		 * Very broadly, it translates into the concurrency limit. 
+		 * This should not be tampered with unless you know what you are doing. 
+		 * A low value might result in a high rate of request rejections. 
+		 * A high value might result in frequent OutOfMemory exceptions.
+		 * [REQUIRED]
+		 */
 		String MaxThreads = "MaxThreads";
+		
+		/**
+		 * The protocol to be adhered while serving requests and building responses.
+		 * [REQUIRED]
+		 */
+		String HTTPVersion = "HTTPVersion";
+		
+		/**
+		 * The waiting period in seconds, before halting the server forcefully. 
+		 * This time is utilized by threads to exit gracefully while releasing 
+		 * any blocked I/O resources. May be increased if your application has 
+		 * frequent long I/O blocking operations, like 3rd party web service requests. 
+		 * If too high, will cause a delay in server shutdown and have no other effect 
+		 * on its operation whatsoever.
+		 * [REQUIRED]
+		 */
 		String ShutdownGraceTime = "ShutdownGraceTime";
+		
+		/**
+		 * Linked to the CommandListener, the Stop command is the command 
+		 * to look for in the GET request which will be received on the 
+		 * CommandPort for shutting down the server. This has been made 
+		 * configurable for an installation to have the flexibility in 
+		 * declaring its own protocol. It is case-insensitive.
+		 * [REQUIRED]
+		 */
 		String StopCommand = "StopCommand";
+		
+		/**
+		 * The timeout value in seconds when the server responds with a Keep-Alive header. 
+		 * Clients having the capability to persist connections will wait for this amount
+		 * of time before closing the connection.
+		 * [REQUIRED]
+		 */
 		String KeepAliveTimeout = "KeepAliveTimeout";
 	}
 
+	/**
+	 * Make constructor private to enforce singleton behaviour.
+	 * Can now only be created from within.
+	 */
 	private ServerConfig() {
 
 	}
 	
+	/**
+	 * Gets the created ServerConfig instance
+	 * 
+	 * @return ServerConfig instance
+	 */
 	public static ServerConfig getInstance() {
 		return serverConfigInstance;
 	}
 
+	/**
+	 * Get the ServerConfig instance, creating it if not already done.
+	 * Allows the caller to specify a custom config file location.
+	 * 
+	 * @param filename An alternate server.xml location
+	 * @return ServerConfig instance
+	 * @throws InvalidConfigException thrown if encountered any error 
+	 * during reading, parsing, validating the config
+	 */
 	public static ServerConfig getInstance(String filename)
 			throws InvalidConfigException {
 
@@ -64,8 +143,21 @@ public class ServerConfig extends Properties {
 	}
 
 	/**
-	 * @source 
-	 *         http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
+	 * Builds the server config object in the following steps:
+	 * 
+	 * 1) If specified, reads the filename XML
+	 * 2) Else, tries to locate a server.xml in the classpath
+	 * 3) Reads the file into a String and validates the XML against the schema in server.xsd
+	 * 4) Parses the String into a W3C DOM object
+	 * 5) Looks for <modules></modules> and constructs ModuleConfig for each module
+	 * 6) Module definitions may be via XML or through Annotation, in which case there should be a package scan path
+	 * 7) ModuleConfigs are loaded into a module Cache against a re-usable Object Pool of each module class
+	 * 8) URL mappings are built and cached for each module. This is referred to at runtime to resolve modules per request.
+	 * 9) Looks for <configs></configs> and stores the server-level configurations while validating each value.
+	 * 
+	 * At any point during processing, if ANY error is encountered an InvalidConfigException with a brief message is thrown
+	 * 
+	 * @source http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
 	 * 
 	 */
 	private static void buildServerConfig(String filename)
@@ -218,46 +310,79 @@ public class ServerConfig extends Properties {
 			throw e;
 		} catch (Exception e) {
 			logger.error("Unknown error while configuring server", e);
-			throw new InvalidConfigException();
+			throw new InvalidConfigException("Unknown error");
 		}
 	}
 
+	// Convenience short-cut methods follow to fetch specific config properties
+	
 	// HTTP Port
 	// Command Port
 	// Max threads
 	// HTTP version
 	// Graceful Shutdown time
 	// Stop Command
-
+	
+	/**
+	 * Gets the HTTP port server is listening on
+	 * 
+	 * @return http port
+	 */
 	public int httpPort() {
-		return Integer.parseInt(getProperty(CONFIGS.HTTPPort, "8080"));
+		return Integer.parseInt(getProperty(CONFIGS.HTTPPort));
 	}
 
+	/**
+	 * Gets the port server is listening on for Command requests
+	 * 
+	 * @return command port
+	 */
 	public int commandPort() {
-		return Integer.parseInt(getProperty(CONFIGS.CommandPort, "5250"));
+		return Integer.parseInt(getProperty(CONFIGS.CommandPort));
 	}
 
+	/**
+	 * Gets the maximum number of threads allowed in the system simultaneously
+	 * 
+	 * @return max threads
+	 */
 	public int maxThreads() {
-		return Integer.parseInt(getProperty(CONFIGS.MaxThreads, "100"));
+		return Integer.parseInt(getProperty(CONFIGS.MaxThreads));
 	}
 
+	/**
+	 * Gets the HTTP versoin the server is running on
+	 * 
+	 * @return http version
+	 */
 	public String httpVersion() {
-		return getProperty(CONFIGS.HTTPVersion, "1.1");
+		return getProperty(CONFIGS.HTTPVersion);
 	}
 
+	/**
+	 * Gets the shutdown grace time given to existing threads to wrap up in the scenario of a server halt
+	 * 
+	 * @return shutdown grace time
+	 */
 	public int shutdownGraceTime() {
-		return Integer.parseInt(getProperty(CONFIGS.ShutdownGraceTime, "60"));
+		return Integer.parseInt(getProperty(CONFIGS.ShutdownGraceTime));
 	}
 
+	/**
+	 * Gets the stop command which if sent to the command port will halt the server instance
+	 * 
+	 * @return stop command
+	 */
 	public String stopCommand() {
-		return getProperty(CONFIGS.StopCommand, "stop");
+		return getProperty(CONFIGS.StopCommand);
 	}
 
+	/**
+	 * Convenience method which constructs the entire URL to hit for a server halt
+	 * 
+	 * @return stop URL
+	 */
 	public String stopURL() {
 		return "http://localhost:" + commandPort() + "/" + stopCommand();
-	}
-	
-	public String toJSON() {
-		return null;
 	}
 }

@@ -5,6 +5,24 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+/**
+ * A re-usable socket implementation.
+ * Wraps a java.net.Socket instance adding on additional behaviour to it.
+ * 
+ * Maintains the 
+ * 
+ * access count, 
+ * last access timestamp, 
+ * persistability 
+ * 
+ * of the underlying Socket.
+ * 
+ * A re-usable socket is used for implementing keep-alive behaviour i.e. 
+ * persistent TCP connections
+ * 
+ * @author vnagpal
+ *
+ */
 public class ReusableSocket {
 
 	private Socket socket;

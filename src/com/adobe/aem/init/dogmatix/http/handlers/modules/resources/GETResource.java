@@ -27,9 +27,9 @@ import com.adobe.aem.init.dogmatix.util.Matcher;
  * A URL is as follows:
  * 
  * http://www.example.com:80/assets/menu/submenu/images/1.png?type=icon
- *   ^           ^        ^  |-------------^-----------|  ^      ^
- *   |           |        |                |              |      |
- * protocol   hostname   port             path           file   query
+ *   ^           ^        ^  |____________^____________| ^      ^
+ *   |           |        |               |              |      |
+ * protocol   hostname   port            path           file   query
  * 
  * Depending on user agents, the GET request URI will contain the whole URL
  * or just the path+file+query.
@@ -51,11 +51,35 @@ public class GETResource extends ResourcesRequestProcessor {
 
 	private Properties settings;
 
+	/**
+	 * Constructs a Resource Request Processor for GET requests
+	 * using the module level configuration settings.
+	 * 
+	 * @param settings
+	 */
 	public GETResource(Properties settings) {
 		super();
 		this.settings = settings;
 	}
 
+	/**
+	 * Processes the GET request.
+	 * Looks for the URI in the repository.
+	 * 
+	 * If the URI points to a directory, either
+	 * (a) redirects to the defaultDirPath within that directory OR
+	 * (b) fetches the defaultDirPath within that directory
+	 * 
+	 * If the URI is not existing in the repository, either
+	 * (a) redirects to the notFound file path
+	 * (b) fetches the notFound file path
+	 * 
+	 * If the repository is not connecting, raises a 404
+	 * 
+	 * @param request HTTPRequest object to read from
+	 * @param response HTTPResponse object to write to
+	 * @throws HttpError 40 Not Found if repo is not accessible OR if resource not found
+	 */
 	@Override
 	public void processRequest(HttpRequest request, HttpResponse response)
 			throws HttpError {
@@ -67,7 +91,10 @@ public class GETResource extends ResourcesRequestProcessor {
 			logger.debug("GET URI : {}", uri);
 
 			String actualUri = Matcher.extract(uri, urlPattern);
-			String contextPath = uri.substring(0, uri.length()-actualUri.length());
+			String contextPath = uri;
+			if(uri.length() > actualUri.length()) {
+				contextPath = uri.substring(0, uri.length()-actualUri.length());
+			}
 
 			logger.debug("GET URI after removing context path : {}", actualUri);
 			logger.debug("Context Path : {}", contextPath);
@@ -140,6 +167,14 @@ public class GETResource extends ResourcesRequestProcessor {
 		}
 	}
 	
+	/**
+	 * Utility method to fetch a file from the repo and write it to the response.
+	 * 
+	 * @param response HttpResponse object to write to
+	 * @param file Full path of the file to look for in the repo
+	 * @throws IOException Raised when any error encountered while accessing the repo
+	 * OR looking up the file
+	 */
 	private void write(HttpResponse response, String file) throws IOException {
 		Metadata info = repository.getInfo(file);
 		FileInputStream fis = repository.lookup(file);
@@ -147,10 +182,23 @@ public class GETResource extends ResourcesRequestProcessor {
 		// Write file to response stream
 		response.append(fis);
 		fis.close();
-		response.addHeader(Constants.HEADERS.CONTENT_TYPE, info.getType());
+		if(info.getType() != null) {
+			response.addHeader(Constants.HEADERS.CONTENT_TYPE, info.getType());	
+		}
 	}
 	
-	private void redirectTo(HttpRequest request, HttpResponse response, String relativeLocation) {
+	/**
+	 * Private utility method to send a 301 redirect back to the user agent.
+	 * Sends the appropriate headers in the response to accomplish that.
+	 * 
+	 * @param request HttpRequest object to read from
+	 * @param response HttpResponse object to write to
+	 * @param relativeLocation New location to redirect to relative to the current
+	 * request URI.
+	 * @throws HttpError throws a 500 Internal Server error if unable to construct
+	 * a redirect construct.
+	 */
+	private void redirectTo(HttpRequest request, HttpResponse response, String relativeLocation) throws HttpError {
 		String host = request.getHeader(Constants.HEADERS.HOST);
 		String newLocation = "";
 		try {
@@ -170,9 +218,10 @@ public class GETResource extends ResourcesRequestProcessor {
 			new URL(newLocation);
 		} catch(MalformedURLException e) {
 			logger.error("Unable to redirect. Host unavailable ro construct redirect URL.");
-			throw new RuntimeException();
+			throw new HttpError(500, "Unable to redirect. Host unavailable ro construct redirect URL.");
 		}
 		
+		logger.debug("Redirecting to {}", newLocation);
 		response.status(301)
 		.addHeader(Constants.HEADERS.LOCATION, newLocation)
 		.addHeader(Constants.HEADERS.CONTENT_TYPE, "text/html")

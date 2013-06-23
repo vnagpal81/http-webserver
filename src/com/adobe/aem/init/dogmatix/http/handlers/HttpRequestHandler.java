@@ -1,6 +1,7 @@
 package com.adobe.aem.init.dogmatix.http.handlers;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,6 +29,7 @@ import com.adobe.aem.init.dogmatix.http.request.Method;
 import com.adobe.aem.init.dogmatix.http.request.Version;
 import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 import com.adobe.aem.init.dogmatix.util.Constants;
+import com.adobe.aem.init.dogmatix.util.NetworkUtils;
 
 public class HttpRequestHandler implements Runnable {
 
@@ -161,13 +163,13 @@ public class HttpRequestHandler implements Runnable {
 	 * 
 	 * @source http://www.java2s.com/Code/Java/Network-Protocol/HttpParser.htm
 	 * @param reader
-	 * @param buffer
+	 * @param raw
 	 *            buffer to copy into
 	 * @return a hash table of header name (lower case) and values
 	 * @throws HttpError
 	 */
 	private Hashtable<String, String> parseHeaders(BufferedReader reader,
-			StringBuffer buffer) throws HttpError {
+			ByteArrayOutputStream raw) throws HttpError {
 		if (reader == null) {
 			throw new HttpError(400);
 		}
@@ -180,8 +182,8 @@ public class HttpRequestHandler implements Runnable {
 			// rfc822 allows multiple lines, we don't care now
 			line = reader.readLine();
 			while (!line.isEmpty()) {
-				if(buffer!= null) {
-					buffer.append(line).append(Constants.NEW_LINE);
+				if(raw!= null) {
+					raw.write((line + Constants.NEW_LINE).getBytes());
 				}
 
 				idx = line.indexOf(':');
@@ -230,9 +232,10 @@ public class HttpRequestHandler implements Runnable {
 	 */
 	protected HttpRequest parseRequest(InputStream inputStream)
 			throws HttpError {
+		
 		HttpRequest httpRequest = new HttpRequest();
 
-		StringBuffer raw = new StringBuffer();
+		ByteArrayOutputStream raw = new ByteArrayOutputStream();
 		String firstLine = null;
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -240,6 +243,7 @@ public class HttpRequestHandler implements Runnable {
 
 		try {
 			firstLine = reader.readLine();
+			raw.write((firstLine + Constants.NEW_LINE).getBytes());
 		} catch (IOException e) {
 			throw new HttpError(400);
 		}
@@ -286,8 +290,7 @@ public class HttpRequestHandler implements Runnable {
 			throw new HttpError(400, "(Invalid method - " + cmd[0] + "");
 		}
 
-		// HTTP specs state that URI starts with /. We need to trim it.
-		String uri = cmd[1].trim().substring(1);
+		String uri = cmd[1];
 
 		if (httpRequest.getMethod() == Method.GET
 				|| httpRequest.getMethod() == Method.HEAD) {
@@ -337,8 +340,6 @@ public class HttpRequestHandler implements Runnable {
 			httpRequest.setURI(uri);
 		}
 
-		raw.append(firstLine).append(Constants.NEW_LINE);
-
 		logger.debug("Trying to parse Request headers");
 		logger.debug("*******************************");
 		Hashtable<String, String> headers = parseHeaders(reader, raw);
@@ -350,24 +351,60 @@ public class HttpRequestHandler implements Runnable {
 		}
 		logger.debug("*******************************");
 
-		if (httpRequest.getMethod() == Method.PUT
-				|| httpRequest.getMethod() == Method.POST) {
-			String line = null;
-			StringBuffer entity = new StringBuffer();
-			logger.debug("Trying to read the entity in the request");
-			try {
-				while (!(line = reader.readLine()).isEmpty()) {
-					entity.append(line).append(Constants.NEW_LINE);
-				}
+		if (httpRequest.getMethod() != Method.GET) {
+			throw new HttpError(405);
+			/*try {
+				logger.debug(reader.readLine());
 			} catch (IOException e) {
-				throw new HttpError(400, "(Invalid entity - " + line + ")");
 			}
-			httpRequest.setEntity(entity.toString().getBytes());
-			logger.debug("Entity in the request - {}", entity);
-			raw.append(httpRequest.getEntity());
+			finally {}
+			
+			int contentLength = -1;
+			try {
+				contentLength = Integer.parseInt(httpRequest.getHeader(Constants.HEADERS.CONTENT_LENGTH));
+			}
+			catch(Exception e) {
+				
+			}
+			byte[]  buffer      = new byte[contentLength];
+			String  postData    = "";
+
+			System.out.println("Reading "+ contentLength + "bytes");
+			try {
+				inputStream.read(buffer, 0, contentLength);
+			} catch (IOException e1) {
+			}
+			postData = new String(buffer, 0, buffer.length);
+			System.out.println(postData);
+			
+			logger.debug("Trying to read the entity in the request");
+			byte[] entityArr = NetworkUtils.readFrom(inputStream, true);
+			raw.write(entityArr, 0, entityArr.length);
+			
+			
+			
+			ByteArrayOutputStream entity = new ByteArrayOutputStream();
+		    int byteRead = -1;
+		    try {
+				while ((byteRead = inputStream.read()) != -1) {
+					entity.write(byteRead);
+					if(contentLength == 0) {
+						break;
+					}
+					contentLength--;
+				}
+				
+				httpRequest.setEntity(entity.toByteArray());
+				logger.debug("Entity in the request - {} bytes", entity.size());
+				raw.write(httpRequest.getEntity(), 0, entity.size());
+				
+			} catch (IOException e) {
+				logger.error("Error reading entity in HTTP request", e);
+				throw new HttpError(400, "(Invalid entity)");
+			}*/
 		}
 
-		httpRequest.setRaw(raw.toString());
+		httpRequest.setRaw(raw.toByteArray());
 
 		return httpRequest;
 	}

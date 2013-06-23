@@ -14,6 +14,16 @@ import com.adobe.aem.init.dogmatix.http.request.HttpRequest;
 import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 import com.adobe.aem.init.dogmatix.util.Matcher;
 
+/**
+ * A resource request processor which processes POST requests for a 
+ * resources module.
+ * 
+ * Delegates the actual CRUD operations to a repository as configured in
+ * the module level settings.
+ * 
+ * @author vnagpal
+ *
+ */
 public class POSTResource extends ResourcesRequestProcessor {
 
 	Logger logger = LoggerFactory.getLogger(POSTResource.class);

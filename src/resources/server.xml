@@ -23,7 +23,7 @@
 				All requests having URIs matching this pattern will be consumed by this module. 
 			-->
 			
-			<url>files/**</url>
+			<url>/**</url>
 			
 			<!-- 
 				Underlying storage strategy. 
@@ -129,9 +129,7 @@
 		<config name="MaxThreads" value="1000"></config>
 		
 		<!-- 
-			The protocol the server should adhere to while entertaining 
-			HTTP requests and building HTTP responses. Currently, it is 
-			used to keep-alive TCP connections as per 1.1 spec.
+			The protocol to be adhered while serving requests and building responses.
 			[REQUIRED]
 		-->
 		<config name="HTTPVersion" value="1.1"></config>
@@ -141,7 +139,7 @@
 			forcefully. This time is to be utilized by threads to exit 
 			gracefully while releasing any blocked I/O resources.
 			May be increased if your application has frequent long 
-			I/O blocking operations, like 3rp party web service requests. 
+			I/O blocking operations, like 3rd party web service requests. 
 			If too high, will cause a delay in server shutdown and have 
 			no other effect on its operation whatsoever.
 			[REQUIRED]

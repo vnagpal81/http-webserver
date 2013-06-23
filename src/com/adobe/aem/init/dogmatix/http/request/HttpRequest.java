@@ -8,7 +8,7 @@ public class HttpRequest {
 	private Hashtable<String, String> params;
 	private byte[] entity;
 
-	private String raw;
+	private byte[] raw;
 	private long length;
 	
 	private Method method;
@@ -40,10 +40,10 @@ public class HttpRequest {
 	public void setEntity(byte[] entity) {
 		this.entity = entity;
 	}
-	public String getRaw() {
+	public byte[] getRaw() {
 		return raw;
 	}
-	public void setRaw(String raw) {
+	public void setRaw(byte[] raw) {
 		this.raw = raw;
 	}
 	public long getLength() {

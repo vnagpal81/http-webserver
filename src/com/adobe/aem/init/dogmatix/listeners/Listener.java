@@ -32,6 +32,7 @@ public abstract class Listener extends Thread {
 				// encountered
 				try {
 					Socket socket = serverSocket.accept();
+					socket.setTcpNoDelay(true);
 					process(socket);
 				} catch (IOException e) {
 					logger.debug("Intentionally closing socket listening on {}", this.port);

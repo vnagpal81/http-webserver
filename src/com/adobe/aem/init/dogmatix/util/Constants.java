@@ -13,7 +13,7 @@ public interface Constants {
 
 	int MAX_HEADER_FIELD_VALUE_LENGTH = 500;
 
-	List<String> SUPPORTED_OPTIONS = Arrays.asList("-a", "--action", "-d", "--debug", "-f", "--file", "-h", "--help", "-v", "--version");
+	List<String> SUPPORTED_OPTIONS = Arrays.asList("-a", "--action", "-l", "--level", "-f", "--file", "-h", "--help", "-v", "--version");
 
 	String VERSION = "1.0";
 

@@ -111,7 +111,7 @@ public class LocalRepository implements Repository {
 		metadata.setLastModifiedOn(f.lastModified());
 		if(f.isFile()) {
 			try {
-				metadata.setType(Magic.getMagicMatch(f, false).getMimeType());
+				metadata.setType(Magic.getMagicMatch(f, true).getMimeType());
 			} catch (MagicParseException | MagicMatchNotFoundException
 					| MagicException e) {
 				logger.error("Error determining type", e);
