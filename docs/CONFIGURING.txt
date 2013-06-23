@@ -93,7 +93,7 @@ Java Annotations http://docs.oracle.com/javase/7/docs/api/java/text/Annotation.h
 				forcefully. This time is to be utilized by threads to exit 
 				gracefully while releasing any blocked I/O resources.
 				May be increased if your application has frequent long 
-				I/O blocking operations, like 3rp party web service requests. 
+				I/O blocking operations, like 3rd party web service requests. 
 				If too high, will cause a delay in server shutdown and have 
 				no other effect on its operation whatsoever.
 				(Default is 60)
