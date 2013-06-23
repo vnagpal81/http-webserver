@@ -1,0 +1,16 @@
+com.adobe.aem.init.dogmatix.config
+com.adobe.aem.init.dogmatix.core
+com.adobe.aem.init.dogmatix.exceptions
+com.adobe.aem.init.dogmatix.http.handlers
+com.adobe.aem.init.dogmatix.http.handlers.modules
+com.adobe.aem.init.dogmatix.http.handlers.modules.echo
+com.adobe.aem.init.dogmatix.http.handlers.modules.proxy
+com.adobe.aem.init.dogmatix.http.handlers.modules.resources
+com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage
+com.adobe.aem.init.dogmatix.http.handlers.modules.rest
+com.adobe.aem.init.dogmatix.http.header
+com.adobe.aem.init.dogmatix.http.request
+com.adobe.aem.init.dogmatix.http.response
+com.adobe.aem.init.dogmatix.listeners
+com.adobe.aem.init.dogmatix.test
+com.adobe.aem.init.dogmatix.util
