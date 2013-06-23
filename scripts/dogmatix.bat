@@ -1,6 +1,9 @@
 @ECHO OFF
 rem Code borrowed from Apache Tomcat bin/*.bat
 
+rem Clear any previous options
+set DOGMATIX_OPTS=
+
 if not exist setenv.bat goto setenvDone
 setenv.bat
 :setenvDone
@@ -56,23 +59,44 @@ if ""%1"" == ""stop"" goto doStop
 if ""%1"" == ""version"" goto doVersion
 if ""%1"" == ""help"" goto doHelp
 
+:printHelp
 echo Usage:  dogmatix ( commands ... )
 echo commands:
-echo   start             Start Dogmatix server
-echo   stop              Stop Dogmatix server
-echo   version           What version are you running?
-echo   help              Displays server help info
+echo   start  [options]  	  Start Dogmatix server
+echo          quiet               Start Dogmatix server in quiet mode
+echo          verbose             Start Dogmatix server in verbose mode
+echo          config "<file>"     Start Dogmatix server with the config file 
+echo   stop              	  Stop Dogmatix server
+echo   version           	  What version are you running?
+echo   help              	  Displays server help info
 goto exit
 
 :doStart
-set DOGMATIX_OPTS=
+
+rem Get remaining unshifted command line arguments
+:setArgs
+shift
+if ""%1""=="""" goto doneSetArgs
+if ""%1"" == ""quiet"" set DOGMATIX_OPTS=%DOGMATIX_OPTS% -l INFO
+if ""%1"" == ""verbose"" set DOGMATIX_OPTS=%DOGMATIX_OPTS% -l DEBUG
+if ""%1"" == ""config"" goto handleConfig 
+shift
+goto setArgs
+
+:handleConfig
+shift 
+set DOGMATIX_OPTS=%DOGMATIX_OPTS% -f %1
+shift
+goto setArgs
+
+:doneSetArgs
+
 echo Starting Server...
 goto execCmd
 
 :doStop
 shift
-set ACTION=stop
-set DOGMATIX_OPTS=-a %ACTION%
+set DOGMATIX_OPTS=-a stop
 echo Stopping Server...
 goto execCmd
 
@@ -81,23 +105,12 @@ set DOGMATIX_OPTS=-v
 goto execCmd
 
 :doHelp
-set DOGMATIX_OPTS=-h
+goto printHelp
 
 :execCmd
-rem Get remaining unshifted command line arguments and save them in the
-set CMD_LINE_ARGS=
-
-:setArgs
-shift
-if ""%1""=="""" goto doneSetArgs
-set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
-shift
-goto setArgs
-:doneSetArgs
-
 rem Execute Java with the applicable properties
 :execCmd
-%_EXECJAVA% %DOGMATIX_OPTS% %CMD_LINE_ARGS%
+%_EXECJAVA% %DOGMATIX_OPTS%
 goto end
 
 :exit
