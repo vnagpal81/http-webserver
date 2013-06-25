@@ -28,7 +28,7 @@
 			<outputDirectory>/docs</outputDirectory>
 			<directory>${basedir}/docs</directory>
 			<includes>
-				<include>*</include>
+				<include>**</include>
 			</includes>
 			<excludes>
 				<exclude>README.md</exclude>
@@ -38,14 +38,14 @@
 			<outputDirectory>/conf</outputDirectory>
 			<directory>${basedir}/src/resources</directory>
 			<includes>
-				<include>*</include>
+				<include>**</include>
 			</includes>
 		</fileSet>
 		<fileSet>
 			<outputDirectory>/resources</outputDirectory>
 			<directory>${basedir}/resources</directory>
 			<includes>
-				<include>*</include>
+				<include>**</include>
 			</includes>
 		</fileSet>
 	</fileSets>

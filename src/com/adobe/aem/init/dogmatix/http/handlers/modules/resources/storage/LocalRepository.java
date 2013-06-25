@@ -3,16 +3,17 @@ package com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
 
 import net.sf.jmimemagic.Magic;
-import net.sf.jmimemagic.MagicException;
-import net.sf.jmimemagic.MagicMatchNotFoundException;
-import net.sf.jmimemagic.MagicParseException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.adobe.aem.init.dogmatix.http.request.FileUpload;
 
 /**
  * 
@@ -71,21 +72,30 @@ public class LocalRepository implements Repository {
 		}
 		logger.debug("Looking up {}", path);
 		
-		FileInputStream fis = null;
-
 		try {
-			fis = new FileInputStream(path);
+			return new FileInputStream(path);
 		} catch (IOException e) {
 			logger.error("Error while looking up {} : {}", path, e.getMessage());
 			throw e;
 		}
-
-		return fis;
 	}
 
 	@Override
-	public void create(File file) throws IOException {
-		throw new UnsupportedOperationException();
+	public void create(FileUpload fileUpload) throws IOException {
+		if(!exists(fileUpload.getFileName())) {
+			FileInputStream temp = new FileInputStream(fileUpload.getTempFilePath());
+			FileOutputStream newFile = new FileOutputStream(baseDir + fileUpload.getFileName());
+			
+			while(temp.available() > 0) {
+				newFile.write(temp.read());
+			}
+			
+			newFile.close();
+			temp.close();
+		}
+		else {
+			throw new FileAlreadyExistsException(fileUpload.getFileName());
+		}
 	}
 
 	@Override
@@ -112,8 +122,7 @@ public class LocalRepository implements Repository {
 		if(f.isFile()) {
 			try {
 				metadata.setType(Magic.getMagicMatch(f, true).getMimeType());
-			} catch (MagicParseException | MagicMatchNotFoundException
-					| MagicException e) {
+			} catch (Exception e) {
 				logger.error("Error determining type", e);
 			}
 		}

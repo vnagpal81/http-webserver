@@ -1,8 +1,9 @@
 package com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import com.adobe.aem.init.dogmatix.http.request.FileUpload;
 
 public class S3Repository implements Repository {
 
@@ -13,7 +14,7 @@ public class S3Repository implements Repository {
 	}
 
 	@Override
-	public void create(File file) throws IOException {
+	public void create(FileUpload fileUpload) throws IOException {
 		// TODO Auto-generated method stub
 		
 	}

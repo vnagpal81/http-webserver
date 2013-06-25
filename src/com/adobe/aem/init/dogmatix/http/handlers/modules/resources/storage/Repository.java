@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import com.adobe.aem.init.dogmatix.http.request.FileUpload;
+
 /**
  * Interface for a file repository. Supported operations are to be implemented
  * by concrete classes which actually represent real-world repositories.
@@ -46,12 +48,12 @@ public interface Repository {
 	/**
 	 * Creates a new file in the repository
 	 * 
-	 * @param file
-	 *            the file contents as an in-memory java.io.File object
+	 * @param fileUpload
+	 *            the file contents as an in-memory
 	 * @throws IOException
 	 *             if file already exists or if not able to connect to the repo
 	 */
-	void create(File file) throws IOException;
+	void create(FileUpload fileUpload) throws IOException;
 
 	/**
 	 * Checks for the existence of the specified file path Consumers should

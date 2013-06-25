@@ -43,7 +43,7 @@
 				Max upload size in case of POST requests. Units are bytes.
 				[OPTIONAL] If not specified defaults to '5242880' (5MB)
 			-->
-			<property name="uploadLimit">5000</property>
+			<!-- <property name="uploadLimit">5000</property> -->
 			
 			<!-- 
 				Tracks GET count if true.

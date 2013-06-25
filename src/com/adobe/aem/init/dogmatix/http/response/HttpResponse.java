@@ -118,8 +118,7 @@ public class HttpResponse {
 				headers.put(Constants.HEADERS.CONTENT_TYPE, Magic
 						.getMagicMatch(body.toString().getBytes())
 						.getMimeType());
-			} catch (MagicParseException | MagicMatchNotFoundException
-					| MagicException e) {
+			} catch (Exception e) {
 				logger.error("Error while determining content type");
 			}
 		}
