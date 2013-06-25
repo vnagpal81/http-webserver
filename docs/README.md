@@ -43,6 +43,7 @@ http://www.oracle.com/technetwork/java/javase/documentation/index-137868.html
 
 http://www.artima.com/designtechniques/threadsafety.html
 
+http://www.prasannatech.net/2009/03/java-http-post-file-upload-server.html
 
 Apart from these, the source code wherever it is borrowed, has been attributed so in the docs.
 
