@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.S3Repository (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">S3Repository.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.FileInputStream;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">com.adobe.aem.init.dogmatix.http.request.FileUpload</A>;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="FormalComment">/**
+<A NAME="25"></A> * Represents a file repository on an Amazon S3 server.
+<A NAME="26"></A> * @see http://aws.amazon.com/s3/
+<A NAME="27"></A> * 
+<A NAME="28"></A> * Parameters required to connect to a S3 Repository:
+<A NAME="29"></A> * 
+<A NAME="30"></A> * Access Key   :   userid
+<A NAME="31"></A> * Secret Key   :   password
+<A NAME="32"></A> * Endpoint URL :   where to connect to?
+<A NAME="33"></A> * Base Bucket  :   name of the bucket in which all files will be read/written
+<A NAME="34"></A> * 
+<A NAME="35"></A> * @author vnagpal
+<A NAME="36"></A> *
+<A NAME="37"></A> */</FONT>
+<A NAME="38"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> S3Repository <FONT ID="Implements">implements</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Repository.java.html">Repository</A> {
+<A NAME="39"></A>
+<A NAME="40"></A>    @Override
+<A NAME="41"></A>    <FONT ID="Public">public</FONT> FileInputStream lookup(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="42"></A>        <FONT ID="SingleLineComment">// TODO Auto-generated method stub
+<A NAME="43"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="44"></A>    }
+<A NAME="45"></A>
+<A NAME="46"></A>    @Override
+<A NAME="47"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> create(<A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">FileUpload</A> fileUpload) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="48"></A>        <FONT ID="SingleLineComment">// TODO Auto-generated method stub
+<A NAME="49"></A></FONT>        
+<A NAME="50"></A>    }
+<A NAME="51"></A>
+<A NAME="52"></A>    @Override
+<A NAME="53"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> exists(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="54"></A>        <FONT ID="SingleLineComment">// TODO Auto-generated method stub
+<A NAME="55"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="56"></A>    }
+<A NAME="57"></A>
+<A NAME="58"></A>    @Override
+<A NAME="59"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> delete(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="60"></A>        <FONT ID="SingleLineComment">// TODO Auto-generated method stub
+<A NAME="61"></A></FONT>        
+<A NAME="62"></A>    }
+<A NAME="63"></A>
+<A NAME="64"></A>    @Override
+<A NAME="65"></A>    <FONT ID="Public">public</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">Metadata</A> getInfo(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="66"></A>        <FONT ID="SingleLineComment">// TODO Auto-generated method stub
+<A NAME="67"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="68"></A>    }
+<A NAME="69"></A>
+<A NAME="70"></A>    @Override
+<A NAME="71"></A>    <FONT ID="Public">public</FONT> FileInputStream lookin(String parentPath, String fileName)
+<A NAME="72"></A>            <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="73"></A>        <FONT ID="SingleLineComment">// TODO Auto-generated method stub
+<A NAME="74"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="75"></A>    }
+<A NAME="76"></A>
+<A NAME="77"></A>}
+<A NAME="78"></A></pre>
+</BODY>
+</HTML>

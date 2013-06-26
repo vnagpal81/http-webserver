@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. The ASF licenses this file to You 
+ * under the Apache License, Version 2.0 (the "License"); you may not 
+ * use this file except in compliance with the License.  
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.adobe.aem.init.dogmatix.http.handlers;
 
 import java.io.ByteArrayOutputStream;
@@ -5,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.Hashtable;
@@ -25,9 +42,27 @@ import com.adobe.aem.init.dogmatix.http.request.HttpRequest;
 import com.adobe.aem.init.dogmatix.http.request.Method;
 import com.adobe.aem.init.dogmatix.http.request.Version;
 import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
+import com.adobe.aem.init.dogmatix.listeners.HttpListener;
 import com.adobe.aem.init.dogmatix.util.Constants;
 import com.adobe.aem.init.dogmatix.util.IOUtils;
 
+/**
+ * Handles an incoming HTTP Request.
+ * Run inside a thread kicked off by the {@link HttpListener}
+ * Has access to the {@link ServerSocket} via the {@link ReusableSocket} instance.
+ * The handler
+ * 
+ * (0) Extracts the I/O streams from the {@link ServerSocket}
+ * (1) Creates a HTTP context by parsing the input 
+ * (2) Invokes the header interceptors for any pre-processing
+ * (3) Delegates the request handling to a module determined via URL mapping
+ * (4) Invokes the header interceptors for any post-processing
+ * (5) Finally, flushes the request which writes the buffer onto the stream
+ * (6) Closes the socket
+ * 
+ * @author vnagpal
+ *
+ */
 public class HttpRequestHandler implements Runnable {
 
 	private static final Logger logger = LoggerFactory

@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleInstancePool (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ModuleInstancePool.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="20"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">com.adobe.aem.init.dogmatix.config.ModuleConfig</A>;
+<A NAME="23"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">com.adobe.aem.init.dogmatix.exceptions.InvalidModuleException</A>;
+<A NAME="24"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/util/ObjectPool.java.html">com.adobe.aem.init.dogmatix.util.ObjectPool</A>;
+<A NAME="25"></A>
+<A NAME="26"></A><FONT ID="FormalComment">/**
+<A NAME="27"></A> * An object pool implementation of {@link AbstractHttpRequestHandlerModule}
+<A NAME="28"></A> * Each request to this module will be served by a re-usable instance in the
+<A NAME="29"></A> * pool. Since instances can be used by multiple requests, they must be
+<A NAME="30"></A> * stateless. If no instances are free in the pool, new ones are created as
+<A NAME="31"></A> * required. Objects in the pool are also expired after a default idle time 
+<A NAME="32"></A> * of 30 seconds so as to free memory.
+<A NAME="33"></A> * 
+<A NAME="34"></A> * @author vnagpal
+<A NAME="35"></A> * 
+<A NAME="36"></A> */</FONT>
+<A NAME="37"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ModuleInstancePool <FONT ID="Extends">extends</FONT>
+<A NAME="38"></A>        <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/util/ObjectPool.java.html">ObjectPool</A>&lt;<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A>&gt; {
+<A NAME="39"></A>
+<A NAME="40"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory
+<A NAME="41"></A>            .getLogger(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleInstancePool.java.html">ModuleInstancePool</A>.<FONT ID="Class">class</FONT>);
+<A NAME="42"></A>
+<A NAME="43"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig;
+<A NAME="44"></A>
+<A NAME="45"></A>    <FONT ID="Public">public</FONT> ModuleInstancePool(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig)
+<A NAME="46"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">InvalidModuleException</A> {
+<A NAME="47"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="48"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="49"></A>            Class.forName(moduleConfig.getClassName()).newInstance();
+<A NAME="50"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">Exception</A> e) {
+<A NAME="51"></A>            logger.error(<FONT ID="StringLiteral">"Invalid class name"</FONT>, e);
+<A NAME="52"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">InvalidModuleException</A>(moduleConfig.getClassName());
+<A NAME="53"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="54"></A>
+<A NAME="55"></A>        }
+<A NAME="56"></A>
+<A NAME="57"></A>        <FONT ID="This">this</FONT>.moduleConfig = moduleConfig;
+<A NAME="58"></A>        logger.debug(<FONT ID="StringLiteral">"Created object pool for {}"</FONT>, moduleConfig.getClassName());
+<A NAME="59"></A>    }
+<A NAME="60"></A>
+<A NAME="61"></A>    @Override
+<A NAME="62"></A>    <FONT ID="Protected">protected</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> create() <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">InvalidModuleException</A> {
+<A NAME="63"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="64"></A>            logger.debug(<FONT ID="StringLiteral">"Creating instance of {}"</FONT>, <FONT ID="This">this</FONT>.moduleConfig.getClassName());
+<A NAME="65"></A>            <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> moduleObj = 
+<A NAME="66"></A>                    (<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A>) Class.forName(moduleConfig.getClassName()).newInstance();
+<A NAME="67"></A>            
+<A NAME="68"></A>            logger.debug(<FONT ID="StringLiteral">"Setting the config {}"</FONT>, moduleConfig);
+<A NAME="69"></A>            moduleObj.setConfig(moduleConfig);
+<A NAME="70"></A>            
+<A NAME="71"></A>            logger.debug(<FONT ID="StringLiteral">"Initializing module instance"</FONT>);
+<A NAME="72"></A>            moduleObj.init();
+<A NAME="73"></A>            
+<A NAME="74"></A>            logger.debug(<FONT ID="StringLiteral">"Adding new object to pool for {}"</FONT>, <FONT ID="This">this</FONT>.moduleConfig.getClassName());
+<A NAME="75"></A>            <FONT ID="Return">return</FONT> moduleObj;
+<A NAME="76"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">Exception</A> e) {
+<A NAME="77"></A>            logger.error(<FONT ID="StringLiteral">"Error adding new object to pool for {} : {}"</FONT>,
+<A NAME="78"></A>                    <FONT ID="This">this</FONT>.moduleConfig.getClassName(), e.getMessage());
+<A NAME="79"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">InvalidModuleException</A>(moduleConfig.getClassName(), e);
+<A NAME="80"></A>        }
+<A NAME="81"></A>    }
+<A NAME="82"></A>
+<A NAME="83"></A>    @Override
+<A NAME="84"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> validate(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> o) {
+<A NAME="85"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="86"></A>    }
+<A NAME="87"></A>
+<A NAME="88"></A>    @Override
+<A NAME="89"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> expire(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> o) {
+<A NAME="90"></A>        <FONT ID="SingleLineComment">//no-op
+<A NAME="91"></A></FONT>    }
+<A NAME="92"></A>
+<A NAME="93"></A>}
+<A NAME="94"></A></pre>
+</BODY>
+</HTML>

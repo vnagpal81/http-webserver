@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. The ASF licenses this file to You 
+ * under the Apache License, Version 2.0 (the "License"); you may not 
+ * use this file except in compliance with the License.  
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.adobe.aem.init.dogmatix.http.handlers.modules.resources;
 
 import java.io.File;
@@ -19,6 +35,23 @@ import com.adobe.aem.init.dogmatix.http.request.HttpRequest;
 import com.adobe.aem.init.dogmatix.http.request.Method;
 import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 
+/**
+ * A Resources module is a server module which acts like a file server
+ * and serves requests for fetching, adding, removing, and updating files 
+ * in a {@link Repository}
+ * 
+ * Depending on the settings in the XML or via {@link Module} annotation,
+ * the module repository is configured to serve the requests by delegating 
+ * the crud operations to the repository.
+ * 
+ * Taking advantage of the module design, a user running the server has the
+ * ability to configure more than one {@link ResourceModule} simultaneously,
+ * the only condition being the url mapping should be different.
+ * 
+ * Hence, this module may be used to serve files via a local repo and web 
+ * resources via a s3 repo by configuring two modules with class {@link ResourceModule}
+ * and url "files/**" and "web/**" respectively.
+ */
 /*@Module(url="files/**", settings={
 		@Setting(name = ResourcesModule.SETTINGS.REPOSITORY, value = "local"),
 		@Setting(name = ResourcesModule.SETTINGS.BASE_DIR, value = "C:\\temp"),
@@ -95,8 +128,19 @@ public class ResourcesModule extends AbstractHttpRequestHandlerModule {
 		DEFAULTS.setProperty(SETTINGS.REDIRECT_TO_NOT_FOUND, "true");
 	}
 	
+	/**
+	 * A method resolver is just a routing mechanism to route {@link HttpRequest}s to
+	 * the specific {@link ResourcesRequestProcessor} based on HTTP {@link Method}
+	 */
 	private Map<Method, ResourcesRequestProcessor> methodResolver;
 	
+	/**
+	 * Initializes a Resources module by
+	 * 
+	 * (1) Creating the underlying repository connection
+	 * (2) Populating the method resolver with {@link ResourcesRequestProcessor}s
+	 * 	   for each HTTP {@link Method} using the module level {@link Setting}s
+	 */
 	protected void init() throws InvalidModuleConfigException {
 		super.init();
 		
@@ -120,6 +164,16 @@ public class ResourcesModule extends AbstractHttpRequestHandlerModule {
 					.setUrlPattern(config.getUrl()));
 	}
 
+	/**
+	 * Consumes the HTTP request.
+	 * Delegates the actual processing to a request processor determined by resolving the
+	 * HTTP method.
+	 * 
+	 * If no processor is bound to the HTTP method, a 404 is raised.
+	 * 
+	 * @param ctx the HTTP context to consume
+	 * @return Always return true, signifying to continue further processing in the chain
+	 */
 	@Override
 	public boolean consume(HttpContext ctx) {
 		HttpResponse response = ctx.getResponse();

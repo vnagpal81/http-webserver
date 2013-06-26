@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.rest.BaseHandler (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">BaseHandler.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.rest;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">com.adobe.aem.init.dogmatix.exceptions.HttpError</A>;
+<A NAME="20"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">com.adobe.aem.init.dogmatix.http.request.HttpRequest</A>;
+<A NAME="21"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">com.adobe.aem.init.dogmatix.http.response.HttpResponse</A>;
+<A NAME="22"></A>
+<A NAME="23"></A><FONT ID="FormalComment">/**
+<A NAME="24"></A> * Base skeletal implementation of a REST handler.
+<A NAME="25"></A> * All method implementations throw a 405 Unsupported error.
+<A NAME="26"></A> * 
+<A NAME="27"></A> * REST Handlers written by extending this BaseHandler must ensure overriding
+<A NAME="28"></A> * those methods which they will be supporting and writing their logic.
+<A NAME="29"></A> * 
+<A NAME="30"></A> * @author vnagpal
+<A NAME="31"></A> *
+<A NAME="32"></A> */</FONT>
+<A NAME="33"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> BaseHandler <FONT ID="Implements">implements</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/rest/Handler.java.html">Handler</A> {
+<A NAME="34"></A>
+<A NAME="35"></A>    @Override
+<A NAME="36"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> handle(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="37"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="38"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="39"></A>    }
+<A NAME="40"></A>
+<A NAME="41"></A>    @Override
+<A NAME="42"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> GET(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="43"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="44"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="45"></A>    }
+<A NAME="46"></A>
+<A NAME="47"></A>    @Override
+<A NAME="48"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> PUT(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="49"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="50"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="51"></A>    }
+<A NAME="52"></A>
+<A NAME="53"></A>    @Override
+<A NAME="54"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> POST(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="55"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="56"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="57"></A>    }
+<A NAME="58"></A>
+<A NAME="59"></A>    @Override
+<A NAME="60"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> DELETE(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="61"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="62"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="63"></A>    }
+<A NAME="64"></A>
+<A NAME="65"></A>    @Override
+<A NAME="66"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> TRACE(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="67"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="68"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="69"></A>    }
+<A NAME="70"></A>
+<A NAME="71"></A>    @Override
+<A NAME="72"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> OPTIONS(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="73"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="74"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="75"></A>    }
+<A NAME="76"></A>
+<A NAME="77"></A>    @Override
+<A NAME="78"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> CONNECT(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="79"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="80"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="81"></A>    }
+<A NAME="82"></A>
+<A NAME="83"></A>    @Override
+<A NAME="84"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> HEAD(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="85"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="86"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>);
+<A NAME="87"></A>    }
+<A NAME="88"></A>
+<A NAME="89"></A>}
+<A NAME="90"></A></pre>
+</BODY>
+</HTML>

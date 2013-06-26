@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.request.HttpRequest (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">HttpRequest.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.request;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.Hashtable;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="FormalComment">/**
+<A NAME="22"></A> * Represents an HTTP Request.
+<A NAME="23"></A> * 
+<A NAME="24"></A> * Structure of a request as defined in the rfc is as follows:
+<A NAME="25"></A> * 
+<A NAME="26"></A> * ( initial line ) Method URI HTTP/Version
+<A NAME="27"></A> * Header1: value1
+<A NAME="28"></A> * Header2: value2
+<A NAME="29"></A> * Header3: value3
+<A NAME="30"></A> * 
+<A NAME="31"></A> * ( optional message body goes here, like file contents or query data; 
+<A NAME="32"></A> * it can be many lines long, or even binary data $&amp;*%@!^$@ )
+<A NAME="33"></A> * 
+<A NAME="34"></A> * @author vnagpal
+<A NAME="35"></A> *
+<A NAME="36"></A> */</FONT>
+<A NAME="37"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> HttpRequest {
+<A NAME="38"></A>    
+<A NAME="39"></A>    <FONT ID="Private">private</FONT> Hashtable&lt;String, String&gt; headers;
+<A NAME="40"></A>    <FONT ID="Private">private</FONT> Hashtable&lt;String, String&gt; params;
+<A NAME="41"></A>    <FONT ID="Private">private</FONT> <FONT ID="Byte">byte</FONT>[] entity;
+<A NAME="42"></A>
+<A NAME="43"></A>    <FONT ID="Private">private</FONT> <FONT ID="Byte">byte</FONT>[] raw;
+<A NAME="44"></A>    <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> length;
+<A NAME="45"></A>    
+<A NAME="46"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">Method</A> method;
+<A NAME="47"></A>    <FONT ID="Private">private</FONT> String URI;
+<A NAME="48"></A>    <FONT ID="Private">private</FONT> String protocol;
+<A NAME="49"></A>    
+<A NAME="50"></A>    <FONT ID="Public">public</FONT> String getHeader(String name) {
+<A NAME="51"></A>        <FONT ID="If">if</FONT>(headers != <FONT ID="Null">null</FONT>) {
+<A NAME="52"></A>            <FONT ID="Return">return</FONT> headers.get(name.toLowerCase());
+<A NAME="53"></A>        }
+<A NAME="54"></A>        <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="55"></A>    }
+<A NAME="56"></A>    <FONT ID="Public">public</FONT> Hashtable&lt;String, String&gt; getHeaders() {
+<A NAME="57"></A>        <FONT ID="Return">return</FONT> headers;
+<A NAME="58"></A>    }
+<A NAME="59"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setHeaders(Hashtable&lt;String, String&gt; headers) {
+<A NAME="60"></A>        <FONT ID="This">this</FONT>.headers = headers;
+<A NAME="61"></A>    }
+<A NAME="62"></A>    
+<A NAME="63"></A>    <FONT ID="Public">public</FONT> Hashtable&lt;String, String&gt; getParams() {
+<A NAME="64"></A>        <FONT ID="Return">return</FONT> params;
+<A NAME="65"></A>    }
+<A NAME="66"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setParams(Hashtable&lt;String, String&gt; params) {
+<A NAME="67"></A>        <FONT ID="This">this</FONT>.params = params;
+<A NAME="68"></A>    }
+<A NAME="69"></A>    <FONT ID="Public">public</FONT> <FONT ID="Byte">byte</FONT>[] getEntity() {
+<A NAME="70"></A>        <FONT ID="Return">return</FONT> entity;
+<A NAME="71"></A>    }
+<A NAME="72"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setEntity(<FONT ID="Byte">byte</FONT>[] entity) {
+<A NAME="73"></A>        <FONT ID="This">this</FONT>.entity = entity;
+<A NAME="74"></A>    }
+<A NAME="75"></A>    <FONT ID="Public">public</FONT> <FONT ID="Byte">byte</FONT>[] getRaw() {
+<A NAME="76"></A>        <FONT ID="Return">return</FONT> raw;
+<A NAME="77"></A>    }
+<A NAME="78"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setRaw(<FONT ID="Byte">byte</FONT>[] raw) {
+<A NAME="79"></A>        <FONT ID="This">this</FONT>.raw = raw;
+<A NAME="80"></A>    }
+<A NAME="81"></A>    <FONT ID="Public">public</FONT> <FONT ID="Long">long</FONT> getLength() {
+<A NAME="82"></A>        <FONT ID="Return">return</FONT> length;
+<A NAME="83"></A>    }
+<A NAME="84"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setLength(<FONT ID="Long">long</FONT> length) {
+<A NAME="85"></A>        <FONT ID="This">this</FONT>.length = length;
+<A NAME="86"></A>    }
+<A NAME="87"></A>    <FONT ID="Public">public</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">Method</A> getMethod() {
+<A NAME="88"></A>        <FONT ID="Return">return</FONT> method;
+<A NAME="89"></A>    }
+<A NAME="90"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setMethod(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">Method</A> method) {
+<A NAME="91"></A>        <FONT ID="This">this</FONT>.method = method;
+<A NAME="92"></A>    }
+<A NAME="93"></A>    <FONT ID="Public">public</FONT> String getURI() {
+<A NAME="94"></A>        <FONT ID="Return">return</FONT> URI;
+<A NAME="95"></A>    }
+<A NAME="96"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setURI(String uRI) {
+<A NAME="97"></A>        <FONT ID="This">this</FONT>.URI = uRI;
+<A NAME="98"></A>    }
+<A NAME="99"></A>    <FONT ID="Public">public</FONT> String getProtocol() {
+<A NAME="100"></A>        <FONT ID="Return">return</FONT> protocol;
+<A NAME="101"></A>    }
+<A NAME="102"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setProtocol(String protocol) {
+<A NAME="103"></A>        <FONT ID="This">this</FONT>.protocol = protocol;
+<A NAME="104"></A>    }
+<A NAME="105"></A>    <FONT ID="Public">public</FONT> String getParam(String name) {
+<A NAME="106"></A>        <FONT ID="If">if</FONT>(params == <FONT ID="Null">null</FONT>) {
+<A NAME="107"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="108"></A>        }
+<A NAME="109"></A>        <FONT ID="Return">return</FONT> params.get(name.toLowerCase());
+<A NAME="110"></A>    }
+<A NAME="111"></A>}
+<A NAME="112"></A></pre>
+</BODY>
+</HTML>

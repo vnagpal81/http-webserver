@@ -1,6 +1,37 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. The ASF licenses this file to You 
+ * under the Apache License, Version 2.0 (the "License"); you may not 
+ * use this file except in compliance with the License.  
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
 
-
+/**
+ * Metadata information about a path in a file system consisting of:
+ * 
+ * Name			:	The path which the metadata is about
+ * Size			:	If the path points to a file, size is set to a 
+ * 					non-zero value representing file size in bytes 
+ * Type			:	If the path points to a file, Mimetype of the file
+ * Owner		:	Creator's username in the file system
+ * Created On	:	Timestamp of creation in the file system
+ * Modified On	:	Timestamp of the last modification event
+ * Leaf Node	:	True, if the path represents a file.
+ * 					False, if the path represents a directory.
+ * 
+ * @author vnagpal
+ *
+ */
 public class Metadata {
 	
 	private String name;

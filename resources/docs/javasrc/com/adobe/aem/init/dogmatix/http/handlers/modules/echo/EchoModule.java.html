@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.echo.EchoModule (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">EchoModule.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.echo;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">com.adobe.aem.init.dogmatix.exceptions.HttpError</A>;
+<A NAME="20"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">com.adobe.aem.init.dogmatix.http.handlers.HttpContext</A>;
+<A NAME="21"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule</A>;
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Module.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.Module</A>;
+<A NAME="23"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Setting.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.Setting</A>;
+<A NAME="24"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">com.adobe.aem.init.dogmatix.http.request.HttpRequest</A>;
+<A NAME="25"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">com.adobe.aem.init.dogmatix.http.request.Method</A>;
+<A NAME="26"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/util/Constants.java.html">com.adobe.aem.init.dogmatix.util.Constants</A>;
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="FormalComment">/**
+<A NAME="29"></A> * An Echo module for the server.
+<A NAME="30"></A> * 
+<A NAME="31"></A> * Prints the incoming request's body as-is to the response.
+<A NAME="32"></A> * 
+<A NAME="33"></A> * Only GET requests are echoed back because requests with entities
+<A NAME="34"></A> * may be misused to cause OutOfMemory exceptions by POSTing
+<A NAME="35"></A> * large data to the echo module.
+<A NAME="36"></A> * 
+<A NAME="37"></A> * Has optional header and footer settings which are printed above
+<A NAME="38"></A> * and below, respectively, the echoed request.
+<A NAME="39"></A> * 
+<A NAME="40"></A> * This module comes in handy while testing clients.
+<A NAME="41"></A> */</FONT>
+<A NAME="42"></A>@<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">Module</A>(url = <FONT ID="StringLiteral">"echo/**"</FONT>, settings = {
+<A NAME="43"></A>        @<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Setting.java.html">Setting</A>(name=EchoModule.SETTINGS.HEADER, value=<FONT ID="StringLiteral">"=========="</FONT>),
+<A NAME="44"></A>        @<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Setting.java.html">Setting</A>(name=EchoModule.SETTINGS.FOOTER, value=<FONT ID="StringLiteral">"=========="</FONT>)
+<A NAME="45"></A>})
+<A NAME="46"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> EchoModule <FONT ID="Extends">extends</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> {
+<A NAME="47"></A>    
+<A NAME="48"></A>    <FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> SETTINGS {
+<A NAME="49"></A>        String HEADER = <FONT ID="StringLiteral">"header"</FONT>;
+<A NAME="50"></A>        String FOOTER = <FONT ID="StringLiteral">"footer"</FONT>;
+<A NAME="51"></A>    }
+<A NAME="52"></A>    
+<A NAME="53"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> String ECHOES = 
+<A NAME="54"></A>                    <FONT ID="StringLiteral">"Overhead the albatross hangs motionless upon the air&lt;br /&gt;"</FONT>+
+<A NAME="55"></A>    <FONT ID="StringLiteral">"And deep beneath the rolling waves in labyrinths of coral caves&lt;br /&gt;"</FONT>+
+<A NAME="56"></A>                    <FONT ID="StringLiteral">"The echo of a distant tide&lt;br /&gt;"</FONT>+
+<A NAME="57"></A>    <FONT ID="StringLiteral">"Comes willowing across the sand&lt;br /&gt;"</FONT>+
+<A NAME="58"></A>                    <FONT ID="StringLiteral">"And everything is green and summery&lt;br /&gt;"</FONT>+
+<A NAME="59"></A>    <FONT ID="StringLiteral">"And no one showed us to the land&lt;br /&gt;"</FONT>+
+<A NAME="60"></A>                    <FONT ID="StringLiteral">"And no one knows the where's or why's&lt;br /&gt;"</FONT>+
+<A NAME="61"></A>    <FONT ID="StringLiteral">"But something stirs and something tries&lt;br /&gt;"</FONT>+
+<A NAME="62"></A>                    <FONT ID="StringLiteral">"And starts to climb towards the light&lt;br /&gt;"</FONT>+
+<A NAME="63"></A>    <FONT ID="StringLiteral">"&lt;br /&gt;"</FONT>+
+<A NAME="64"></A>                    <FONT ID="StringLiteral">"Strangers passing in the street&lt;br /&gt;"</FONT>+
+<A NAME="65"></A>    <FONT ID="StringLiteral">"By chance two separate glances meet&lt;br /&gt;"</FONT>+
+<A NAME="66"></A>                    <FONT ID="StringLiteral">"And I am you and what I see is me&lt;br /&gt;"</FONT>+
+<A NAME="67"></A>    <FONT ID="StringLiteral">"And do I take you by the hand&lt;br /&gt;"</FONT>+
+<A NAME="68"></A>                    <FONT ID="StringLiteral">"And lead you through the land&lt;br /&gt;"</FONT>+
+<A NAME="69"></A>    <FONT ID="StringLiteral">"And help me understand the best I can&lt;br /&gt;"</FONT>+
+<A NAME="70"></A>                    <FONT ID="StringLiteral">"And no one calls us to move on&lt;br /&gt;"</FONT>+
+<A NAME="71"></A>    <FONT ID="StringLiteral">"And no one forces down our eyes&lt;br /&gt;"</FONT>+
+<A NAME="72"></A>                    <FONT ID="StringLiteral">"No one speaks&lt;br /&gt;"</FONT>+
+<A NAME="73"></A>    <FONT ID="StringLiteral">"And no one tries&lt;br /&gt;"</FONT>+
+<A NAME="74"></A>                    <FONT ID="StringLiteral">"No one flies around the sun&lt;br /&gt;"</FONT>+
+<A NAME="75"></A>    <FONT ID="StringLiteral">"&lt;br /&gt;"</FONT>+
+<A NAME="76"></A>                    <FONT ID="StringLiteral">"Almost every day you fall upon my waking eyes&lt;br /&gt;"</FONT>+
+<A NAME="77"></A>    <FONT ID="StringLiteral">"Inviting and inciting me to rise&lt;br /&gt;"</FONT>+
+<A NAME="78"></A>                    <FONT ID="StringLiteral">"And through the window in the wall&lt;br /&gt;"</FONT>+
+<A NAME="79"></A>    <FONT ID="StringLiteral">"Comes streaming in on sunlight wings&lt;br /&gt;"</FONT>+
+<A NAME="80"></A>                    <FONT ID="StringLiteral">"A million bright ambassadors of morning&lt;br /&gt;"</FONT>+
+<A NAME="81"></A>    <FONT ID="StringLiteral">"And no one sings me lullabies&lt;br /&gt;"</FONT>+
+<A NAME="82"></A>                    <FONT ID="StringLiteral">"And no one makes me close my eyes&lt;br /&gt;"</FONT>+
+<A NAME="83"></A>    <FONT ID="StringLiteral">"So I throw the windows wide&lt;br /&gt;"</FONT>+
+<A NAME="84"></A>                    <FONT ID="StringLiteral">"And call to you across the sky."</FONT>;
+<A NAME="85"></A>    
+<A NAME="86"></A>    @Override
+<A NAME="87"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> consume(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> context) {
+<A NAME="88"></A>        <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request = context.getRequest();
+<A NAME="89"></A>        <FONT ID="If">if</FONT>(request.getMethod() == Method.GET) {
+<A NAME="90"></A>            StringBuffer response = <FONT ID="New">new</FONT> StringBuffer();
+<A NAME="91"></A>            response.append(config.getSetting(EchoModule.SETTINGS.HEADER, <FONT ID="StringLiteral">""</FONT>));
+<A NAME="92"></A>            response.append(Constants.NEW_LINE);
+<A NAME="93"></A>            response.append(request.getRaw());
+<A NAME="94"></A>            response.append(Constants.NEW_LINE);
+<A NAME="95"></A>            response.append(config.getSetting(EchoModule.SETTINGS.FOOTER, <FONT ID="StringLiteral">""</FONT>));
+<A NAME="96"></A>            context.getResponse().append(response);
+<A NAME="97"></A>        }
+<A NAME="98"></A>        <FONT ID="Else">else</FONT> {
+<A NAME="99"></A>            context.getResponse().err(<FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">405</FONT>, ECHOES));
+<A NAME="100"></A>        }
+<A NAME="101"></A>
+<A NAME="102"></A>        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="103"></A>
+<A NAME="104"></A>    }
+<A NAME="105"></A>
+<A NAME="106"></A>}
+<A NAME="107"></A></pre>
+</BODY>
+</HTML>

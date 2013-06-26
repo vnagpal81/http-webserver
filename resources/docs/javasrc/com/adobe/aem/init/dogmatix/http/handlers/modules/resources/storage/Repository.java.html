@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.Repository (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Repository.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.FileInputStream;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">com.adobe.aem.init.dogmatix.http.request.FileUpload</A>;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="FormalComment">/**
+<A NAME="25"></A> * Interface for a file repository. Supported operations are to be implemented
+<A NAME="26"></A> * by concrete classes which actually represent real-world repositories.
+<A NAME="27"></A> * 
+<A NAME="28"></A> * @see LocalRepository
+<A NAME="29"></A> * @see S3Repository
+<A NAME="30"></A> * @see RemoteRepository
+<A NAME="31"></A> * @see FTPRepository
+<A NAME="32"></A> * 
+<A NAME="33"></A> * @author vnagpal
+<A NAME="34"></A> * 
+<A NAME="35"></A> */</FONT>
+<A NAME="36"></A><FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> Repository {
+<A NAME="37"></A>
+<A NAME="38"></A>    <FONT ID="FormalComment">/**
+<A NAME="39"></A>     * Gets the request file handle as an input stream. The caller method bears
+<A NAME="40"></A>     * the responsibility of retrying the lookup in case of connection failure
+<A NAME="41"></A>     * 
+<A NAME="42"></A>     * @param filePath
+<A NAME="43"></A>     *            requested file path
+<A NAME="44"></A>     * @return the file as input stream
+<A NAME="45"></A>     * @throws IOException
+<A NAME="46"></A>     *             if not able to connect to the repo or if file not found
+<A NAME="47"></A>     */</FONT>
+<A NAME="48"></A>    FileInputStream lookup(String filePath) <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="49"></A>    
+<A NAME="50"></A>    <FONT ID="FormalComment">/**
+<A NAME="51"></A>     * Convenience method to lookup a file within a folder.
+<A NAME="52"></A>     * Gets the request file handle as an input stream. The caller method bears
+<A NAME="53"></A>     * the responsibility of retrying the lookup in case of connection failure
+<A NAME="54"></A>     * 
+<A NAME="55"></A>     * @param parentPath path of the folder to look in
+<A NAME="56"></A>     * @param fileName requested file 
+<A NAME="57"></A>     * @return the file as input stream 
+<A NAME="58"></A>     * @throws IOException
+<A NAME="59"></A>     *               if not able to connect to the repo or if file not found
+<A NAME="60"></A>     */</FONT>
+<A NAME="61"></A>    FileInputStream lookin(String parentPath, String fileName) <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="62"></A>
+<A NAME="63"></A>    <FONT ID="FormalComment">/**
+<A NAME="64"></A>     * Creates a new file in the repository
+<A NAME="65"></A>     * 
+<A NAME="66"></A>     * @param fileUpload
+<A NAME="67"></A>     *            the file contents as an in-memory
+<A NAME="68"></A>     * @throws IOException
+<A NAME="69"></A>     *             if file already exists or if not able to connect to the repo
+<A NAME="70"></A>     */</FONT>
+<A NAME="71"></A>    <FONT ID="Void">void</FONT> create(<A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">FileUpload</A> fileUpload) <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="72"></A>
+<A NAME="73"></A>    <FONT ID="FormalComment">/**
+<A NAME="74"></A>     * Checks for the existence of the specified file path Consumers should
+<A NAME="75"></A>     * check for existence before any operation to avoid exceptions.
+<A NAME="76"></A>     * 
+<A NAME="77"></A>     * @param uri
+<A NAME="78"></A>     *            path to lookup
+<A NAME="79"></A>     * @return true if a file exists at the specified location, false otherwise
+<A NAME="80"></A>     * @throws IOException
+<A NAME="81"></A>     *             if not able to connect to the repo
+<A NAME="82"></A>     */</FONT>
+<A NAME="83"></A>    <FONT ID="Boolean">boolean</FONT> exists(String uri) <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="84"></A>
+<A NAME="85"></A>    <FONT ID="FormalComment">/**
+<A NAME="86"></A>     * Deletes the specified file from the repo permanently. This action is
+<A NAME="87"></A>     * irreversible and this method should be used with care and awareness
+<A NAME="88"></A>     * especially when working with remote repos. If some repo extends the
+<A NAME="89"></A>     * functionality of a soft delete and rescue, it must be implemented
+<A NAME="90"></A>     * separately in the child class. Such methods, since not standard across
+<A NAME="91"></A>     * all types of file storage, are not part of the top most ancestor in the
+<A NAME="92"></A>     * class heirarchy
+<A NAME="93"></A>     * 
+<A NAME="94"></A>     * @param uri
+<A NAME="95"></A>     *            the path to delete
+<A NAME="96"></A>     * @throws IOException
+<A NAME="97"></A>     *             if file does not exist at desired location or if not able to
+<A NAME="98"></A>     *             connect to the repo
+<A NAME="99"></A>     */</FONT>
+<A NAME="100"></A>    <FONT ID="Void">void</FONT> delete(String uri) <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="101"></A>
+<A NAME="102"></A>    <FONT ID="FormalComment">/**
+<A NAME="103"></A>     * Queries the repository for file info metadata.
+<A NAME="104"></A>     * 
+<A NAME="105"></A>     * @param uri
+<A NAME="106"></A>     *            the path to get info for
+<A NAME="107"></A>     * @return a wrapper over file info metadata
+<A NAME="108"></A>     * @throws IOException
+<A NAME="109"></A>     *             if file does not exist at desired location or if not able to
+<A NAME="110"></A>     *             connect to the repo
+<A NAME="111"></A>     */</FONT>
+<A NAME="112"></A>    <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">Metadata</A> getInfo(String uri) <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="113"></A>}
+<A NAME="114"></A></pre>
+</BODY>
+</HTML>

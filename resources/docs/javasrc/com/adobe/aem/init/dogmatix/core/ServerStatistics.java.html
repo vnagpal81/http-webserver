@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.core.ServerStatistics (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ServerStatistics.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.core;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> <FONT ID="Static">static</FONT> java.util.concurrent.TimeUnit.NANOSECONDS;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="FormalComment">/**
+<A NAME="22"></A> * A Utility class which maintains the server runtime statistics
+<A NAME="23"></A> * 
+<A NAME="24"></A> * Currently only 2 parameters consist of the statistics
+<A NAME="25"></A> * 
+<A NAME="26"></A> * &lt;ul&gt;
+<A NAME="27"></A> *  &lt;li&gt;Server Up Time&lt;/li&gt;
+<A NAME="28"></A> *  &lt;li&gt;Memory Consumption&lt;/li&gt;
+<A NAME="29"></A> * &lt;/ul&gt;
+<A NAME="30"></A> * 
+<A NAME="31"></A> * @author vnagpal
+<A NAME="32"></A> *
+<A NAME="33"></A> */</FONT>
+<A NAME="34"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ServerStatistics {
+<A NAME="35"></A>    
+<A NAME="36"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Long">long</FONT> MEGABYTE = <FONT ID="IntegerLiteral">1024L</FONT> * <FONT ID="IntegerLiteral">1024L</FONT>;
+<A NAME="37"></A>
+<A NAME="38"></A>    <FONT ID="FormalComment">/**
+<A NAME="39"></A>     * Converts bytes value to megabytes using the conversion factor
+<A NAME="40"></A>     * 
+<A NAME="41"></A>     * @param bytes number of bytes
+<A NAME="42"></A>     * @return equivalent number of megabytes
+<A NAME="43"></A>     */</FONT>
+<A NAME="44"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Long">long</FONT> bytesToMegabytes(<FONT ID="Long">long</FONT> bytes) {
+<A NAME="45"></A>        <FONT ID="Return">return</FONT> bytes / MEGABYTE;
+<A NAME="46"></A>    }
+<A NAME="47"></A>
+<A NAME="48"></A>    <FONT ID="FormalComment">/**
+<A NAME="49"></A>     * Server startup timestamp in nanos elapsed since epoch
+<A NAME="50"></A>     */</FONT>
+<A NAME="51"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Long">long</FONT> startupTime = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="52"></A>
+<A NAME="53"></A>    <FONT ID="FormalComment">/**
+<A NAME="54"></A>     * Sets the server startup timestamp. Should be invoked at server launch.
+<A NAME="55"></A>     */</FONT>
+<A NAME="56"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> serverStarted() {
+<A NAME="57"></A>        <FONT ID="If">if</FONT> (startupTime == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="58"></A>            startupTime = System.nanoTime();
+<A NAME="59"></A>        }
+<A NAME="60"></A>    }
+<A NAME="61"></A>
+<A NAME="62"></A>    <FONT ID="FormalComment">/**
+<A NAME="63"></A>     * Converts a nanosecond duration into human readable 
+<A NAME="64"></A>     * (D days, H hours, M minutes, S seconds) format
+<A NAME="65"></A>     * 
+<A NAME="66"></A>     * @param duration time period to convert 
+<A NAME="67"></A>     * @return formatted string equivalent
+<A NAME="68"></A>     */</FONT>
+<A NAME="69"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> String nanosDurationPrettyPrint(<FONT ID="Long">long</FONT> duration) {
+<A NAME="70"></A>        <FONT ID="Long">long</FONT> days = NANOSECONDS.toDays(duration);
+<A NAME="71"></A>        <FONT ID="Long">long</FONT> hours = NANOSECONDS.toHours(duration);
+<A NAME="72"></A>        <FONT ID="Long">long</FONT> minutes = NANOSECONDS.toMinutes(duration);
+<A NAME="73"></A>        <FONT ID="Long">long</FONT> seconds = NANOSECONDS.toSeconds(duration);
+<A NAME="74"></A>
+<A NAME="75"></A>        String durationStr = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="76"></A>
+<A NAME="77"></A>        <FONT ID="If">if</FONT> (days &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="78"></A>            durationStr += days + <FONT ID="StringLiteral">" Days "</FONT>;
+<A NAME="79"></A>            hours = hours - <FONT ID="IntegerLiteral">24</FONT> * days;
+<A NAME="80"></A>            minutes = minutes - <FONT ID="IntegerLiteral">24</FONT> * <FONT ID="IntegerLiteral">60</FONT> * days;
+<A NAME="81"></A>            seconds = seconds - <FONT ID="IntegerLiteral">24</FONT> * <FONT ID="IntegerLiteral">60</FONT> * <FONT ID="IntegerLiteral">60</FONT> * days;
+<A NAME="82"></A>        }
+<A NAME="83"></A>
+<A NAME="84"></A>        <FONT ID="If">if</FONT> (hours &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="85"></A>            durationStr += hours + <FONT ID="StringLiteral">" Hours "</FONT>;
+<A NAME="86"></A>            minutes = minutes - <FONT ID="IntegerLiteral">60</FONT> * hours;
+<A NAME="87"></A>            seconds = seconds - <FONT ID="IntegerLiteral">60</FONT> * <FONT ID="IntegerLiteral">60</FONT> * hours;
+<A NAME="88"></A>        }
+<A NAME="89"></A>
+<A NAME="90"></A>        <FONT ID="If">if</FONT> (minutes &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="91"></A>            durationStr += minutes + <FONT ID="StringLiteral">" Minutes "</FONT>;
+<A NAME="92"></A>            seconds = seconds - <FONT ID="IntegerLiteral">60</FONT> * minutes;
+<A NAME="93"></A>        }
+<A NAME="94"></A>
+<A NAME="95"></A>        <FONT ID="If">if</FONT> (seconds &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="96"></A>            durationStr += seconds + <FONT ID="StringLiteral">" Seconds "</FONT>;
+<A NAME="97"></A>        }
+<A NAME="98"></A>
+<A NAME="99"></A>        <FONT ID="Return">return</FONT> durationStr;
+<A NAME="100"></A>    }
+<A NAME="101"></A>
+<A NAME="102"></A>    <FONT ID="FormalComment">/**
+<A NAME="103"></A>     * Since the statistics are required at runtime, they will often be requested via AJAX
+<A NAME="104"></A>     * and hence a JSON response is appropriate.
+<A NAME="105"></A>     * This method converts the statistics (duration &amp; memory) into a json string.
+<A NAME="106"></A>     * 
+<A NAME="107"></A>     * @return {"duration":"D days, H hours, M minutes, S seconds", "memory":"X MB"}
+<A NAME="108"></A>     */</FONT>
+<A NAME="109"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String getStatsAsJSON() {
+<A NAME="110"></A>        <FONT ID="SingleLineComment">// Getting the runtime reference from system
+<A NAME="111"></A></FONT>        Runtime runtime = Runtime.getRuntime();
+<A NAME="112"></A>        <FONT ID="Long">long</FONT> maxMemory = runtime.maxMemory();
+<A NAME="113"></A>        <FONT ID="Long">long</FONT> allocatedMemory = runtime.totalMemory();
+<A NAME="114"></A>        <FONT ID="Long">long</FONT> freeMemory = runtime.freeMemory();
+<A NAME="115"></A>        <FONT ID="Long">long</FONT> usedMemory = allocatedMemory - freeMemory;
+<A NAME="116"></A>        <FONT ID="Long">long</FONT> currentTime = System.nanoTime();
+<A NAME="117"></A>        <FONT ID="Long">long</FONT> timeElapsed = currentTime - startupTime;
+<A NAME="118"></A>
+<A NAME="119"></A>        <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"{\"duration\":\""</FONT> + nanosDurationPrettyPrint(timeElapsed)
+<A NAME="120"></A>                + <FONT ID="StringLiteral">"\", \"memory\":\""</FONT> + bytesToMegabytes(usedMemory)
+<A NAME="121"></A>                + <FONT ID="StringLiteral">" MB\"}"</FONT>;
+<A NAME="122"></A>    }
+<A NAME="123"></A>
+<A NAME="124"></A>}
+<A NAME="125"></A></pre>
+</BODY>
+</HTML>

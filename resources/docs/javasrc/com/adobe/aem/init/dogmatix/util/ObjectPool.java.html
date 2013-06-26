@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.util.ObjectPool (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ObjectPool.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.util;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.Enumeration;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.util.Hashtable;
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="FormalComment">/**
+<A NAME="23"></A> * An abstract object pool.
+<A NAME="24"></A> * 
+<A NAME="25"></A> * Reusable pool of objects of type T. New objects are created on demand and if
+<A NAME="26"></A> * all objects in the pool are currently in use. Objects lying idle in the pool
+<A NAME="27"></A> * are subject to expire and hence can be garbage collected to save memory.
+<A NAME="28"></A> * 
+<A NAME="29"></A> * @author http://sourcemaking.com/design_patterns/object_pool/java
+<A NAME="30"></A> * 
+<A NAME="31"></A> * @param &lt;T&gt;
+<A NAME="32"></A> * 
+<A NAME="33"></A> *            Generic parameter of the type of objects in the pool
+<A NAME="34"></A> */</FONT>
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Class">class</FONT> ObjectPool&lt;T&gt; {
+<A NAME="37"></A>    <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> expirationTime;
+<A NAME="38"></A>
+<A NAME="39"></A>    <FONT ID="Private">private</FONT> Hashtable&lt;T, Long&gt; locked, unlocked;
+<A NAME="40"></A>
+<A NAME="41"></A>    <FONT ID="Public">public</FONT> ObjectPool() {
+<A NAME="42"></A>        expirationTime = <FONT ID="IntegerLiteral">30000</FONT>; <FONT ID="SingleLineComment">// 30 seconds
+<A NAME="43"></A></FONT>        locked = <FONT ID="New">new</FONT> Hashtable&lt;T, Long&gt;();
+<A NAME="44"></A>        unlocked = <FONT ID="New">new</FONT> Hashtable&lt;T, Long&gt;();
+<A NAME="45"></A>    }
+<A NAME="46"></A>
+<A NAME="47"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Abstract">abstract</FONT> T create() <FONT ID="Throws">throws</FONT> Exception;
+<A NAME="48"></A>
+<A NAME="49"></A>    <FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Boolean">boolean</FONT> validate(T o);
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Void">void</FONT> expire(T o);
+<A NAME="52"></A>
+<A NAME="53"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> T checkOut() <FONT ID="Throws">throws</FONT> Exception {
+<A NAME="54"></A>        <FONT ID="Long">long</FONT> now = System.currentTimeMillis();
+<A NAME="55"></A>        T t;
+<A NAME="56"></A>        <FONT ID="If">if</FONT> (unlocked.size() &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="57"></A>            Enumeration&lt;T&gt; e = unlocked.keys();
+<A NAME="58"></A>            <FONT ID="While">while</FONT> (e.hasMoreElements()) {
+<A NAME="59"></A>                t = e.nextElement();
+<A NAME="60"></A>                <FONT ID="If">if</FONT> ((now - unlocked.get(t)) &gt; expirationTime) {
+<A NAME="61"></A>                    <FONT ID="SingleLineComment">// object has expired
+<A NAME="62"></A></FONT>                    unlocked.remove(t);
+<A NAME="63"></A>                    expire(t);
+<A NAME="64"></A>                    t = <FONT ID="Null">null</FONT>;
+<A NAME="65"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="66"></A>                    <FONT ID="If">if</FONT> (validate(t)) {
+<A NAME="67"></A>                        unlocked.remove(t);
+<A NAME="68"></A>                        locked.put(t, now);
+<A NAME="69"></A>                        <FONT ID="Return">return</FONT> (t);
+<A NAME="70"></A>                    } <FONT ID="Else">else</FONT> {
+<A NAME="71"></A>                        <FONT ID="SingleLineComment">// object failed validation
+<A NAME="72"></A></FONT>                        unlocked.remove(t);
+<A NAME="73"></A>                        expire(t);
+<A NAME="74"></A>                        t = <FONT ID="Null">null</FONT>;
+<A NAME="75"></A>                    }
+<A NAME="76"></A>                }
+<A NAME="77"></A>            }
+<A NAME="78"></A>        }
+<A NAME="79"></A>        <FONT ID="SingleLineComment">// no objects available, create a new one
+<A NAME="80"></A></FONT>        t = create();
+<A NAME="81"></A>        locked.put(t, now);
+<A NAME="82"></A>        <FONT ID="Return">return</FONT> (t);
+<A NAME="83"></A>    }
+<A NAME="84"></A>
+<A NAME="85"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> checkIn(T t) {
+<A NAME="86"></A>        locked.remove(t);
+<A NAME="87"></A>        unlocked.put(t, System.currentTimeMillis());
+<A NAME="88"></A>    }
+<A NAME="89"></A>}</pre>
+</BODY>
+</HTML>

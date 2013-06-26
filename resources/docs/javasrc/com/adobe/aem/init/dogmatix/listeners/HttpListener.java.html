@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.listeners.HttpListener (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">HttpListener.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.listeners;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.util.concurrent.Executors;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.util.concurrent.ThreadPoolExecutor;
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.util.concurrent.TimeUnit;
+<A NAME="24"></A>
+<A NAME="25"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="26"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">com.adobe.aem.init.dogmatix.config.ServerConfig</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpRequestHandler.java.html">com.adobe.aem.init.dogmatix.http.handlers.HttpRequestHandler</A>;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="FormalComment">/**
+<A NAME="32"></A> * A listener which listens on a port for incoming HTTP Requests. Each request
+<A NAME="33"></A> * is served in a new thread so as to keep the main thread free. The execution
+<A NAME="34"></A> * is implemented using {@link ExecutorService} The {@link ThreadPoolExecutor}
+<A NAME="35"></A> * implementation maintains a core pool of threads the size of which can be
+<A NAME="36"></A> * extended upto the maxPoolSize. By default the Executor fills up a queue with
+<A NAME="37"></A> * incoming tasks before creating a new worker thread. To overcome this
+<A NAME="38"></A> * behaviour, we declare a pool with core pool size as maxThreads and allowing
+<A NAME="39"></A> * these threads to time out in case of inactivity for keepAlive time units.
+<A NAME="40"></A> * 
+<A NAME="41"></A> * @author vnagpal
+<A NAME="42"></A> * 
+<A NAME="43"></A> */</FONT>
+<A NAME="44"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> HttpListener <FONT ID="Extends">extends</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> {
+<A NAME="45"></A>
+<A NAME="46"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Static">static</FONT> Logger logger = LoggerFactory
+<A NAME="47"></A>            .getLogger(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/HttpListener.java.html">HttpListener</A>.<FONT ID="Class">class</FONT>);
+<A NAME="48"></A>
+<A NAME="49"></A>    <FONT ID="Private">private</FONT> ThreadPoolExecutor pool;
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> serverConfig;
+<A NAME="52"></A>
+<A NAME="53"></A>    <FONT ID="Public">public</FONT> HttpListener(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> serverConfig) {
+<A NAME="54"></A>        <FONT ID="Super">super</FONT>(serverConfig.httpPort());
+<A NAME="55"></A>        pool = (ThreadPoolExecutor) Executors.newFixedThreadPool(serverConfig
+<A NAME="56"></A>                .maxThreads());
+<A NAME="57"></A>        pool.setKeepAliveTime(<FONT ID="IntegerLiteral">1</FONT>, TimeUnit.MINUTES);
+<A NAME="58"></A>        pool.allowCoreThreadTimeOut(<FONT ID="True">true</FONT>);
+<A NAME="59"></A>        <FONT ID="This">this</FONT>.serverConfig = serverConfig;
+<A NAME="60"></A>    }
+<A NAME="61"></A>
+<A NAME="62"></A>    @Override
+<A NAME="63"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> process(Socket socket) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="64"></A>        pool.execute(<FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpRequestHandler.java.html">HttpRequestHandler</A>(socket));
+<A NAME="65"></A>    }
+<A NAME="66"></A>
+<A NAME="67"></A>    @Override
+<A NAME="68"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stopListening() {
+<A NAME="69"></A>        shutdownAndAwaitTermination();
+<A NAME="70"></A>        <FONT ID="Super">super</FONT>.stopListening();
+<A NAME="71"></A>    }
+<A NAME="72"></A>
+<A NAME="73"></A>    <FONT ID="FormalComment">/**
+<A NAME="74"></A>     * @see http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/
+<A NAME="75"></A>     *      ExecutorService.html
+<A NAME="76"></A>     */</FONT>
+<A NAME="77"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> shutdownAndAwaitTermination() {
+<A NAME="78"></A>        logger.debug(<FONT ID="StringLiteral">"Do not entertain any new requests"</FONT>);
+<A NAME="79"></A>        pool.shutdown(); <FONT ID="SingleLineComment">// Disable new tasks from being submitted
+<A NAME="80"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="81"></A>            <FONT ID="SingleLineComment">// Wait a while for existing tasks to terminate
+<A NAME="82"></A></FONT>            logger.debug(<FONT ID="StringLiteral">"Waiting for existing requests to finish"</FONT>);
+<A NAME="83"></A>            <FONT ID="If">if</FONT> (!pool.awaitTermination(serverConfig.shutdownGraceTime(),
+<A NAME="84"></A>                    TimeUnit.SECONDS)) {
+<A NAME="85"></A>                logger.debug(<FONT ID="StringLiteral">"Cannot wait any longer. Shutting down forcefully now. Any unserved request will be dropped"</FONT>);
+<A NAME="86"></A>                pool.shutdownNow(); <FONT ID="SingleLineComment">// Cancel currently executing tasks
+<A NAME="87"></A></FONT>                <FONT ID="SingleLineComment">// Wait a while for tasks to respond to being cancelled
+<A NAME="88"></A></FONT>                <FONT ID="If">if</FONT> (!pool.awaitTermination(serverConfig.shutdownGraceTime(),
+<A NAME="89"></A>                        TimeUnit.SECONDS)) {
+<A NAME="90"></A>                    logger.error(<FONT ID="StringLiteral">"Pool did not terminate"</FONT>);
+<A NAME="91"></A>                }
+<A NAME="92"></A>            }
+<A NAME="93"></A>        } <FONT ID="Catch">catch</FONT> (InterruptedException ie) {
+<A NAME="94"></A>            <FONT ID="SingleLineComment">// (Re-)Cancel if current thread also interrupted
+<A NAME="95"></A></FONT>            pool.shutdownNow();
+<A NAME="96"></A>            <FONT ID="SingleLineComment">// Preserve interrupt status
+<A NAME="97"></A></FONT>            Thread.currentThread().interrupt();
+<A NAME="98"></A>        }
+<A NAME="99"></A>    }
+<A NAME="100"></A>}</pre>
+</BODY>
+</HTML>

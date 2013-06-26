@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ResourcesModule.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.util.HashMap;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.util.Map;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="25"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">com.adobe.aem.init.dogmatix.exceptions.HttpError</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleConfigException.java.html">com.adobe.aem.init.dogmatix.exceptions.InvalidModuleConfigException</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">com.adobe.aem.init.dogmatix.http.handlers.HttpContext</A>;
+<A NAME="30"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule</A>;
+<A NAME="31"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Repository.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.Repository</A>;
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryFactory.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.RepositoryFactory</A>;
+<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.RepositoryNotAccessibleException</A>;
+<A NAME="34"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">com.adobe.aem.init.dogmatix.http.request.HttpRequest</A>;
+<A NAME="35"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">com.adobe.aem.init.dogmatix.http.request.Method</A>;
+<A NAME="36"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">com.adobe.aem.init.dogmatix.http.response.HttpResponse</A>;
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * A Resources module is a server module which acts like a file server
+<A NAME="40"></A> * and serves requests for fetching, adding, removing, and updating files 
+<A NAME="41"></A> * in a {@link Repository}
+<A NAME="42"></A> * 
+<A NAME="43"></A> * Depending on the settings in the XML or via {@link Module} annotation,
+<A NAME="44"></A> * the module repository is configured to serve the requests by delegating 
+<A NAME="45"></A> * the crud operations to the repository.
+<A NAME="46"></A> * 
+<A NAME="47"></A> * Taking advantage of the module design, a user running the server has the
+<A NAME="48"></A> * ability to configure more than one {@link ResourceModule} simultaneously,
+<A NAME="49"></A> * the only condition being the url mapping should be different.
+<A NAME="50"></A> * 
+<A NAME="51"></A> * Hence, this module may be used to serve files via a local repo and web 
+<A NAME="52"></A> * resources via a s3 repo by configuring two modules with class {@link ResourceModule}
+<A NAME="53"></A> * and url "files/**" and "web/**" respectively.
+<A NAME="54"></A> */</FONT>
+<A NAME="55"></A><FONT ID="MultiLineComment">/*@Module(url="files/**", settings={
+<A NAME="56"></A>        @Setting(name = ResourcesModule.SETTINGS.REPOSITORY, value = "local"),
+<A NAME="57"></A>        @Setting(name = ResourcesModule.SETTINGS.BASE_DIR, value = "C:\\temp"),
+<A NAME="58"></A>        @Setting(name = ResourcesModule.SETTINGS.UPLOAD_LIMIT, value = "5000"),
+<A NAME="59"></A>        @Setting(name = ResourcesModule.SETTINGS.TRACK, value = "false"),
+<A NAME="60"></A>        @Setting(name = ResourcesModule.SETTINGS.DOWNLOAD_PARAM, value = "download"),
+<A NAME="61"></A>        @Setting(name = ResourcesModule.SETTINGS.DEFAULT_DIR_PATH, value = "index.html"),
+<A NAME="62"></A>        @Setting(name = ResourcesModule.SETTINGS.REDIRECT_TO_DEFAULT, value = "true"),
+<A NAME="63"></A>        @Setting(name = ResourcesModule.SETTINGS.NOT_FOUND, value = "404.html"),
+<A NAME="64"></A>        @Setting(name = ResourcesModule.SETTINGS.REDIRECT_TO_NOT_FOUND, value = "true"),
+<A NAME="65"></A>})*/</FONT>
+<A NAME="66"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ResourcesModule <FONT ID="Extends">extends</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> {
+<A NAME="67"></A>    
+<A NAME="68"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesModule.java.html">ResourcesModule</A>.<FONT ID="Class">class</FONT>);
+<A NAME="69"></A>    
+<A NAME="70"></A>    <FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> SETTINGS {
+<A NAME="71"></A>        <FONT ID="FormalComment">/**
+<A NAME="72"></A>         * Underlying storage strategy. 
+<A NAME="73"></A>         * One of local, remote, ftp, s3. 
+<A NAME="74"></A>         * May need extra settings depending on the repository value
+<A NAME="75"></A>         * 
+<A NAME="76"></A>         */</FONT>
+<A NAME="77"></A>        String REPOSITORY = <FONT ID="StringLiteral">"repository"</FONT>; 
+<A NAME="78"></A>        <FONT ID="FormalComment">/**
+<A NAME="79"></A>         * Base directory path in case local storage is used.
+<A NAME="80"></A>         */</FONT>
+<A NAME="81"></A>        String BASE_DIR = <FONT ID="StringLiteral">"baseDir"</FONT>; 
+<A NAME="82"></A>        <FONT ID="FormalComment">/**
+<A NAME="83"></A>         * Max upload size in case of POST requests. Units are bytes.
+<A NAME="84"></A>         */</FONT>
+<A NAME="85"></A>        String UPLOAD_LIMIT = <FONT ID="StringLiteral">"uploadLimit"</FONT>;
+<A NAME="86"></A>        <FONT ID="FormalComment">/**
+<A NAME="87"></A>         * Tracks GET count if true.
+<A NAME="88"></A>         */</FONT>
+<A NAME="89"></A>        String TRACK = <FONT ID="StringLiteral">"track"</FONT>;
+<A NAME="90"></A>        <FONT ID="FormalComment">/**
+<A NAME="91"></A>         * Query param to check in case response is to be sent as an attachment.
+<A NAME="92"></A>         */</FONT>
+<A NAME="93"></A>        String DOWNLOAD_PARAM = <FONT ID="StringLiteral">"downloadParam"</FONT>;
+<A NAME="94"></A>        <FONT ID="FormalComment">/**
+<A NAME="95"></A>         * The file to default to in case requested resource is a directory.
+<A NAME="96"></A>         * Usually file servers have a default index.html in each folder.
+<A NAME="97"></A>         */</FONT>
+<A NAME="98"></A>        String DEFAULT_DIR_PATH = <FONT ID="StringLiteral">"defaultDirPath"</FONT>;
+<A NAME="99"></A>        <FONT ID="FormalComment">/**
+<A NAME="100"></A>         * The strategy to employ in case requested resource is a directory.
+<A NAME="101"></A>         * If true, send a redirect to the user-agent.
+<A NAME="102"></A>         * If false, fall back to response publishing the defaultDirPath.
+<A NAME="103"></A>         */</FONT>
+<A NAME="104"></A>        String REDIRECT_TO_DEFAULT = <FONT ID="StringLiteral">"redirectToDefault"</FONT>;
+<A NAME="105"></A>        <FONT ID="FormalComment">/**
+<A NAME="106"></A>         * The file to default to in case requested resource is not found.
+<A NAME="107"></A>         * Usually file servers have a default 404.html to be served globally.
+<A NAME="108"></A>         */</FONT>
+<A NAME="109"></A>        String NOT_FOUND = <FONT ID="StringLiteral">"notFound"</FONT>;
+<A NAME="110"></A>        <FONT ID="FormalComment">/**
+<A NAME="111"></A>         * The strategy to employ in case requested resource is not found.
+<A NAME="112"></A>         * If true, send a redirect to the user-agent.
+<A NAME="113"></A>         * If false, fall back to response publishing the notFound.
+<A NAME="114"></A>         */</FONT>
+<A NAME="115"></A>        String REDIRECT_TO_NOT_FOUND = <FONT ID="StringLiteral">"redirectToNotFound"</FONT>;
+<A NAME="116"></A>    }
+<A NAME="117"></A>    
+<A NAME="118"></A>    <FONT ID="Static">static</FONT> {
+<A NAME="119"></A>        DEFAULTS = <FONT ID="New">new</FONT> Properties();
+<A NAME="120"></A>        DEFAULTS.setProperty(SETTINGS.REPOSITORY, <FONT ID="StringLiteral">"local"</FONT>);
+<A NAME="121"></A>        DEFAULTS.setProperty(SETTINGS.BASE_DIR, <FONT ID="StringLiteral">".."</FONT> + File.separator + <FONT ID="StringLiteral">"resources"</FONT>);
+<A NAME="122"></A>        DEFAULTS.setProperty(SETTINGS.UPLOAD_LIMIT, <FONT ID="StringLiteral">"5242880"</FONT>);
+<A NAME="123"></A>        DEFAULTS.setProperty(SETTINGS.TRACK, <FONT ID="StringLiteral">"false"</FONT>);
+<A NAME="124"></A>        DEFAULTS.setProperty(SETTINGS.DOWNLOAD_PARAM, <FONT ID="StringLiteral">"download"</FONT>);
+<A NAME="125"></A>        <FONT ID="SingleLineComment">//DEFAULTS.setProperty(SETTINGS.DEFAULT_DIR_PATH, "index.html"); Optional parameter
+<A NAME="126"></A></FONT>        DEFAULTS.setProperty(SETTINGS.REDIRECT_TO_DEFAULT, <FONT ID="StringLiteral">"true"</FONT>);
+<A NAME="127"></A>        <FONT ID="SingleLineComment">//DEFAULTS.setProperty(SETTINGS.NOT_FOUND, "404.html"); Optional parameter
+<A NAME="128"></A></FONT>        DEFAULTS.setProperty(SETTINGS.REDIRECT_TO_NOT_FOUND, <FONT ID="StringLiteral">"true"</FONT>);
+<A NAME="129"></A>    }
+<A NAME="130"></A>    
+<A NAME="131"></A>    <FONT ID="FormalComment">/**
+<A NAME="132"></A>     * A method resolver is just a routing mechanism to route {@link HttpRequest}s to
+<A NAME="133"></A>     * the specific {@link ResourcesRequestProcessor} based on HTTP {@link Method}
+<A NAME="134"></A>     */</FONT>
+<A NAME="135"></A>    <FONT ID="Private">private</FONT> Map&lt;<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">Method</A>, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesRequestProcessor.java.html">ResourcesRequestProcessor</A>&gt; methodResolver;
+<A NAME="136"></A>    
+<A NAME="137"></A>    <FONT ID="FormalComment">/**
+<A NAME="138"></A>     * Initializes a Resources module by
+<A NAME="139"></A>     * 
+<A NAME="140"></A>     * (1) Creating the underlying repository connection
+<A NAME="141"></A>     * (2) Populating the method resolver with {@link ResourcesRequestProcessor}s
+<A NAME="142"></A>     *     for each HTTP {@link Method} using the module level {@link Setting}s
+<A NAME="143"></A>     */</FONT>
+<A NAME="144"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> init() <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleConfigException.java.html">InvalidModuleConfigException</A> {
+<A NAME="145"></A>        <FONT ID="Super">super</FONT>.init();
+<A NAME="146"></A>        
+<A NAME="147"></A>        <FONT ID="SingleLineComment">//populate repository from module config
+<A NAME="148"></A></FONT>        <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Repository.java.html">Repository</A> repository;
+<A NAME="149"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="150"></A>            repository = RepositoryFactory.getRepository(config.getSettings());
+<A NAME="151"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A> e) {
+<A NAME="152"></A>            logger.error(<FONT ID="StringLiteral">"Not able to connect to repository"</FONT>, e);
+<A NAME="153"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleConfigException.java.html">InvalidModuleConfigException</A>(e);
+<A NAME="154"></A>        }
+<A NAME="155"></A>        
+<A NAME="156"></A>        methodResolver = <FONT ID="New">new</FONT> HashMap&lt;<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">Method</A>, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesRequestProcessor.java.html">ResourcesRequestProcessor</A>&gt;();
+<A NAME="157"></A>        methodResolver.put(Method.GET, 
+<A NAME="158"></A>                <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/GETResource.java.html">GETResource</A>(config.getSettings())
+<A NAME="159"></A>                    .setRepository(repository)
+<A NAME="160"></A>                    .setUrlPattern(config.getUrl()));
+<A NAME="161"></A>        methodResolver.put(Method.POST, 
+<A NAME="162"></A>                <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/POSTResource.java.html">POSTResource</A>(config.getSettings())
+<A NAME="163"></A>                    .setRepository(repository)
+<A NAME="164"></A>                    .setUrlPattern(config.getUrl()));
+<A NAME="165"></A>    }
+<A NAME="166"></A>
+<A NAME="167"></A>    <FONT ID="FormalComment">/**
+<A NAME="168"></A>     * Consumes the HTTP request.
+<A NAME="169"></A>     * Delegates the actual processing to a request processor determined by resolving the
+<A NAME="170"></A>     * HTTP method.
+<A NAME="171"></A>     * 
+<A NAME="172"></A>     * If no processor is bound to the HTTP method, a 404 is raised.
+<A NAME="173"></A>     * 
+<A NAME="174"></A>     * @param ctx the HTTP context to consume
+<A NAME="175"></A>     * @return Always return true, signifying to continue further processing in the chain
+<A NAME="176"></A>     */</FONT>
+<A NAME="177"></A>    @Override
+<A NAME="178"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> consume(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx) {
+<A NAME="179"></A>        <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response = ctx.getResponse();
+<A NAME="180"></A>        
+<A NAME="181"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="182"></A>            <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request = ctx.getRequest();
+<A NAME="183"></A>            
+<A NAME="184"></A>            <FONT ID="SingleLineComment">// get request processor
+<A NAME="185"></A></FONT>            <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesRequestProcessor.java.html">ResourcesRequestProcessor</A> processor = methodResolver.get(request.getMethod());
+<A NAME="186"></A>            
+<A NAME="187"></A>            <FONT ID="If">if</FONT> (processor != <FONT ID="Null">null</FONT>) {
+<A NAME="188"></A>                
+<A NAME="189"></A>                processor.processRequest(request, response);
+<A NAME="190"></A>                
+<A NAME="191"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="192"></A>                <FONT ID="SingleLineComment">// raise 404
+<A NAME="193"></A></FONT>                response.err(<FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>, String.format(<FONT ID="StringLiteral">"Unsupported HTTP method %s"</FONT>, request.getMethod())));
+<A NAME="194"></A>            }           
+<A NAME="195"></A>        }
+<A NAME="196"></A>        <FONT ID="Catch">catch</FONT>(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> e) {
+<A NAME="197"></A>            response.err(e);
+<A NAME="198"></A>        }
+<A NAME="199"></A>        
+<A NAME="200"></A>        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="201"></A>    }
+<A NAME="202"></A>
+<A NAME="203"></A>}
+<A NAME="204"></A></pre>
+</BODY>
+</HTML>

@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.Module (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Module.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.lang.annotation.Retention;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.lang.annotation.RetentionPolicy;
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="FormalComment">/**
+<A NAME="23"></A> * Indicates that a class is a Module. The server, at startup time, if 
+<A NAME="24"></A> * instructed via config to scan for Modules in a package, will 
+<A NAME="25"></A> * reflectively look for classes annotated with this annotation type.
+<A NAME="26"></A> * Once detected as a module, the class will be instantiated and 
+<A NAME="27"></A> * initialized using the properties url and settings.
+<A NAME="28"></A> * 
+<A NAME="29"></A> * @author vnagpal
+<A NAME="30"></A> *
+<A NAME="31"></A> */</FONT>
+<A NAME="32"></A>@Retention(RetentionPolicy.RUNTIME)
+<A NAME="33"></A><FONT ID="Public">public</FONT> @<FONT ID="Interface">interface</FONT> Module {
+<A NAME="34"></A>    
+<A NAME="35"></A>    <FONT ID="FormalComment">/**
+<A NAME="36"></A>     * The URL pattern to match against the request URI to determine 
+<A NAME="37"></A>     * if this module should consume the request.
+<A NAME="38"></A>     * 
+<A NAME="39"></A>     */</FONT>
+<A NAME="40"></A>    String url();
+<A NAME="41"></A>
+<A NAME="42"></A>    <FONT ID="FormalComment">/**
+<A NAME="43"></A>     * Detailed module-specific settings required for its functioning. 
+<A NAME="44"></A>     */</FONT>
+<A NAME="45"></A>    <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Setting.java.html">Setting</A>[] settings() <FONT ID="Default">default</FONT> {};
+<A NAME="46"></A>
+<A NAME="47"></A>}
+<A NAME="48"></A></pre>
+</BODY>
+</HTML>

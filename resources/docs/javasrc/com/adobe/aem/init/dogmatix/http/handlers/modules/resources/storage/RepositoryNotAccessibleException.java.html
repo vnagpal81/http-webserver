@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.RepositoryNotAccessibleException (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">RepositoryNotAccessibleException.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="FormalComment">/**
+<A NAME="22"></A> * Thrown when a class attempts an operation on a {@link Repository} and fails
+<A NAME="23"></A> * because the repository was not available.
+<A NAME="24"></A> * 
+<A NAME="25"></A> * As a fail-safe mechanism, it is recommended to not delay the detection of
+<A NAME="26"></A> * {@link Repository} connection failure till an operation is attempted. It should be
+<A NAME="27"></A> * detected at application startup time by eager initialization.
+<A NAME="28"></A> * 
+<A NAME="29"></A> * This, however, does not guarantee the availability of the underlying {@link Repository}
+<A NAME="30"></A> * at all times. An application may still encounter a {@link RepositoryNotAccessibleException}
+<A NAME="31"></A> * while attempting an operation at a later point of time.
+<A NAME="32"></A> * 
+<A NAME="33"></A> * @see RepositoryFactory
+<A NAME="34"></A> * @see RemoteRepository
+<A NAME="35"></A> * @see FTPRepository
+<A NAME="36"></A> * @see S3Repository
+<A NAME="37"></A> * 
+<A NAME="38"></A> * @author vnagpal
+<A NAME="39"></A> *
+<A NAME="40"></A> */</FONT>
+<A NAME="41"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> RepositoryNotAccessibleException <FONT ID="Extends">extends</FONT> IOException {
+<A NAME="42"></A>
+<A NAME="43"></A>    <FONT ID="Public">public</FONT> RepositoryNotAccessibleException(Throwable cause) {
+<A NAME="44"></A>        <FONT ID="Super">super</FONT>(cause);
+<A NAME="45"></A>    }
+<A NAME="46"></A>
+<A NAME="47"></A>    <FONT ID="Public">public</FONT> RepositoryNotAccessibleException() {
+<A NAME="48"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="49"></A>    }
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="Public">public</FONT> RepositoryNotAccessibleException(String message) {
+<A NAME="52"></A>        <FONT ID="Super">super</FONT>(message);
+<A NAME="53"></A>    }
+<A NAME="54"></A>}
+<A NAME="55"></A></pre>
+</BODY>
+</HTML>

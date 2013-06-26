@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.response.Status (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Status.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.response;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.HashMap;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.util.Map;
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="FormalComment">/**
+<A NAME="23"></A> * Stores the Status message against each HTTP Response status code
+<A NAME="24"></A> * @author vnagpal
+<A NAME="25"></A> *
+<A NAME="26"></A> */</FONT>
+<A NAME="27"></A><FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> Status {
+<A NAME="28"></A>
+<A NAME="29"></A>    @SuppressWarnings(<FONT ID="StringLiteral">"serial"</FONT>)
+<A NAME="30"></A>    Map&lt;Integer,String&gt; HttpReplies = <FONT ID="New">new</FONT> HashMap&lt;Integer, String&gt;() {{
+<A NAME="31"></A>        put(<FONT ID="IntegerLiteral">100</FONT>, <FONT ID="StringLiteral">"Continue"</FONT>);
+<A NAME="32"></A>        put(<FONT ID="IntegerLiteral">101</FONT>, <FONT ID="StringLiteral">"Switching Protocols"</FONT>);
+<A NAME="33"></A>        put(<FONT ID="IntegerLiteral">200</FONT>, <FONT ID="StringLiteral">"OK"</FONT>);
+<A NAME="34"></A>        put(<FONT ID="IntegerLiteral">201</FONT>, <FONT ID="StringLiteral">"Created"</FONT>);
+<A NAME="35"></A>        put(<FONT ID="IntegerLiteral">202</FONT>, <FONT ID="StringLiteral">"Accepted"</FONT>);
+<A NAME="36"></A>        put(<FONT ID="IntegerLiteral">203</FONT>, <FONT ID="StringLiteral">"Non-Authoritative Information"</FONT>);
+<A NAME="37"></A>        put(<FONT ID="IntegerLiteral">204</FONT>, <FONT ID="StringLiteral">"No Content"</FONT>);
+<A NAME="38"></A>        put(<FONT ID="IntegerLiteral">205</FONT>, <FONT ID="StringLiteral">"Reset Content"</FONT>);
+<A NAME="39"></A>        put(<FONT ID="IntegerLiteral">206</FONT>, <FONT ID="StringLiteral">"Partial Content"</FONT>);
+<A NAME="40"></A>        put(<FONT ID="IntegerLiteral">300</FONT>, <FONT ID="StringLiteral">"Multiple Choices"</FONT>);
+<A NAME="41"></A>        put(<FONT ID="IntegerLiteral">301</FONT>, <FONT ID="StringLiteral">"Moved Permanently"</FONT>);
+<A NAME="42"></A>        put(<FONT ID="IntegerLiteral">302</FONT>, <FONT ID="StringLiteral">"Found"</FONT>);
+<A NAME="43"></A>        put(<FONT ID="IntegerLiteral">303</FONT>, <FONT ID="StringLiteral">"See Other"</FONT>);
+<A NAME="44"></A>        put(<FONT ID="IntegerLiteral">304</FONT>, <FONT ID="StringLiteral">"Not Modified"</FONT>);
+<A NAME="45"></A>        put(<FONT ID="IntegerLiteral">305</FONT>, <FONT ID="StringLiteral">"Use Proxy"</FONT>);
+<A NAME="46"></A>        put(<FONT ID="IntegerLiteral">306</FONT>, <FONT ID="StringLiteral">"(Unused)"</FONT>);
+<A NAME="47"></A>        put(<FONT ID="IntegerLiteral">307</FONT>, <FONT ID="StringLiteral">"Temporary Redirect"</FONT>);
+<A NAME="48"></A>        put(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"Bad Request"</FONT>);
+<A NAME="49"></A>        put(<FONT ID="IntegerLiteral">401</FONT>, <FONT ID="StringLiteral">"Unauthorized"</FONT>);
+<A NAME="50"></A>        put(<FONT ID="IntegerLiteral">402</FONT>, <FONT ID="StringLiteral">"Payment Required"</FONT>);
+<A NAME="51"></A>        put(<FONT ID="IntegerLiteral">403</FONT>, <FONT ID="StringLiteral">"Forbidden"</FONT>);
+<A NAME="52"></A>        put(<FONT ID="IntegerLiteral">404</FONT>, <FONT ID="StringLiteral">"Not Found"</FONT>);
+<A NAME="53"></A>        put(<FONT ID="IntegerLiteral">405</FONT>, <FONT ID="StringLiteral">"Method Not Allowed"</FONT>);
+<A NAME="54"></A>        put(<FONT ID="IntegerLiteral">406</FONT>, <FONT ID="StringLiteral">"Not Acceptable"</FONT>);
+<A NAME="55"></A>        put(<FONT ID="IntegerLiteral">407</FONT>, <FONT ID="StringLiteral">"Proxy Authentication Required"</FONT>);
+<A NAME="56"></A>        put(<FONT ID="IntegerLiteral">408</FONT>, <FONT ID="StringLiteral">"Request Timeout"</FONT>);
+<A NAME="57"></A>        put(<FONT ID="IntegerLiteral">409</FONT>, <FONT ID="StringLiteral">"Conflict"</FONT>);
+<A NAME="58"></A>        put(<FONT ID="IntegerLiteral">410</FONT>, <FONT ID="StringLiteral">"Gone"</FONT>);
+<A NAME="59"></A>        put(<FONT ID="IntegerLiteral">411</FONT>, <FONT ID="StringLiteral">"Length Required"</FONT>);
+<A NAME="60"></A>        put(<FONT ID="IntegerLiteral">412</FONT>, <FONT ID="StringLiteral">"Precondition Failed"</FONT>);
+<A NAME="61"></A>        put(<FONT ID="IntegerLiteral">413</FONT>, <FONT ID="StringLiteral">"Request Entity Too Large"</FONT>);
+<A NAME="62"></A>        put(<FONT ID="IntegerLiteral">414</FONT>, <FONT ID="StringLiteral">"Request-URI Too Long"</FONT>);
+<A NAME="63"></A>        put(<FONT ID="IntegerLiteral">415</FONT>, <FONT ID="StringLiteral">"Unsupported Media Type"</FONT>);
+<A NAME="64"></A>        put(<FONT ID="IntegerLiteral">416</FONT>, <FONT ID="StringLiteral">"Requested Range Not Satisfiable"</FONT>);
+<A NAME="65"></A>        put(<FONT ID="IntegerLiteral">417</FONT>, <FONT ID="StringLiteral">"Expectation Failed"</FONT>);
+<A NAME="66"></A>        put(<FONT ID="IntegerLiteral">500</FONT>, <FONT ID="StringLiteral">"Internal Server Error"</FONT>);
+<A NAME="67"></A>        put(<FONT ID="IntegerLiteral">501</FONT>, <FONT ID="StringLiteral">"Not Implemented"</FONT>);
+<A NAME="68"></A>        put(<FONT ID="IntegerLiteral">502</FONT>, <FONT ID="StringLiteral">"Bad Gateway"</FONT>);
+<A NAME="69"></A>        put(<FONT ID="IntegerLiteral">503</FONT>, <FONT ID="StringLiteral">"Service Unavailable"</FONT>);
+<A NAME="70"></A>        put(<FONT ID="IntegerLiteral">504</FONT>, <FONT ID="StringLiteral">"Gateway Timeout"</FONT>);
+<A NAME="71"></A>        put(<FONT ID="IntegerLiteral">505</FONT>, <FONT ID="StringLiteral">"HTTP Version Not Supported"</FONT>);
+<A NAME="72"></A>    }};
+<A NAME="73"></A>
+<A NAME="74"></A>}</pre>
+</BODY>
+</HTML>

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.header.HeaderInterceptor (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">HeaderInterceptor.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.header;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">com.adobe.aem.init.dogmatix.http.handlers.HttpContext</A>;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="FormalComment">/**
+<A NAME="22"></A> * Interface defining the behaviour of a class intercepting the processing of a
+<A NAME="23"></A> * request. Hooks are provided for pre-processing, which happens &lt;b&gt;before&lt;/b&gt;
+<A NAME="24"></A> * the module consumes the request and for post-processing, which is invoked
+<A NAME="25"></A> * &lt;b&gt;after&lt;/b&gt; the module consumes the request.
+<A NAME="26"></A> * 
+<A NAME="27"></A> * @author vnagpal
+<A NAME="28"></A> * 
+<A NAME="29"></A> */</FONT>
+<A NAME="30"></A><FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> HeaderInterceptor {
+<A NAME="31"></A>
+<A NAME="32"></A>    <FONT ID="FormalComment">/**
+<A NAME="33"></A>     * To be implemented method which is invoked before the module gets to
+<A NAME="34"></A>     * consume the request
+<A NAME="35"></A>     * 
+<A NAME="36"></A>     * @param ctx
+<A NAME="37"></A>     *            the context to process
+<A NAME="38"></A>     * @return true if this method has handled the request and sent out the
+<A NAME="39"></A>     *         response by itself and no further execution is required, false
+<A NAME="40"></A>     *         otherwise.
+<A NAME="41"></A>     */</FONT>
+<A NAME="42"></A>    <FONT ID="Boolean">boolean</FONT> preProcess(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx);
+<A NAME="43"></A>
+<A NAME="44"></A>    <FONT ID="FormalComment">/**
+<A NAME="45"></A>     * To be implemented method which is invoked after the module has consumed
+<A NAME="46"></A>     * the request
+<A NAME="47"></A>     * 
+<A NAME="48"></A>     * @param ctx
+<A NAME="49"></A>     *            the context to process
+<A NAME="50"></A>     * @return true if this method has handled the request and sent out the
+<A NAME="51"></A>     *         response by itself and no further execution is required, false
+<A NAME="52"></A>     *         otherwise.
+<A NAME="53"></A>     */</FONT>
+<A NAME="54"></A>    <FONT ID="Boolean">boolean</FONT> postProcess(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx);
+<A NAME="55"></A>
+<A NAME="56"></A>    <FONT ID="FormalComment">/**
+<A NAME="57"></A>     * To be implemented method which tests whether this intercepter is
+<A NAME="58"></A>     * applicable in the given context. Usually done by checking HTTP Request
+<A NAME="59"></A>     * headers.
+<A NAME="60"></A>     * 
+<A NAME="61"></A>     * @param ctx
+<A NAME="62"></A>     *            the HTTP context
+<A NAME="63"></A>     * @return
+<A NAME="64"></A>     */</FONT>
+<A NAME="65"></A>    <FONT ID="Boolean">boolean</FONT> applicable(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx);
+<A NAME="66"></A>
+<A NAME="67"></A>    <FONT ID="FormalComment">/**
+<A NAME="68"></A>     * Performs a validation of the Header syntax in the HTTP request. Returns
+<A NAME="69"></A>     * the validity of the syntax of the header in question. Also optionally
+<A NAME="70"></A>     * writes the error to the response.
+<A NAME="71"></A>     * 
+<A NAME="72"></A>     * This method should usually be invoked from preProcess and further
+<A NAME="73"></A>     * processing should be terminated in case of invalid Header info.
+<A NAME="74"></A>     * 
+<A NAME="75"></A>     * @param ctx
+<A NAME="76"></A>     *            the HTTP context
+<A NAME="77"></A>     * @param writeResponse
+<A NAME="78"></A>     *            if true, instructs the interceptor to write the error to
+<A NAME="79"></A>     *            response if header infor is invalid
+<A NAME="80"></A>     * @return
+<A NAME="81"></A>     */</FONT>
+<A NAME="82"></A>    <FONT ID="Boolean">boolean</FONT> isValid(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx, <FONT ID="Boolean">boolean</FONT> writeResponse);
+<A NAME="83"></A>
+<A NAME="84"></A>}
+<A NAME="85"></A></pre>
+</BODY>
+</HTML>

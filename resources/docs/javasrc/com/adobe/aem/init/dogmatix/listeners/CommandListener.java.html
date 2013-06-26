@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.listeners.CommandListener (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">CommandListener.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.listeners;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.BufferedReader;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.io.InputStreamReader;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.io.OutputStream;
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="24"></A><FONT ID="Import">import</FONT> java.util.ArrayList;
+<A NAME="25"></A><FONT ID="Import">import</FONT> java.util.List;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="28"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="29"></A>
+<A NAME="30"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">com.adobe.aem.init.dogmatix.config.ServerConfig</A>;
+<A NAME="31"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/core/ServerStatistics.java.html">com.adobe.aem.init.dogmatix.core.ServerStatistics</A>;
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">com.adobe.aem.init.dogmatix.http.response.HttpResponse</A>;
+<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/util/Constants.java.html">com.adobe.aem.init.dogmatix.util.Constants</A>;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="FormalComment">/**
+<A NAME="36"></A> * A listener which listens on a port for incoming Command Requests.
+<A NAME="37"></A> * A command request is nothing but an HTTP GET Request sent at a
+<A NAME="38"></A> * specific URI determined by the command.
+<A NAME="39"></A> * For example, a stop command request will be sent to /STOP
+<A NAME="40"></A> * 
+<A NAME="41"></A> * Upon receiving the request, the listener then processes it by performing
+<A NAME="42"></A> * an action on that command.
+<A NAME="43"></A> * 
+<A NAME="44"></A> * Currently, only STOP and STATS commands are understood. Any other 
+<A NAME="45"></A> * is conveniently ignored.
+<A NAME="46"></A> * 
+<A NAME="47"></A> * @author vnagpal
+<A NAME="48"></A> *
+<A NAME="49"></A> */</FONT>
+<A NAME="50"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> CommandListener <FONT ID="Extends">extends</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> {
+<A NAME="51"></A>    
+<A NAME="52"></A>    Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/CommandListener.java.html">CommandListener</A>.<FONT ID="Class">class</FONT>);
+<A NAME="53"></A>    
+<A NAME="54"></A>    <FONT ID="Private">private</FONT> List&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>&gt; listeners;
+<A NAME="55"></A>    
+<A NAME="56"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> serverConfig;
+<A NAME="57"></A>    
+<A NAME="58"></A>    <FONT ID="Public">public</FONT> CommandListener(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> serverConfig, <A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>... listeners) {
+<A NAME="59"></A>        <FONT ID="Super">super</FONT>(serverConfig.commandPort());
+<A NAME="60"></A>        <FONT ID="This">this</FONT>.serverConfig = serverConfig;
+<A NAME="61"></A>        <FONT ID="If">if</FONT>(listeners != <FONT ID="Null">null</FONT> &amp;&amp; listeners.length &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="62"></A>            <FONT ID="If">if</FONT>(<FONT ID="This">this</FONT>.listeners == <FONT ID="Null">null</FONT>) {
+<A NAME="63"></A>                <FONT ID="This">this</FONT>.listeners = <FONT ID="New">new</FONT> ArrayList&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>&gt;();
+<A NAME="64"></A>            }
+<A NAME="65"></A>            <FONT ID="For">for</FONT>(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener : listeners) {
+<A NAME="66"></A>                registerListener(listener);
+<A NAME="67"></A>            }
+<A NAME="68"></A>        }
+<A NAME="69"></A>    }
+<A NAME="70"></A>
+<A NAME="71"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> process(Socket socket) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="72"></A>        logger.debug(<FONT ID="StringLiteral">"Processing command"</FONT>);
+<A NAME="73"></A>        BufferedReader in = <FONT ID="New">new</FONT> BufferedReader(
+<A NAME="74"></A>                    <FONT ID="New">new</FONT> InputStreamReader(
+<A NAME="75"></A>                    socket.getInputStream()));
+<A NAME="76"></A>
+<A NAME="77"></A>        String inputLine = in.readLine();
+<A NAME="78"></A>        String[] cmd = inputLine.split(<FONT ID="StringLiteral">"\\s"</FONT>);
+<A NAME="79"></A>        String command = cmd[<FONT ID="IntegerLiteral">1</FONT>].substring(<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="80"></A>        logger.debug(<FONT ID="StringLiteral">"Received command {}"</FONT>, command);
+<A NAME="81"></A>        
+<A NAME="82"></A>        <FONT ID="If">if</FONT>(command.toLowerCase().contains(serverConfig.stopCommand().toLowerCase())) {
+<A NAME="83"></A>            OutputStream outputStream = socket.getOutputStream();
+<A NAME="84"></A>            <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response = <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A>(outputStream);
+<A NAME="85"></A>            response
+<A NAME="86"></A>            .status(<FONT ID="IntegerLiteral">200</FONT>)
+<A NAME="87"></A>            .addHeader(Constants.HEADERS.CONTENT_TYPE, <FONT ID="StringLiteral">"application/json"</FONT>)
+<A NAME="88"></A>            .append(<FONT ID="StringLiteral">"callbackShutdown({})"</FONT>)
+<A NAME="89"></A>            .flush();
+<A NAME="90"></A>            
+<A NAME="91"></A>            cleanup(socket);
+<A NAME="92"></A>            
+<A NAME="93"></A>            <FONT ID="SingleLineComment">//stopListening();
+<A NAME="94"></A></FONT>            System.exit(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="95"></A>        }
+<A NAME="96"></A>        <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT>(command.toLowerCase().contains(<FONT ID="StringLiteral">"stats"</FONT>)) {
+<A NAME="97"></A>            String callbackFunc = command.split(<FONT ID="StringLiteral">"\\?"</FONT>)[<FONT ID="IntegerLiteral">1</FONT>];
+<A NAME="98"></A>            <FONT ID="SingleLineComment">//send server statistics in response
+<A NAME="99"></A></FONT>            OutputStream outputStream = socket.getOutputStream();
+<A NAME="100"></A>            <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response = <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A>(outputStream);
+<A NAME="101"></A>            response
+<A NAME="102"></A>            .status(<FONT ID="IntegerLiteral">200</FONT>)
+<A NAME="103"></A>            .addHeader(Constants.HEADERS.CONTENT_TYPE, <FONT ID="StringLiteral">"application/json"</FONT>)
+<A NAME="104"></A>            .append(<FONT ID="StringLiteral">"callbackServerStats("</FONT>+ServerStatistics.getStatsAsJSON()+<FONT ID="StringLiteral">")"</FONT>)
+<A NAME="105"></A>            .flush();
+<A NAME="106"></A>            <FONT ID="SingleLineComment">//out.close();
+<A NAME="107"></A></FONT>            cleanup(socket);
+<A NAME="108"></A>        }
+<A NAME="109"></A>
+<A NAME="110"></A>    }   
+<A NAME="111"></A>    
+<A NAME="112"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> registerListener(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener) {
+<A NAME="113"></A>        <FONT ID="This">this</FONT>.listeners.add(listener);
+<A NAME="114"></A>    }
+<A NAME="115"></A>
+<A NAME="116"></A>    @Override
+<A NAME="117"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stopListening() {
+<A NAME="118"></A>        logger.debug(<FONT ID="StringLiteral">"Shutting down server..."</FONT>);
+<A NAME="119"></A>        <FONT ID="For">for</FONT>(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener : listeners) {
+<A NAME="120"></A>            logger.debug(<FONT ID="StringLiteral">"Stopping all registered listeners"</FONT>);
+<A NAME="121"></A>            listener.stopListening();
+<A NAME="122"></A>        }
+<A NAME="123"></A>        logger.debug(<FONT ID="StringLiteral">"Stop listening myself"</FONT>);
+<A NAME="124"></A>        <FONT ID="Super">super</FONT>.stopListening();
+<A NAME="125"></A>        logger.debug(<FONT ID="StringLiteral">"_RIP_"</FONT>);
+<A NAME="126"></A>    }
+<A NAME="127"></A>    
+<A NAME="128"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> cleanup(Socket socket) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="129"></A>        socket.getOutputStream().close();
+<A NAME="130"></A>    }
+<A NAME="131"></A>}
+<A NAME="132"></A></pre>
+</BODY>
+</HTML>

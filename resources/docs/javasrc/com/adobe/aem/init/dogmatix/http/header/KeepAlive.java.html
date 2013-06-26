@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.header.KeepAlive (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">KeepAlive.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.header;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> org.springframework.util.StringUtils;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">com.adobe.aem.init.dogmatix.config.ServerConfig</A>;
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/core/ReusableSocket.java.html">com.adobe.aem.init.dogmatix.core.ReusableSocket</A>;
+<A NAME="23"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">com.adobe.aem.init.dogmatix.http.handlers.HttpContext</A>;
+<A NAME="24"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/Version.java.html">com.adobe.aem.init.dogmatix.http.request.Version</A>;
+<A NAME="25"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/util/Constants.java.html">com.adobe.aem.init.dogmatix.util.Constants</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="FormalComment">/**
+<A NAME="28"></A> * Intercepts the request processing and performs Keep-Alive behaviour, if
+<A NAME="29"></A> * required. Should be used at the end of the interceptor chain as the last
+<A NAME="30"></A> * interceptor in case the underlying I/O streams are closed.
+<A NAME="31"></A> * 
+<A NAME="32"></A> * @author vnagpal
+<A NAME="33"></A> * 
+<A NAME="34"></A> */</FONT>
+<A NAME="35"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> KeepAlive <FONT ID="Implements">implements</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/header/HeaderInterceptor.java.html">HeaderInterceptor</A> {
+<A NAME="36"></A>    
+<A NAME="37"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> timeout = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="38"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> max = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="39"></A>
+<A NAME="40"></A>    @Override
+<A NAME="41"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> preProcess(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx) {
+<A NAME="42"></A>        <FONT ID="If">if</FONT>(!isValid(ctx, <FONT ID="True">true</FONT>)) {
+<A NAME="43"></A>            <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="44"></A>        }
+<A NAME="45"></A>        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="46"></A>    }
+<A NAME="47"></A>
+<A NAME="48"></A>    @Override
+<A NAME="49"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> postProcess(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx) {
+<A NAME="50"></A>        <FONT ID="If">if</FONT> (!applicable(ctx))
+<A NAME="51"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="52"></A>
+<A NAME="53"></A>        <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/core/ReusableSocket.java.html">ReusableSocket</A> socket = (<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/core/ReusableSocket.java.html">ReusableSocket</A>) ctx.getSocket();
+<A NAME="54"></A>        String connection = ctx.getRequest().getHeader(
+<A NAME="55"></A>                Constants.HEADERS.CONNECTION);
+<A NAME="56"></A>        <FONT ID="Boolean">boolean</FONT> keepAlive = connection != <FONT ID="Null">null</FONT>
+<A NAME="57"></A>                &amp;&amp; connection.equalsIgnoreCase(<FONT ID="StringLiteral">"Keep-Alive"</FONT>);
+<A NAME="58"></A>
+<A NAME="59"></A>        <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> serverConfig = ServerConfig.getInstance();
+<A NAME="60"></A>        <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/Version.java.html">Version</A> version = Version.getVersion(serverConfig.httpVersion());
+<A NAME="61"></A>
+<A NAME="62"></A>        <FONT ID="SingleLineComment">//keep alive behaviour is protocol version specific
+<A NAME="63"></A></FONT>        <FONT ID="Switch">switch</FONT> (version) {
+<A NAME="64"></A>        <FONT ID="Case">case</FONT> VERSION_0_9:
+<A NAME="65"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="66"></A>        <FONT ID="Case">case</FONT> VERSION_1_0:
+<A NAME="67"></A>            <FONT ID="If">if</FONT> (keepAlive) {
+<A NAME="68"></A>                ctx.getResponse().addHeader(Constants.HEADERS.CONNECTION, <FONT ID="StringLiteral">"Keep-Alive"</FONT>);
+<A NAME="69"></A>                socket.setPersist(<FONT ID="True">true</FONT>);
+<A NAME="70"></A>            }
+<A NAME="71"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="72"></A>        <FONT ID="Case">case</FONT> VERSION_1_1:
+<A NAME="73"></A>            <FONT ID="If">if</FONT> (keepAlive) {
+<A NAME="74"></A>                <FONT ID="If">if</FONT> (max == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="75"></A>                    socket.setPersist(<FONT ID="True">true</FONT>);
+<A NAME="76"></A>                } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (socket.getCount() == max) {
+<A NAME="77"></A>                    socket.setPersist(<FONT ID="False">false</FONT>);
+<A NAME="78"></A>                }
+<A NAME="79"></A>                <FONT ID="If">if</FONT> (timeout == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="80"></A>                    socket.setPersist(<FONT ID="True">true</FONT>);
+<A NAME="81"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="82"></A>                    <FONT ID="Long">long</FONT> idleTime = (System.currentTimeMillis() - socket
+<A NAME="83"></A>                            .getLastAccess()) / <FONT ID="IntegerLiteral">1000</FONT>;
+<A NAME="84"></A>                    <FONT ID="If">if</FONT> (idleTime &gt;= timeout) {
+<A NAME="85"></A>                        socket.setPersist(<FONT ID="False">false</FONT>);
+<A NAME="86"></A>                    } <FONT ID="Else">else</FONT> {
+<A NAME="87"></A>                        socket.setPersist(<FONT ID="True">true</FONT>);
+<A NAME="88"></A>                    }
+<A NAME="89"></A>                }
+<A NAME="90"></A>                
+<A NAME="91"></A>                <FONT ID="If">if</FONT>(socket.isPersist()) {
+<A NAME="92"></A>                    ctx.getResponse().addHeader(Constants.HEADERS.CONNECTION, <FONT ID="StringLiteral">"Keep-Alive"</FONT>);
+<A NAME="93"></A>                }
+<A NAME="94"></A>            }
+<A NAME="95"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="96"></A>        <FONT ID="Default">default</FONT>:
+<A NAME="97"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="98"></A>        }
+<A NAME="99"></A>        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="100"></A>    }
+<A NAME="101"></A>
+<A NAME="102"></A>    <FONT ID="FormalComment">/**
+<A NAME="103"></A>     * Checks if keep-alive behaviour should be applied to this context or not.
+<A NAME="104"></A>     * If response is 3xx(redirection), 4xx(client error) or 5xx(server error)
+<A NAME="105"></A>     * server should not keep-alive. OTOH, if response is 1xx(informational) or
+<A NAME="106"></A>     * 2xx(success), server may keep-alive depending on its policy and request
+<A NAME="107"></A>     * headers.
+<A NAME="108"></A>     */</FONT>
+<A NAME="109"></A>    @Override
+<A NAME="110"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> applicable(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx) {
+<A NAME="111"></A>        <FONT ID="Return">return</FONT> ctx.getResponse().getStatus() &lt; <FONT ID="IntegerLiteral">300</FONT>;
+<A NAME="112"></A>    }
+<A NAME="113"></A>
+<A NAME="114"></A>    <FONT ID="FormalComment">/**
+<A NAME="115"></A>     * Validates Header syntax and initializes 'timeout' and 'max' values
+<A NAME="116"></A>     */</FONT>
+<A NAME="117"></A>    @Override
+<A NAME="118"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isValid(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx, <FONT ID="Boolean">boolean</FONT> writeResponse) {
+<A NAME="119"></A>        String keepAliveHeader = ctx.getRequest().getHeader(
+<A NAME="120"></A>                Constants.HEADERS.KEEP_ALIVE);
+<A NAME="121"></A>        <FONT ID="If">if</FONT> (StringUtils.hasText(keepAliveHeader)) {
+<A NAME="122"></A>            <FONT ID="For">for</FONT> (String part : keepAliveHeader.split(<FONT ID="StringLiteral">","</FONT>)) {
+<A NAME="123"></A>                <FONT ID="If">if</FONT> (part.toLowerCase().contains(<FONT ID="StringLiteral">"timeout"</FONT>)
+<A NAME="124"></A>                        &amp;&amp; part.contains(<FONT ID="StringLiteral">"="</FONT>)) {
+<A NAME="125"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="126"></A>                        timeout = Integer.parseInt(part.split(<FONT ID="StringLiteral">"="</FONT>)[<FONT ID="IntegerLiteral">1</FONT>]);
+<A NAME="127"></A>                    } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="128"></A>                        <FONT ID="SingleLineComment">// log
+<A NAME="129"></A></FONT>                        <FONT ID="If">if</FONT>(writeResponse) {
+<A NAME="130"></A>                            ctx.getResponse().err(<FONT ID="IntegerLiteral">400</FONT>);
+<A NAME="131"></A>                        }
+<A NAME="132"></A>                        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="133"></A>                    }
+<A NAME="134"></A>                } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (part.toLowerCase().contains(<FONT ID="StringLiteral">"max"</FONT>)
+<A NAME="135"></A>                        &amp;&amp; part.contains(<FONT ID="StringLiteral">"="</FONT>)) {
+<A NAME="136"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="137"></A>                        max = Integer.parseInt(part.split(<FONT ID="StringLiteral">"="</FONT>)[<FONT ID="IntegerLiteral">1</FONT>]);
+<A NAME="138"></A>                    } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="139"></A>                        <FONT ID="SingleLineComment">// log
+<A NAME="140"></A></FONT>                        <FONT ID="If">if</FONT>(writeResponse) {
+<A NAME="141"></A>                            ctx.getResponse().err(<FONT ID="IntegerLiteral">400</FONT>);
+<A NAME="142"></A>                        }
+<A NAME="143"></A>                        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="144"></A>                    }
+<A NAME="145"></A>                }
+<A NAME="146"></A>            }
+<A NAME="147"></A>        }
+<A NAME="148"></A>        
+<A NAME="149"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="150"></A>    }
+<A NAME="151"></A>
+<A NAME="152"></A>}
+<A NAME="153"></A></pre>
+</BODY>
+</HTML>

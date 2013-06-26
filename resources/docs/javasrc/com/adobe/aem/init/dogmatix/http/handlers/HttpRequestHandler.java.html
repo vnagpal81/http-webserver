@@ -1,0 +1,422 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.HttpRequestHandler (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">HttpRequestHandler.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.ByteArrayOutputStream;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.io.InputStream;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.io.OutputStream;
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.io.UnsupportedEncodingException;
+<A NAME="24"></A><FONT ID="Import">import</FONT> java.net.ServerSocket;
+<A NAME="25"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="26"></A><FONT ID="Import">import</FONT> java.net.URLDecoder;
+<A NAME="27"></A><FONT ID="Import">import</FONT> java.util.Hashtable;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="30"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">com.adobe.aem.init.dogmatix.config.ModuleConfig</A>;
+<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/core/ReusableSocket.java.html">com.adobe.aem.init.dogmatix.core.ReusableSocket</A>;
+<A NAME="34"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">com.adobe.aem.init.dogmatix.exceptions.HttpError</A>;
+<A NAME="35"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidHeaderException.java.html">com.adobe.aem.init.dogmatix.exceptions.InvalidHeaderException</A>;
+<A NAME="36"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule</A>;
+<A NAME="37"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleFactory.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleFactory</A>;
+<A NAME="38"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/URLMapping.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.URLMapping</A>;
+<A NAME="39"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/header/HeaderInterceptor.java.html">com.adobe.aem.init.dogmatix.http.header.HeaderInterceptor</A>;
+<A NAME="40"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/header/KeepAlive.java.html">com.adobe.aem.init.dogmatix.http.header.KeepAlive</A>;
+<A NAME="41"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">com.adobe.aem.init.dogmatix.http.request.HttpRequest</A>;
+<A NAME="42"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">com.adobe.aem.init.dogmatix.http.request.Method</A>;
+<A NAME="43"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/Version.java.html">com.adobe.aem.init.dogmatix.http.request.Version</A>;
+<A NAME="44"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">com.adobe.aem.init.dogmatix.http.response.HttpResponse</A>;
+<A NAME="45"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/listeners/HttpListener.java.html">com.adobe.aem.init.dogmatix.listeners.HttpListener</A>;
+<A NAME="46"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/util/Constants.java.html">com.adobe.aem.init.dogmatix.util.Constants</A>;
+<A NAME="47"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/util/IOUtils.java.html">com.adobe.aem.init.dogmatix.util.IOUtils</A>;
+<A NAME="48"></A>
+<A NAME="49"></A><FONT ID="FormalComment">/**
+<A NAME="50"></A> * Handles an incoming HTTP Request.
+<A NAME="51"></A> * Run inside a thread kicked off by the {@link HttpListener}
+<A NAME="52"></A> * Has access to the {@link ServerSocket} via the {@link ReusableSocket} instance.
+<A NAME="53"></A> * The handler
+<A NAME="54"></A> * 
+<A NAME="55"></A> * (0) Extracts the I/O streams from the {@link ServerSocket}
+<A NAME="56"></A> * (1) Creates a HTTP context by parsing the input 
+<A NAME="57"></A> * (2) Invokes the header interceptors for any pre-processing
+<A NAME="58"></A> * (3) Delegates the request handling to a module determined via URL mapping
+<A NAME="59"></A> * (4) Invokes the header interceptors for any post-processing
+<A NAME="60"></A> * (5) Finally, flushes the request which writes the buffer onto the stream
+<A NAME="61"></A> * (6) Closes the socket
+<A NAME="62"></A> * 
+<A NAME="63"></A> * @author vnagpal
+<A NAME="64"></A> *
+<A NAME="65"></A> */</FONT>
+<A NAME="66"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> HttpRequestHandler <FONT ID="Implements">implements</FONT> Runnable {
+<A NAME="67"></A>
+<A NAME="68"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory
+<A NAME="69"></A>            .getLogger(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpRequestHandler.java.html">HttpRequestHandler</A>.<FONT ID="Class">class</FONT>);
+<A NAME="70"></A>
+<A NAME="71"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/core/ReusableSocket.java.html">ReusableSocket</A> socket;
+<A NAME="72"></A>
+<A NAME="73"></A>    <FONT ID="Public">public</FONT> HttpRequestHandler(Socket socket) {
+<A NAME="74"></A>        <FONT ID="This">this</FONT>.socket = <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/core/ReusableSocket.java.html">ReusableSocket</A>(socket);
+<A NAME="75"></A>    }
+<A NAME="76"></A>
+<A NAME="77"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="78"></A>
+<A NAME="79"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="80"></A>            logger.debug(<FONT ID="StringLiteral">"Incoming Request..."</FONT>);
+<A NAME="81"></A>
+<A NAME="82"></A>            <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx = <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A>();
+<A NAME="83"></A>
+<A NAME="84"></A>            OutputStream out = <FONT ID="This">this</FONT>.socket.getOutputStream();
+<A NAME="85"></A>            InputStream in = <FONT ID="This">this</FONT>.socket.getInputStream();
+<A NAME="86"></A>
+<A NAME="87"></A>            <FONT ID="SingleLineComment">// Parse Request and create Response
+<A NAME="88"></A></FONT>            <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response = <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A>(out);
+<A NAME="89"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="90"></A>                logger.debug(<FONT ID="StringLiteral">"Trying to parse the request"</FONT>);
+<A NAME="91"></A>                <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request = parseRequest(in);
+<A NAME="92"></A>
+<A NAME="93"></A>                ctx.setRequest(request);
+<A NAME="94"></A>                ctx.setResponse(response);
+<A NAME="95"></A>                ctx.setSocket(<FONT ID="This">this</FONT>.socket);
+<A NAME="96"></A>
+<A NAME="97"></A>                <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/header/HeaderInterceptor.java.html">HeaderInterceptor</A>[] headerInterceptors = {<FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/header/KeepAlive.java.html">KeepAlive</A>()};
+<A NAME="98"></A>                <FONT ID="Boolean">boolean</FONT> processed = <FONT ID="False">false</FONT>;
+<A NAME="99"></A>
+<A NAME="100"></A>                <FONT ID="SingleLineComment">// Pre process the request
+<A NAME="101"></A></FONT>                <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; headerInterceptors.length; i++) {
+<A NAME="102"></A>                    processed = headerInterceptors[i].preProcess(ctx);
+<A NAME="103"></A>                    <FONT ID="If">if</FONT> (processed) {
+<A NAME="104"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="105"></A>                    }
+<A NAME="106"></A>                }
+<A NAME="107"></A>
+<A NAME="108"></A>                <FONT ID="If">if</FONT> (!processed) {
+<A NAME="109"></A>                    <FONT ID="SingleLineComment">// Determine URL
+<A NAME="110"></A></FONT>                    String url = request.getURI();
+<A NAME="111"></A>                    
+<A NAME="112"></A>                    <FONT ID="If">if</FONT>(url.startsWith(<FONT ID="StringLiteral">".."</FONT>) || url.startsWith(<FONT ID="StringLiteral">"./"</FONT>)) {
+<A NAME="113"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">403</FONT>, <FONT ID="StringLiteral">"(Don't act smart. Relative paths not allowed)"</FONT>);
+<A NAME="114"></A>                    }
+<A NAME="115"></A>
+<A NAME="116"></A>                    <FONT ID="SingleLineComment">// Map from config and get Module
+<A NAME="117"></A></FONT>                    <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> config = URLMapping.getModuleConfig(url);
+<A NAME="118"></A>
+<A NAME="119"></A>                    <FONT ID="If">if</FONT> (config == <FONT ID="Null">null</FONT>) {
+<A NAME="120"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>);
+<A NAME="121"></A>                    }
+<A NAME="122"></A>
+<A NAME="123"></A>                    <FONT ID="SingleLineComment">// Get Module Instance from ModuleFactory
+<A NAME="124"></A></FONT>                    <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> module = ModuleFactory
+<A NAME="125"></A>                            .getModule(config);
+<A NAME="126"></A>
+<A NAME="127"></A>                    <FONT ID="SingleLineComment">// Delegate Request handling to module.consume() which will
+<A NAME="128"></A></FONT>                    <FONT ID="SingleLineComment">// also build the Response
+<A NAME="129"></A></FONT>                    processed = module.consume(ctx);
+<A NAME="130"></A>                }
+<A NAME="131"></A>
+<A NAME="132"></A>                <FONT ID="If">if</FONT> (!processed) {
+<A NAME="133"></A>                    <FONT ID="SingleLineComment">// Post process the request
+<A NAME="134"></A></FONT>                    <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; headerInterceptors.length; i++) {
+<A NAME="135"></A>                        processed = headerInterceptors[i].postProcess(ctx);
+<A NAME="136"></A>                        <FONT ID="If">if</FONT> (processed) {
+<A NAME="137"></A>                            <FONT ID="Break">break</FONT>;
+<A NAME="138"></A>                        }
+<A NAME="139"></A>                    }
+<A NAME="140"></A>                }
+<A NAME="141"></A>            } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> e) {
+<A NAME="142"></A>                response.err(e);
+<A NAME="143"></A>            } <FONT ID="Catch">catch</FONT>(Exception e) {
+<A NAME="144"></A>                logger.error(<FONT ID="StringLiteral">"Internal server error"</FONT>, e);
+<A NAME="145"></A>                response.err(<FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">500</FONT>, e.getMessage()));
+<A NAME="146"></A>            } <FONT ID="Finally">finally</FONT> {
+<A NAME="147"></A>                response.addHeader(Constants.HEADERS.CONNECTION, <FONT ID="StringLiteral">"Close"</FONT>);
+<A NAME="148"></A>                response.flush();
+<A NAME="149"></A>            }
+<A NAME="150"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="151"></A>            logger.error(<FONT ID="StringLiteral">"Error while handling HTTP request"</FONT>, e);
+<A NAME="152"></A>            
+<A NAME="153"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="154"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="155"></A>                <FONT ID="SingleLineComment">//cleanup();
+<A NAME="156"></A></FONT>                logger.debug(<FONT ID="StringLiteral">"Closing socket"</FONT>);
+<A NAME="157"></A>                <FONT ID="This">this</FONT>.socket.close();
+<A NAME="158"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="159"></A>                logger.error(<FONT ID="StringLiteral">"Unable to close socket connection"</FONT>);
+<A NAME="160"></A>            }
+<A NAME="161"></A>        }
+<A NAME="162"></A>    }
+<A NAME="163"></A>
+<A NAME="164"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> cleanup() <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="165"></A>        <FONT ID="If">if</FONT>(!<FONT ID="This">this</FONT>.socket.isPersist()) {
+<A NAME="166"></A>            logger.debug(<FONT ID="StringLiteral">"Closing socket"</FONT>);
+<A NAME="167"></A>            <FONT ID="This">this</FONT>.socket.close();
+<A NAME="168"></A>        }
+<A NAME="169"></A>        <FONT ID="Else">else</FONT> {
+<A NAME="170"></A>            logger.debug(<FONT ID="StringLiteral">"Persisting the socket : Count - {}"</FONT>, <FONT ID="This">this</FONT>.socket.getCount()+<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="171"></A>            <FONT ID="This">this</FONT>.socket.setCount(<FONT ID="This">this</FONT>.socket.getCount()+<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="172"></A>            <FONT ID="This">this</FONT>.socket.setLastAccess(System.currentTimeMillis());
+<A NAME="173"></A>        }
+<A NAME="174"></A>    }
+<A NAME="175"></A>
+<A NAME="176"></A>    <FONT ID="FormalComment">/**
+<A NAME="177"></A>     * parses the http request into its various components (method, uri,
+<A NAME="178"></A>     * version, headers, entity) throws an HttpError in case of any exceptions
+<A NAME="179"></A>     * encountered while parsing the request
+<A NAME="180"></A>     * 
+<A NAME="181"></A>     * @source http://www.java2s.com/Code/Java/Network-Protocol/HttpParser.htm
+<A NAME="182"></A>     * @param inputStream
+<A NAME="183"></A>     *            the stream to read from
+<A NAME="184"></A>     * @return the http request object thus formed
+<A NAME="185"></A>     * @throws HttpError
+<A NAME="186"></A>     */</FONT>
+<A NAME="187"></A>    <FONT ID="Protected">protected</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> parseRequest(InputStream inputStream)
+<A NAME="188"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="189"></A>        
+<A NAME="190"></A>        <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> httpRequest = <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A>();
+<A NAME="191"></A>
+<A NAME="192"></A>        ByteArrayOutputStream raw = <FONT ID="New">new</FONT> ByteArrayOutputStream();
+<A NAME="193"></A>        String firstLine = <FONT ID="Null">null</FONT>;
+<A NAME="194"></A>
+<A NAME="195"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="196"></A>            firstLine = IOUtils.readLine(inputStream);
+<A NAME="197"></A>            raw.write((firstLine + Constants.NEW_LINE).getBytes());
+<A NAME="198"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="199"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>);
+<A NAME="200"></A>        }
+<A NAME="201"></A>
+<A NAME="202"></A>        logger.debug(<FONT ID="StringLiteral">"Read first line - {}"</FONT>, firstLine);
+<A NAME="203"></A>
+<A NAME="204"></A>        <FONT ID="SingleLineComment">// non-existent request no-op
+<A NAME="205"></A></FONT>        <FONT ID="If">if</FONT> (firstLine == <FONT ID="Null">null</FONT> || firstLine.length() == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="206"></A>            logger.error(<FONT ID="StringLiteral">"Empty request"</FONT>);
+<A NAME="207"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>);
+<A NAME="208"></A>        }
+<A NAME="209"></A>
+<A NAME="210"></A>        <FONT ID="If">if</FONT> (Character.isWhitespace(firstLine.charAt(<FONT ID="IntegerLiteral">0</FONT>))) {
+<A NAME="211"></A>            <FONT ID="SingleLineComment">// starting whitespace, return bad request
+<A NAME="212"></A></FONT>            logger.error(<FONT ID="StringLiteral">"Request starts with whitespace"</FONT>);
+<A NAME="213"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(First character is space)"</FONT>);
+<A NAME="214"></A>        }
+<A NAME="215"></A>
+<A NAME="216"></A>        String[] cmd = firstLine.split(<FONT ID="StringLiteral">"\\s"</FONT>);
+<A NAME="217"></A>        <FONT ID="If">if</FONT> (cmd.length != <FONT ID="IntegerLiteral">3</FONT>) {
+<A NAME="218"></A>            logger.error(<FONT ID="StringLiteral">"Request first line is invalid format"</FONT>);
+<A NAME="219"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Invalid Format - "</FONT> + firstLine + <FONT ID="StringLiteral">")"</FONT>);
+<A NAME="220"></A>        }
+<A NAME="221"></A>
+<A NAME="222"></A>        <FONT ID="If">if</FONT> (cmd[<FONT ID="IntegerLiteral">2</FONT>].indexOf(<FONT ID="StringLiteral">"HTTP/"</FONT>) == <FONT ID="IntegerLiteral">0</FONT> &amp;&amp; cmd[<FONT ID="IntegerLiteral">2</FONT>].indexOf(<FONT ID="CharacerLiteral">'.'</FONT>) &gt; <FONT ID="IntegerLiteral">5</FONT>) {
+<A NAME="223"></A>            String ver = cmd[<FONT ID="IntegerLiteral">2</FONT>].substring(<FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="224"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="225"></A>                Float.parseFloat(ver);
+<A NAME="226"></A>                httpRequest.setProtocol(ver);
+<A NAME="227"></A>            } <FONT ID="Catch">catch</FONT> (NumberFormatException nfe) {
+<A NAME="228"></A>                logger.error(<FONT ID="StringLiteral">"HTTP version {} is invalid"</FONT>, ver);
+<A NAME="229"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Invalid version - "</FONT> + ver + <FONT ID="StringLiteral">")"</FONT>);
+<A NAME="230"></A>            }
+<A NAME="231"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="232"></A>            logger.error(<FONT ID="StringLiteral">"HTTP version is missing"</FONT>);
+<A NAME="233"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Version missing)"</FONT>);
+<A NAME="234"></A>        }
+<A NAME="235"></A>
+<A NAME="236"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="237"></A>            httpRequest.setMethod(Method.valueOf(cmd[<FONT ID="IntegerLiteral">0</FONT>]));
+<A NAME="238"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="239"></A>            logger.error(<FONT ID="StringLiteral">"HTTP method {} is invalid or not yet supported"</FONT>,
+<A NAME="240"></A>                    cmd[<FONT ID="IntegerLiteral">0</FONT>]);
+<A NAME="241"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Invalid method - "</FONT> + cmd[<FONT ID="IntegerLiteral">0</FONT>] + <FONT ID="StringLiteral">""</FONT>);
+<A NAME="242"></A>        }
+<A NAME="243"></A>
+<A NAME="244"></A>        String uri = cmd[<FONT ID="IntegerLiteral">1</FONT>];
+<A NAME="245"></A>
+<A NAME="246"></A>        <FONT ID="If">if</FONT> (httpRequest.getMethod() == Method.GET
+<A NAME="247"></A>                || httpRequest.getMethod() == Method.HEAD) {
+<A NAME="248"></A>            logger.debug(<FONT ID="StringLiteral">"Parsing request URI and query params from {}"</FONT>, uri);
+<A NAME="249"></A>
+<A NAME="250"></A>            <FONT ID="Int">int</FONT> idx = uri.indexOf(<FONT ID="CharacerLiteral">'?'</FONT>);
+<A NAME="251"></A>            <FONT ID="If">if</FONT> (idx &lt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="252"></A>                httpRequest.setURI(uri);
+<A NAME="253"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="254"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="255"></A>                    httpRequest.setURI(URLDecoder.decode(uri.substring(<FONT ID="IntegerLiteral">0</FONT>, idx),
+<A NAME="256"></A>                            <FONT ID="StringLiteral">"ISO-8859-1"</FONT>));
+<A NAME="257"></A>
+<A NAME="258"></A>                    String[] prms = uri.substring(idx + <FONT ID="IntegerLiteral">1</FONT>).split(<FONT ID="StringLiteral">"&amp;"</FONT>);
+<A NAME="259"></A>
+<A NAME="260"></A>                    Hashtable&lt;String, String&gt; params = <FONT ID="New">new</FONT> Hashtable&lt;String, String&gt;();
+<A NAME="261"></A>                    <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; prms.length; i++) {
+<A NAME="262"></A>                        String[] temp = prms[i].split(<FONT ID="StringLiteral">"="</FONT>);
+<A NAME="263"></A>                        <FONT ID="If">if</FONT> (temp.length == <FONT ID="IntegerLiteral">2</FONT>) {
+<A NAME="264"></A>                            <FONT ID="SingleLineComment">// we use ISO-8859-1 as temporary
+<A NAME="265"></A></FONT>                            <FONT ID="SingleLineComment">// charset
+<A NAME="266"></A></FONT>                            <FONT ID="SingleLineComment">// and
+<A NAME="267"></A></FONT>                            <FONT ID="SingleLineComment">// then
+<A NAME="268"></A></FONT>                            <FONT ID="SingleLineComment">// String.getBytes("ISO-8859-1") to get
+<A NAME="269"></A></FONT>                            <FONT ID="SingleLineComment">// the
+<A NAME="270"></A></FONT>                            <FONT ID="SingleLineComment">// data
+<A NAME="271"></A></FONT>                            params.put(
+<A NAME="272"></A>                                    URLDecoder.decode(temp[<FONT ID="IntegerLiteral">0</FONT>], <FONT ID="StringLiteral">"ISO-8859-1"</FONT>),
+<A NAME="273"></A>                                    URLDecoder.decode(temp[<FONT ID="IntegerLiteral">1</FONT>], <FONT ID="StringLiteral">"ISO-8859-1"</FONT>));
+<A NAME="274"></A>                        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (temp.length == <FONT ID="IntegerLiteral">1</FONT>
+<A NAME="275"></A>                                &amp;&amp; prms[i].indexOf(<FONT ID="CharacerLiteral">'='</FONT>) == prms[i].length() - <FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="276"></A>                            <FONT ID="SingleLineComment">// handle empty string separately
+<A NAME="277"></A></FONT>                            params.put(
+<A NAME="278"></A>                                    URLDecoder.decode(temp[<FONT ID="IntegerLiteral">0</FONT>], <FONT ID="StringLiteral">"ISO-8859-1"</FONT>),
+<A NAME="279"></A>                                    <FONT ID="StringLiteral">""</FONT>);
+<A NAME="280"></A>                        }
+<A NAME="281"></A>                    }
+<A NAME="282"></A>
+<A NAME="283"></A>                    httpRequest.setParams(params);
+<A NAME="284"></A>
+<A NAME="285"></A>                } <FONT ID="Catch">catch</FONT> (UnsupportedEncodingException e) {
+<A NAME="286"></A>                    logger.error(<FONT ID="StringLiteral">"Invalid query params encoding in {}"</FONT>, uri);
+<A NAME="287"></A>                    <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Invalid encoding - "</FONT> + uri + <FONT ID="StringLiteral">")"</FONT>);
+<A NAME="288"></A>                }
+<A NAME="289"></A>            }
+<A NAME="290"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="291"></A>            httpRequest.setURI(uri);
+<A NAME="292"></A>        }
+<A NAME="293"></A>
+<A NAME="294"></A>        
+<A NAME="295"></A>        <FONT ID="SingleLineComment">//read headers
+<A NAME="296"></A></FONT>        
+<A NAME="297"></A>        logger.debug(<FONT ID="StringLiteral">"Trying to parse Request headers"</FONT>);
+<A NAME="298"></A>        logger.debug(<FONT ID="StringLiteral">"*******************************"</FONT>);
+<A NAME="299"></A>        Hashtable&lt;String, String&gt; headers = <FONT ID="New">new</FONT> Hashtable&lt;String, String&gt;();
+<A NAME="300"></A>        
+<A NAME="301"></A>        <FONT ID="While">while</FONT>(<FONT ID="True">true</FONT>) {
+<A NAME="302"></A>            String line;
+<A NAME="303"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="304"></A>                line = IOUtils.readLine(inputStream);
+<A NAME="305"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="306"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>);
+<A NAME="307"></A>            }
+<A NAME="308"></A>            
+<A NAME="309"></A>            <FONT ID="If">if</FONT>(line.isEmpty()) {
+<A NAME="310"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="311"></A>            }
+<A NAME="312"></A>            
+<A NAME="313"></A>            logger.debug(line);
+<A NAME="314"></A>            <FONT ID="SingleLineComment">// rfc822 allows multiple lines, we don't care now
+<A NAME="315"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="316"></A>                <FONT ID="Int">int</FONT> idx = line.indexOf(<FONT ID="CharacerLiteral">':'</FONT>);
+<A NAME="317"></A>                <FONT ID="If">if</FONT> (idx &lt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="318"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="319"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="320"></A>                    String headerName = line.substring(<FONT ID="IntegerLiteral">0</FONT>, idx).toLowerCase();
+<A NAME="321"></A>                    String headerValue = line.substring(idx + <FONT ID="IntegerLiteral">1</FONT>).trim();
+<A NAME="322"></A>
+<A NAME="323"></A>                    <FONT ID="If">if</FONT> (headerName.length() &gt; Constants.MAX_HEADER_FIELD_NAME_LENGTH) {
+<A NAME="324"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidHeaderException.java.html">InvalidHeaderException</A>(headerName,
+<A NAME="325"></A>                                headerValue, <FONT ID="StringLiteral">"Name too long"</FONT>);
+<A NAME="326"></A>                    }
+<A NAME="327"></A>                    <FONT ID="If">if</FONT> (headerValue.length() &gt; Constants.MAX_HEADER_FIELD_VALUE_LENGTH) {
+<A NAME="328"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidHeaderException.java.html">InvalidHeaderException</A>(headerName,
+<A NAME="329"></A>                                headerValue, <FONT ID="StringLiteral">"Value too long"</FONT>);
+<A NAME="330"></A>                    }
+<A NAME="331"></A>
+<A NAME="332"></A>                    headers.put(headerName, headerValue);
+<A NAME="333"></A>                }
+<A NAME="334"></A>            } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidHeaderException.java.html">InvalidHeaderException</A> e) {
+<A NAME="335"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Invalid Header - "</FONT> + e.getMessage()
+<A NAME="336"></A>                    + <FONT ID="StringLiteral">")"</FONT>);
+<A NAME="337"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="338"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Invalid Header - "</FONT> + line + <FONT ID="StringLiteral">")"</FONT>);
+<A NAME="339"></A>            }
+<A NAME="340"></A>        }
+<A NAME="341"></A>        
+<A NAME="342"></A>        httpRequest.setHeaders(headers);
+<A NAME="343"></A>        logger.debug(<FONT ID="StringLiteral">"*******************************"</FONT>);
+<A NAME="344"></A>
+<A NAME="345"></A>        
+<A NAME="346"></A>        <FONT ID="SingleLineComment">//read post data
+<A NAME="347"></A></FONT>        
+<A NAME="348"></A>        <FONT ID="If">if</FONT> (httpRequest.getMethod() == Method.POST) {
+<A NAME="349"></A>            logger.debug(<FONT ID="StringLiteral">"Trying to read the entity in the request"</FONT>);
+<A NAME="350"></A>
+<A NAME="351"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="352"></A>                <FONT ID="Int">int</FONT> contentLength = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="353"></A>                contentLength = Integer.parseInt(httpRequest.getHeader(Constants.HEADERS.CONTENT_LENGTH));
+<A NAME="354"></A>                ByteArrayOutputStream baos = <FONT ID="New">new</FONT> ByteArrayOutputStream();
+<A NAME="355"></A>                
+<A NAME="356"></A>                <FONT ID="For">for</FONT>(<FONT ID="Int">int</FONT> i=<FONT ID="IntegerLiteral">0</FONT>; i&lt; contentLength; i++) {
+<A NAME="357"></A>                    <FONT ID="Int">int</FONT> b = inputStream.read();
+<A NAME="358"></A>                    <FONT ID="If">if</FONT>(b == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="359"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="360"></A>                    }
+<A NAME="361"></A>                    baos.write(b);
+<A NAME="362"></A>                }
+<A NAME="363"></A>                
+<A NAME="364"></A>                httpRequest.setEntity(baos.toByteArray());
+<A NAME="365"></A>                logger.debug(<FONT ID="StringLiteral">"Entity in the request - {} bytes"</FONT>, contentLength);
+<A NAME="366"></A>                raw.write(httpRequest.getEntity(), <FONT ID="IntegerLiteral">0</FONT>, contentLength);
+<A NAME="367"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="368"></A>                logger.error(<FONT ID="StringLiteral">"Error reading entity in HTTP request"</FONT>, e);
+<A NAME="369"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Invalid entity)"</FONT>);
+<A NAME="370"></A>            } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="371"></A>                logger.error(<FONT ID="StringLiteral">"Error reading content length"</FONT>, e);
+<A NAME="372"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Missing Content Length)"</FONT>);
+<A NAME="373"></A>            }
+<A NAME="374"></A>        }
+<A NAME="375"></A>
+<A NAME="376"></A>        httpRequest.setRaw(raw.toByteArray());
+<A NAME="377"></A>
+<A NAME="378"></A>        <FONT ID="Return">return</FONT> httpRequest;
+<A NAME="379"></A>    }
+<A NAME="380"></A>
+<A NAME="381"></A>    <FONT ID="FormalComment">/**
+<A NAME="382"></A>     * Validates the HTTP request based on certain standard rules in the
+<A NAME="383"></A>     * {@link RFC http://www.ietf.org/rfc/rfc2616.txt} stops validation at the
+<A NAME="384"></A>     * first failure encountered
+<A NAME="385"></A>     * 
+<A NAME="386"></A>     * @param httpRequest
+<A NAME="387"></A>     *            request object to be validated
+<A NAME="388"></A>     * @throws HttpError
+<A NAME="389"></A>     *             raises an error with status and message if validation fails
+<A NAME="390"></A>     */</FONT>
+<A NAME="391"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> validateHttpRequest(<A HREF="../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> httpRequest)
+<A NAME="392"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="393"></A>
+<A NAME="394"></A>        <FONT ID="SingleLineComment">// HTTP/1.1 dictates Host header is mandatory
+<A NAME="395"></A></FONT>        <FONT ID="SingleLineComment">// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.23
+<A NAME="396"></A></FONT>        <FONT ID="If">if</FONT> (Version.valueOf(httpRequest.getProtocol()).ordinal() &gt;= Version.VERSION_1_1
+<A NAME="397"></A>                .ordinal() &amp;&amp; httpRequest.getHeader(<FONT ID="StringLiteral">"Host"</FONT>) == <FONT ID="Null">null</FONT>) {
+<A NAME="398"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>);
+<A NAME="399"></A>        }
+<A NAME="400"></A>
+<A NAME="401"></A>    }
+<A NAME="402"></A>}
+<A NAME="403"></A></pre>
+</BODY>
+</HTML>
