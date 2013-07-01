@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.RepositoryFactory (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">RepositoryFactory.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesModule.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</A>;
+<A NAME="22"></A>
+<A NAME="23"></A><FONT ID="FormalComment">/**
+<A NAME="24"></A> * A Factory class responsible for generating {@link Repository} instances.
+<A NAME="25"></A> * The type of {@link Repository} to create is determined by settings passed as an argument.
+<A NAME="26"></A> * These settings also contain the connection parameters required to connect to any
+<A NAME="27"></A> * repository while initializing.
+<A NAME="28"></A> * 
+<A NAME="29"></A> * @see LocalRepository
+<A NAME="30"></A> * @see S3Repository
+<A NAME="31"></A> * @see RemoteRepository
+<A NAME="32"></A> * @see FTPRepository
+<A NAME="33"></A> * 
+<A NAME="34"></A> * @author vnagpal
+<A NAME="35"></A> *
+<A NAME="36"></A> */</FONT>
+<A NAME="37"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> RepositoryFactory {
+<A NAME="38"></A>
+<A NAME="39"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Repository.java.html">Repository</A> getRepository(Properties settings) <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A> {
+<A NAME="40"></A>        <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryType.java.html">RepositoryType</A> type = RepositoryType.valueOf(settings.getProperty(ResourcesModule.SETTINGS.REPOSITORY).toUpperCase());
+<A NAME="41"></A>        <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Repository.java.html">Repository</A> repository = <FONT ID="Null">null</FONT>;
+<A NAME="42"></A>        <FONT ID="Switch">switch</FONT>(type) {
+<A NAME="43"></A>        <FONT ID="Case">case</FONT> FTP:
+<A NAME="44"></A>            repository = <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/FTPRepository.java.html">FTPRepository</A>();
+<A NAME="45"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="46"></A>        <FONT ID="Case">case</FONT> LOCAL:
+<A NAME="47"></A>            repository = <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/LocalRepository.java.html">LocalRepository</A>(settings.getProperty(ResourcesModule.SETTINGS.BASE_DIR));
+<A NAME="48"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="49"></A>        <FONT ID="Case">case</FONT> REMOTE:
+<A NAME="50"></A>            repository = <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RemoteRepository.java.html">RemoteRepository</A>();
+<A NAME="51"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="52"></A>        <FONT ID="Case">case</FONT> S3:
+<A NAME="53"></A>            repository = <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/S3Repository.java.html">S3Repository</A>();
+<A NAME="54"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="55"></A>        <FONT ID="Default">default</FONT>:
+<A NAME="56"></A>            repository = <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/LocalRepository.java.html">LocalRepository</A>(settings.getProperty(ResourcesModule.SETTINGS.BASE_DIR));
+<A NAME="57"></A>            <FONT ID="Break">break</FONT>;
+<A NAME="58"></A>        }
+<A NAME="59"></A>        <FONT ID="Return">return</FONT> repository;
+<A NAME="60"></A>    }
+<A NAME="61"></A>
+<A NAME="62"></A>}
+<A NAME="63"></A></pre>
+</BODY>
+</HTML>

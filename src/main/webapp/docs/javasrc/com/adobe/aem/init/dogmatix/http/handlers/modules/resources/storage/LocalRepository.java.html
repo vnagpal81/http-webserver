@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.LocalRepository (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">LocalRepository.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.FileInputStream;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.io.FileNotFoundException;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.io.FileOutputStream;
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="24"></A><FONT ID="Import">import</FONT> java.net.URL;
+<A NAME="25"></A><FONT ID="Import">import</FONT> java.nio.file.FileAlreadyExistsException;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> net.sf.jmimemagic.Magic;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="30"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">com.adobe.aem.init.dogmatix.http.request.FileUpload</A>;
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="FormalComment">/**
+<A NAME="35"></A> * 
+<A NAME="36"></A> * A file repository implementation with an underlying storage mechanism on the local server disk.
+<A NAME="37"></A> * 
+<A NAME="38"></A> * Parameters required to connect to a Local Repository:
+<A NAME="39"></A> * Base Directory   :   The path to a directory on the local disk where files are to be read/written
+<A NAME="40"></A> *                      May be specified as absolute or relative to server root/lib/
+<A NAME="41"></A> * 
+<A NAME="42"></A> * @author vnagpal
+<A NAME="43"></A> *
+<A NAME="44"></A> */</FONT>
+<A NAME="45"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> LocalRepository <FONT ID="Implements">implements</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Repository.java.html">Repository</A> {
+<A NAME="46"></A>    
+<A NAME="47"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/LocalRepository.java.html">LocalRepository</A>.<FONT ID="Class">class</FONT>);
+<A NAME="48"></A>
+<A NAME="49"></A>    <FONT ID="Private">private</FONT> String baseDir;
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="FormalComment">/**
+<A NAME="52"></A>     * Initialize a file repository on the local server disk storage.
+<A NAME="53"></A>     * Base directory path could be relative to server root as well as absolute.
+<A NAME="54"></A>     * 
+<A NAME="55"></A>     * @param baseDir Base directory path
+<A NAME="56"></A>     * @throws RepositoryNotAccessibleException thrown if path specified is not found or is not a directory
+<A NAME="57"></A>     */</FONT>
+<A NAME="58"></A>    <FONT ID="Public">public</FONT> LocalRepository(String baseDir) <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A> {
+<A NAME="59"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="60"></A>            <FONT ID="SingleLineComment">//try locating base dir as an absolute path
+<A NAME="61"></A></FONT>            File f = <FONT ID="New">new</FONT> File(baseDir);
+<A NAME="62"></A>            <FONT ID="If">if</FONT>(!f.isDirectory()) {
+<A NAME="63"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A>(String.format(<FONT ID="StringLiteral">"%s is not a directory"</FONT>, baseDir));
+<A NAME="64"></A>            }
+<A NAME="65"></A>            <FONT ID="This">this</FONT>.baseDir = f.getPath() + File.separator;
+<A NAME="66"></A>            logger.debug(<FONT ID="StringLiteral">"Registered a Local repository at {}"</FONT>, <FONT ID="This">this</FONT>.baseDir);
+<A NAME="67"></A>        }
+<A NAME="68"></A>        <FONT ID="Catch">catch</FONT>(Exception e) {
+<A NAME="69"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="70"></A>                URL dirURL = <FONT ID="This">this</FONT>.getClass().getResource(baseDir);
+<A NAME="71"></A>                File f = <FONT ID="New">new</FONT> File(dirURL.toURI());
+<A NAME="72"></A>                <FONT ID="If">if</FONT>(!f.isDirectory()) {
+<A NAME="73"></A>                    <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A>(String.format(<FONT ID="StringLiteral">"%s is not a directory"</FONT>, baseDir));
+<A NAME="74"></A>                }
+<A NAME="75"></A>            }
+<A NAME="76"></A>            <FONT ID="Catch">catch</FONT>(Exception ex) {
+<A NAME="77"></A>                logger.error(<FONT ID="StringLiteral">"Failure while registering local repository at {} : {}"</FONT>, baseDir, e.getMessage());
+<A NAME="78"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A>(e);
+<A NAME="79"></A>            }
+<A NAME="80"></A>        }
+<A NAME="81"></A>    }
+<A NAME="82"></A>
+<A NAME="83"></A>    @Override
+<A NAME="84"></A>    <FONT ID="Public">public</FONT> FileInputStream lookup(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="85"></A>        String[] paths = uri.split(<FONT ID="StringLiteral">"/"</FONT>);
+<A NAME="86"></A>        String path = baseDir;
+<A NAME="87"></A>        <FONT ID="For">for</FONT>(String s : paths) {
+<A NAME="88"></A>            path += s + File.separator;
+<A NAME="89"></A>        }
+<A NAME="90"></A>        <FONT ID="If">if</FONT>(path.endsWith(File.separator)) {
+<A NAME="91"></A>            path = path.substring(<FONT ID="IntegerLiteral">0</FONT>, path.length()-<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="92"></A>        }
+<A NAME="93"></A>        logger.debug(<FONT ID="StringLiteral">"Looking up {}"</FONT>, path);
+<A NAME="94"></A>        
+<A NAME="95"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="96"></A>            <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> FileInputStream(path);
+<A NAME="97"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="98"></A>            logger.error(<FONT ID="StringLiteral">"Error while looking up {} : {}"</FONT>, path, e.getMessage());
+<A NAME="99"></A>            <FONT ID="Throw">throw</FONT> e;
+<A NAME="100"></A>        }
+<A NAME="101"></A>    }
+<A NAME="102"></A>
+<A NAME="103"></A>    @Override
+<A NAME="104"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> create(<A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">FileUpload</A> fileUpload) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="105"></A>        <FONT ID="If">if</FONT>(!exists(fileUpload.getFileName())) {
+<A NAME="106"></A>            FileInputStream temp = <FONT ID="New">new</FONT> FileInputStream(fileUpload.getTempFilePath());
+<A NAME="107"></A>            FileOutputStream newFile = <FONT ID="New">new</FONT> FileOutputStream(baseDir + fileUpload.getFileName());
+<A NAME="108"></A>            
+<A NAME="109"></A>            <FONT ID="While">while</FONT>(temp.available() &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="110"></A>                newFile.write(temp.read());
+<A NAME="111"></A>            }
+<A NAME="112"></A>            
+<A NAME="113"></A>            newFile.close();
+<A NAME="114"></A>            temp.close();
+<A NAME="115"></A>        }
+<A NAME="116"></A>        <FONT ID="Else">else</FONT> {
+<A NAME="117"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> FileAlreadyExistsException(fileUpload.getFileName());
+<A NAME="118"></A>        }
+<A NAME="119"></A>    }
+<A NAME="120"></A>
+<A NAME="121"></A>    @Override
+<A NAME="122"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> exists(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="123"></A>        File f = <FONT ID="New">new</FONT> File(baseDir + uri);
+<A NAME="124"></A>        <FONT ID="Return">return</FONT> f.exists();
+<A NAME="125"></A>    }
+<A NAME="126"></A>
+<A NAME="127"></A>    @Override
+<A NAME="128"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> delete(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="129"></A>        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> UnsupportedOperationException();
+<A NAME="130"></A>    }
+<A NAME="131"></A>
+<A NAME="132"></A>    @Override
+<A NAME="133"></A>    <FONT ID="Public">public</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">Metadata</A> getInfo(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="134"></A>        <FONT ID="If">if</FONT>(!exists(uri)) {
+<A NAME="135"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> FileNotFoundException();
+<A NAME="136"></A>        }
+<A NAME="137"></A>        File f = <FONT ID="New">new</FONT> File(baseDir + uri);
+<A NAME="138"></A>        <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">Metadata</A> metadata = <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">Metadata</A>();
+<A NAME="139"></A>        metadata.setSize(f.length());
+<A NAME="140"></A>        metadata.setCreatedOn(f.lastModified());
+<A NAME="141"></A>        metadata.setLastModifiedOn(f.lastModified());
+<A NAME="142"></A>        <FONT ID="If">if</FONT>(f.isFile()) {
+<A NAME="143"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="144"></A>                metadata.setType(Magic.getMagicMatch(f, <FONT ID="True">true</FONT>).getMimeType());
+<A NAME="145"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="146"></A>                logger.error(<FONT ID="StringLiteral">"Error determining type"</FONT>, e);
+<A NAME="147"></A>            }
+<A NAME="148"></A>        }
+<A NAME="149"></A>            
+<A NAME="150"></A>        metadata.setName(f.getName());
+<A NAME="151"></A>        metadata.setLeafNode(f.isFile());
+<A NAME="152"></A>        <FONT ID="Return">return</FONT> metadata;
+<A NAME="153"></A>    }
+<A NAME="154"></A>
+<A NAME="155"></A>    @Override
+<A NAME="156"></A>    <FONT ID="Public">public</FONT> FileInputStream lookin(String parentPath, String fileName)
+<A NAME="157"></A>            <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="158"></A>        String[] paths = parentPath.split(<FONT ID="StringLiteral">"/"</FONT>);
+<A NAME="159"></A>        String path = baseDir;
+<A NAME="160"></A>        <FONT ID="For">for</FONT>(String s : paths) {
+<A NAME="161"></A>            path += s + File.separator;
+<A NAME="162"></A>        }
+<A NAME="163"></A>        path += fileName;
+<A NAME="164"></A>        logger.debug(<FONT ID="StringLiteral">"Looking up {}"</FONT>, path);
+<A NAME="165"></A>        
+<A NAME="166"></A>        FileInputStream fis = <FONT ID="Null">null</FONT>;
+<A NAME="167"></A>
+<A NAME="168"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="169"></A>            fis = <FONT ID="New">new</FONT> FileInputStream(path);
+<A NAME="170"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="171"></A>            logger.error(<FONT ID="StringLiteral">"Error while looking up {} : {}"</FONT>, path, e.getMessage());
+<A NAME="172"></A>        }
+<A NAME="173"></A>
+<A NAME="174"></A>        <FONT ID="Return">return</FONT> fis;
+<A NAME="175"></A>    }
+<A NAME="176"></A>
+<A NAME="177"></A>}
+<A NAME="178"></A></pre>
+</BODY>
+</HTML>

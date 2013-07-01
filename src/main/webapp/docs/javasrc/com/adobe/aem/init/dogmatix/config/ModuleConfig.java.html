@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.config.ModuleConfig (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ModuleConfig.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.config;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="FormalComment">/**
+<A NAME="22"></A> * Module level configuration POJO
+<A NAME="23"></A> * 
+<A NAME="24"></A> * A module is uniquely identified by its Class and URL. This implies that the
+<A NAME="25"></A> * same module can consume requests from 2 different URLs while still exhibiting
+<A NAME="26"></A> * separate handling behaviour.
+<A NAME="27"></A> * 
+<A NAME="28"></A> * @author vnagpal
+<A NAME="29"></A> * 
+<A NAME="30"></A> */</FONT>
+<A NAME="31"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ModuleConfig {
+<A NAME="32"></A>
+<A NAME="33"></A>    <FONT ID="FormalComment">/**
+<A NAME="34"></A>     * Fully qualified class name of the module implementation.
+<A NAME="35"></A>     */</FONT>
+<A NAME="36"></A>    <FONT ID="Private">private</FONT> String className;
+<A NAME="37"></A>    
+<A NAME="38"></A>    <FONT ID="FormalComment">/**
+<A NAME="39"></A>     * A regular expression of the path to be matched against request URI. 
+<A NAME="40"></A>     * All requests having URIs matching this pattern will be consumed by this module. 
+<A NAME="41"></A>     */</FONT>
+<A NAME="42"></A>    <FONT ID="Private">private</FONT> String url;
+<A NAME="43"></A>    
+<A NAME="44"></A>    <FONT ID="FormalComment">/**
+<A NAME="45"></A>     * Module level extra settings. Each setting is a String-String
+<A NAME="46"></A>     * Key-Value pair which influences the module implementation logic and hence,
+<A NAME="47"></A>     * the setting keys are module dependent.
+<A NAME="48"></A>     */</FONT>
+<A NAME="49"></A>    <FONT ID="Private">private</FONT> Properties settings;
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="FormalComment">/**
+<A NAME="52"></A>     * Default no-arg constructor
+<A NAME="53"></A>     */</FONT>
+<A NAME="54"></A>    <FONT ID="Public">public</FONT> ModuleConfig() {
+<A NAME="55"></A>    }
+<A NAME="56"></A>
+<A NAME="57"></A>    <FONT ID="FormalComment">/**
+<A NAME="58"></A>     * Construct a module config with className and urlPattern
+<A NAME="59"></A>     * 
+<A NAME="60"></A>     * @param className Fully qualified class name of the class implementing the module
+<A NAME="61"></A>     * @param url URL pattern used to map the requests to this module
+<A NAME="62"></A>     */</FONT>
+<A NAME="63"></A>    <FONT ID="Public">public</FONT> ModuleConfig(String className, String url) {
+<A NAME="64"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="65"></A>        <FONT ID="This">this</FONT>.className = className;
+<A NAME="66"></A>        <FONT ID="This">this</FONT>.url = url;
+<A NAME="67"></A>    }
+<A NAME="68"></A>
+<A NAME="69"></A>    <FONT ID="FormalComment">/**
+<A NAME="70"></A>     * Get the class name for this module
+<A NAME="71"></A>     * 
+<A NAME="72"></A>     * @return Fully qualified class name of the class implementing the module
+<A NAME="73"></A>     */</FONT>
+<A NAME="74"></A>    <FONT ID="Public">public</FONT> String getClassName() {
+<A NAME="75"></A>        <FONT ID="Return">return</FONT> className;
+<A NAME="76"></A>    }
+<A NAME="77"></A>
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * Sets the class name for this module
+<A NAME="80"></A>     * 
+<A NAME="81"></A>     * @param className Fully qualified class name of the class implementing the module
+<A NAME="82"></A>     */</FONT>
+<A NAME="83"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setClassName(String className) {
+<A NAME="84"></A>        <FONT ID="This">this</FONT>.className = className;
+<A NAME="85"></A>    }
+<A NAME="86"></A>
+<A NAME="87"></A>    <FONT ID="FormalComment">/**
+<A NAME="88"></A>     * Gets the URL pattern mapping to this module
+<A NAME="89"></A>     * 
+<A NAME="90"></A>     * @return URL pattern used to map the requests to this module
+<A NAME="91"></A>     */</FONT>
+<A NAME="92"></A>    <FONT ID="Public">public</FONT> String getUrl() {
+<A NAME="93"></A>        <FONT ID="Return">return</FONT> url;
+<A NAME="94"></A>    }
+<A NAME="95"></A>
+<A NAME="96"></A>    <FONT ID="FormalComment">/**
+<A NAME="97"></A>     * Sets the URL pattern mapping to this module
+<A NAME="98"></A>     * 
+<A NAME="99"></A>     * @param url URL pattern used to map the requests to this module
+<A NAME="100"></A>     */</FONT>
+<A NAME="101"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setUrl(String url) {
+<A NAME="102"></A>        <FONT ID="This">this</FONT>.url = url;
+<A NAME="103"></A>    }
+<A NAME="104"></A>
+<A NAME="105"></A>    <FONT ID="FormalComment">/**
+<A NAME="106"></A>     * Gets the module instance settings as Key-Value pairs
+<A NAME="107"></A>     * 
+<A NAME="108"></A>     * @return A java.util.Properties object representing the module config settings
+<A NAME="109"></A>     */</FONT>
+<A NAME="110"></A>    <FONT ID="Public">public</FONT> Properties getSettings() {
+<A NAME="111"></A>        <FONT ID="Return">return</FONT> settings;
+<A NAME="112"></A>    }
+<A NAME="113"></A>
+<A NAME="114"></A>    <FONT ID="FormalComment">/**
+<A NAME="115"></A>     * Sets the module instance settings
+<A NAME="116"></A>     * 
+<A NAME="117"></A>     * @param settings A java.util.Properties object representing the module config settings
+<A NAME="118"></A>     */</FONT>
+<A NAME="119"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSettings(Properties settings) {
+<A NAME="120"></A>        <FONT ID="This">this</FONT>.settings = settings;
+<A NAME="121"></A>    }
+<A NAME="122"></A>
+<A NAME="123"></A>    <FONT ID="FormalComment">/**
+<A NAME="124"></A>     * Adds a module instance setting key-value pair to the config
+<A NAME="125"></A>     * 
+<A NAME="126"></A>     * @param name Setting keyword
+<A NAME="127"></A>     * @param value Setting value
+<A NAME="128"></A>     */</FONT>
+<A NAME="129"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> addSetting(String name, String value) {
+<A NAME="130"></A>        <FONT ID="If">if</FONT> (<FONT ID="This">this</FONT>.settings == <FONT ID="Null">null</FONT>) {
+<A NAME="131"></A>            <FONT ID="This">this</FONT>.settings = <FONT ID="New">new</FONT> Properties();
+<A NAME="132"></A>        }
+<A NAME="133"></A>        <FONT ID="This">this</FONT>.settings.setProperty(name, value);
+<A NAME="134"></A>    }
+<A NAME="135"></A>
+<A NAME="136"></A>    <FONT ID="FormalComment">/**
+<A NAME="137"></A>     * Retrieves the module instance setting value in the config
+<A NAME="138"></A>     * against the key
+<A NAME="139"></A>     * 
+<A NAME="140"></A>     * @param name Setting key
+<A NAME="141"></A>     * @return Setting value
+<A NAME="142"></A>     */</FONT>
+<A NAME="143"></A>    <FONT ID="Public">public</FONT> String getSetting(String name) {
+<A NAME="144"></A>        <FONT ID="If">if</FONT> (<FONT ID="This">this</FONT>.settings == <FONT ID="Null">null</FONT>) {
+<A NAME="145"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="146"></A>        }
+<A NAME="147"></A>        <FONT ID="Return">return</FONT> <FONT ID="This">this</FONT>.settings.getProperty(name);
+<A NAME="148"></A>    }
+<A NAME="149"></A>
+<A NAME="150"></A>    <FONT ID="FormalComment">/**
+<A NAME="151"></A>     * Retrieves the module instance setting value in the config
+<A NAME="152"></A>     * against the key. Returns a defaultValue if no config 
+<A NAME="153"></A>     * setting found.
+<A NAME="154"></A>     * 
+<A NAME="155"></A>     * @param name Setting key
+<A NAME="156"></A>     * @param defaultValue Default value to return
+<A NAME="157"></A>     * @return Setting value or defaultValue
+<A NAME="158"></A>     */</FONT>
+<A NAME="159"></A>    <FONT ID="Public">public</FONT> String getSetting(String name, String defaultValue) {
+<A NAME="160"></A>        <FONT ID="If">if</FONT> (<FONT ID="This">this</FONT>.settings == <FONT ID="Null">null</FONT>) {
+<A NAME="161"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="162"></A>        }
+<A NAME="163"></A>        <FONT ID="Return">return</FONT> <FONT ID="This">this</FONT>.settings.getProperty(name, defaultValue);
+<A NAME="164"></A>    }
+<A NAME="165"></A>
+<A NAME="166"></A>    <FONT ID="FormalComment">/**
+<A NAME="167"></A>     * Checks if two module configs are equal or not.
+<A NAME="168"></A>     * Equality is established if both modules have the same 
+<A NAME="169"></A>     * class implementation and the url pattern mapping.
+<A NAME="170"></A>     */</FONT>
+<A NAME="171"></A>    @Override
+<A NAME="172"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> equals(Object obj) {
+<A NAME="173"></A>        <FONT ID="If">if</FONT> (obj == <FONT ID="Null">null</FONT>)
+<A NAME="174"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="175"></A>
+<A NAME="176"></A>        <FONT ID="If">if</FONT> (!(obj <FONT ID="InstanceOf">instanceof</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>))
+<A NAME="177"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="178"></A>
+<A NAME="179"></A>        <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> cfg = (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>) obj;
+<A NAME="180"></A>
+<A NAME="181"></A>        <FONT ID="If">if</FONT> (!<FONT ID="This">this</FONT>.className.equals(cfg.className))
+<A NAME="182"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="183"></A>
+<A NAME="184"></A>        <FONT ID="If">if</FONT> (!<FONT ID="This">this</FONT>.url.equals(cfg.url))
+<A NAME="185"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="186"></A>
+<A NAME="187"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="188"></A>    }
+<A NAME="189"></A>}
+<A NAME="190"></A></pre>
+</BODY>
+</HTML>

@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.URLMapping (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">URLMapping.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.Collections;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.util.HashMap;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.util.List;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.util.Map;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="25"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">com.adobe.aem.init.dogmatix.config.ModuleConfig</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/util/Matcher.java.html">com.adobe.aem.init.dogmatix.util.Matcher</A>;
+<A NAME="29"></A>
+<A NAME="30"></A><FONT ID="FormalComment">/**
+<A NAME="31"></A> * A utility class which maintains the URL mapping of url patterns against modules.
+<A NAME="32"></A> * It maintains an internal cache of mappings so as not to do run a match every time.
+<A NAME="33"></A> * Since, the cache is in memory, a max size is enforced on it.
+<A NAME="34"></A> * Once the max size is reached, the cache is purged using a LRU or LFU algorithm 
+<A NAME="35"></A> * as per the declared cache policy
+<A NAME="36"></A> * 
+<A NAME="37"></A> * @author vnagpal
+<A NAME="38"></A> *
+<A NAME="39"></A> */</FONT>
+<A NAME="40"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> URLMapping {
+<A NAME="41"></A>    
+<A NAME="42"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory
+<A NAME="43"></A>            .getLogger(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/URLMapping.java.html">URLMapping</A>.<FONT ID="Class">class</FONT>);
+<A NAME="44"></A>    
+<A NAME="45"></A>    <FONT ID="FormalComment">/**
+<A NAME="46"></A>     * Threshold for cache size exceeding which a purge is done
+<A NAME="47"></A>     */</FONT>
+<A NAME="48"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> MAX_URL_CACHE_SIZE = <FONT ID="IntegerLiteral">5000</FONT>;
+<A NAME="49"></A>    
+<A NAME="50"></A>    <FONT ID="FormalComment">/**
+<A NAME="51"></A>     * Maximum number of cache entries to invalidate at one go
+<A NAME="52"></A>     */</FONT>
+<A NAME="53"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> URL_CACHE_CLEAN_CHUNK = <FONT ID="IntegerLiteral">100</FONT>;
+<A NAME="54"></A>
+<A NAME="55"></A>    <FONT ID="FormalComment">/**
+<A NAME="56"></A>     * The URL Mapping cache
+<A NAME="57"></A>     */</FONT>
+<A NAME="58"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Map&lt;String, <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt; urlMapping;
+<A NAME="59"></A>    
+<A NAME="60"></A>    <FONT ID="FormalComment">/**
+<A NAME="61"></A>     * Record of the last time a cache entry was used
+<A NAME="62"></A>     */</FONT>
+<A NAME="63"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Map&lt;String, Long&gt; lastUsed;
+<A NAME="64"></A>
+<A NAME="65"></A>    <FONT ID="FormalComment">/**
+<A NAME="66"></A>     * Record of number of times a cache entry is used
+<A NAME="67"></A>     */</FONT>
+<A NAME="68"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Map&lt;String, Long&gt; countUsed;
+<A NAME="69"></A>    
+<A NAME="70"></A>    <FONT ID="FormalComment">/**
+<A NAME="71"></A>     * Looks up a module config object against a url.
+<A NAME="72"></A>     * 
+<A NAME="73"></A>     * @param url request URI
+<A NAME="74"></A>     * @return the module config object if found, else null
+<A NAME="75"></A>     */</FONT>
+<A NAME="76"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> getModuleConfig(String url) {
+<A NAME="77"></A>        logger.debug(<FONT ID="StringLiteral">"Trying to lookup module for {}"</FONT>, url);
+<A NAME="78"></A>        <FONT ID="If">if</FONT>(urlMapping == <FONT ID="Null">null</FONT>) {
+<A NAME="79"></A>            logger.error(<FONT ID="StringLiteral">"urlMapping is null"</FONT>);
+<A NAME="80"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;<FONT ID="SingleLineComment">//throw uninitialized error?
+<A NAME="81"></A></FONT>        }
+<A NAME="82"></A>        <FONT ID="If">if</FONT>(!urlMapping.containsKey(url)) {
+<A NAME="83"></A>            <FONT ID="For">for</FONT>(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> config : urlMapping.values()) {
+<A NAME="84"></A>                logger.debug(<FONT ID="StringLiteral">"Check if {} matches {}"</FONT>, url, config.getUrl());
+<A NAME="85"></A>                <FONT ID="If">if</FONT>(Matcher.matches(url, config.getUrl())) {
+<A NAME="86"></A>                    <FONT ID="If">if</FONT>(urlMapping.size() == MAX_URL_CACHE_SIZE) {
+<A NAME="87"></A>                        <FONT ID="SingleLineComment">//cleanUpCache();
+<A NAME="88"></A></FONT>                    }
+<A NAME="89"></A>                    urlMapping.put(url, config);
+<A NAME="90"></A>                    lastUsed.put(url, System.currentTimeMillis());
+<A NAME="91"></A>                    countUsed.put(url, (countUsed.containsKey(url)?countUsed.get(url):<FONT ID="IntegerLiteral">0L</FONT>)+<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="92"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="93"></A>                }
+<A NAME="94"></A>            }
+<A NAME="95"></A>        }
+<A NAME="96"></A>        <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> config = urlMapping.get(url);
+<A NAME="97"></A>        <FONT ID="If">if</FONT>(config == <FONT ID="Null">null</FONT>) {
+<A NAME="98"></A>            logger.error(<FONT ID="StringLiteral">"No module fit to consume {}"</FONT>, url);
+<A NAME="99"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="100"></A>        }
+<A NAME="101"></A>        logger.debug(<FONT ID="StringLiteral">"Found {} for {}"</FONT>, config.getClassName(), config.getUrl());
+<A NAME="102"></A>        <FONT ID="Return">return</FONT> config;
+<A NAME="103"></A>    }
+<A NAME="104"></A>
+<A NAME="105"></A>    <FONT ID="FormalComment">/**
+<A NAME="106"></A>     * Generates a url mapping for a url pattern against a module config
+<A NAME="107"></A>     * Should be called at server startup time to initialize the mapping cache.
+<A NAME="108"></A>     * 
+<A NAME="109"></A>     * @param moduleConfig The module config to map
+<A NAME="110"></A>     */</FONT>
+<A NAME="111"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> map(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig) {
+<A NAME="112"></A>        logger.debug(<FONT ID="StringLiteral">"Mapping URL {} to {}"</FONT>, moduleConfig.getUrl(), moduleConfig.getClassName());
+<A NAME="113"></A>        <FONT ID="If">if</FONT>(urlMapping == <FONT ID="Null">null</FONT>) {
+<A NAME="114"></A>            urlMapping = Collections.synchronizedMap(<FONT ID="New">new</FONT> HashMap&lt;String, <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt;());
+<A NAME="115"></A>            lastUsed = Collections.synchronizedMap(<FONT ID="New">new</FONT> HashMap&lt;String, Long&gt;());
+<A NAME="116"></A>            countUsed = Collections.synchronizedMap(<FONT ID="New">new</FONT> HashMap&lt;String, Long&gt;());
+<A NAME="117"></A>        }
+<A NAME="118"></A>        urlMapping.put(moduleConfig.getUrl(), moduleConfig);
+<A NAME="119"></A>    }
+<A NAME="120"></A>    
+<A NAME="121"></A>    <FONT ID="FormalComment">/**
+<A NAME="122"></A>     * Convenience method to map multiple modules at once.
+<A NAME="123"></A>     * 
+<A NAME="124"></A>     * @param configs The module configs to map
+<A NAME="125"></A>     */</FONT>
+<A NAME="126"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> map(List&lt;<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt; configs) {
+<A NAME="127"></A>        <FONT ID="For">for</FONT>(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> config : configs) {
+<A NAME="128"></A>            map(config);
+<A NAME="129"></A>        }
+<A NAME="130"></A>    }
+<A NAME="131"></A>    
+<A NAME="132"></A>    <FONT ID="FormalComment">/**
+<A NAME="133"></A>     * Purges the mapping cache according to purge policy.
+<A NAME="134"></A>     * Policies supported are LRU and LFU
+<A NAME="135"></A>     */</FONT>
+<A NAME="136"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> cleanUpCache() {
+<A NAME="137"></A>        <FONT ID="SingleLineComment">//if policy is DiscardLastUsed
+<A NAME="138"></A></FONT>        <FONT ID="Synchronized">synchronized</FONT>(lastUsed) {
+<A NAME="139"></A>            <FONT ID="Int">int</FONT> count = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="140"></A>            <FONT ID="For">for</FONT>(<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; urlMapping.size() &amp;&amp; count &lt; URL_CACHE_CLEAN_CHUNK; i++) {
+<A NAME="141"></A>                <FONT ID="For">for</FONT>(String url : urlMapping.keySet()) {
+<A NAME="142"></A>                    
+<A NAME="143"></A>                }
+<A NAME="144"></A>            }
+<A NAME="145"></A>        }
+<A NAME="146"></A>        <FONT ID="SingleLineComment">//else if policy is DiscardLeastUsed
+<A NAME="147"></A></FONT>        <FONT ID="Synchronized">synchronized</FONT>(countUsed) {
+<A NAME="148"></A>            
+<A NAME="149"></A>        }
+<A NAME="150"></A>    }
+<A NAME="151"></A>
+<A NAME="152"></A>}</pre>
+</BODY>
+</HTML>

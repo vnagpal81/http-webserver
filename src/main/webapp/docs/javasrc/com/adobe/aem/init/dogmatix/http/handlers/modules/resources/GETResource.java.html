@@ -1,0 +1,267 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.GETResource (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">GETResource.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.FileInputStream;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.net.MalformedURLException;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.net.URL;
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="24"></A>
+<A NAME="25"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="26"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">com.adobe.aem.init.dogmatix.exceptions.HttpError</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.Metadata</A>;
+<A NAME="30"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.RepositoryNotAccessibleException</A>;
+<A NAME="31"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">com.adobe.aem.init.dogmatix.http.request.HttpRequest</A>;
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">com.adobe.aem.init.dogmatix.http.response.HttpResponse</A>;
+<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/util/Constants.java.html">com.adobe.aem.init.dogmatix.util.Constants</A>;
+<A NAME="34"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/util/Matcher.java.html">com.adobe.aem.init.dogmatix.util.Matcher</A>;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="FormalComment">/**
+<A NAME="37"></A> * A resource request processor which processes GET requests for a 
+<A NAME="38"></A> * resources module.
+<A NAME="39"></A> * 
+<A NAME="40"></A> * Delegates the actual CRUD operations to a repository as configured in
+<A NAME="41"></A> * the module level settings.
+<A NAME="42"></A> * 
+<A NAME="43"></A> * A URL is as follows:
+<A NAME="44"></A> * 
+<A NAME="45"></A> * http://www.example.com:80/assets/menu/submenu/images/1.png?type=icon
+<A NAME="46"></A> *   ^           ^        ^  |____________^____________| ^      ^
+<A NAME="47"></A> *   |           |        |               |              |      |
+<A NAME="48"></A> * protocol   hostname   port            path           file   query
+<A NAME="49"></A> * 
+<A NAME="50"></A> * Depending on user agents, the GET request URI will contain the whole URL
+<A NAME="51"></A> * or just the path+file+query.
+<A NAME="52"></A> * 
+<A NAME="53"></A> * In case of latter, the former part of the URL has to be extracted from the 
+<A NAME="54"></A> * request headers. But this is only needed in case of a redirect.
+<A NAME="55"></A> * 
+<A NAME="56"></A> * If serving the GET request, we need to follow the logic below:
+<A NAME="57"></A> * 
+<A NAME="58"></A> * 1) Separate Path, File and Query from the request URI using String split
+<A NAME="59"></A> * 2) From Path, extract the URL pattern which is used to map the Module 
+<A NAME="60"></A> *    serving the request. The pattern is only a mapping key and is not part 
+<A NAME="61"></A> *    of the actual file path
+<A NAME="62"></A> * 3) Construct the actual file path from the extracted path above + filename 
+<A NAME="63"></A> */</FONT>
+<A NAME="64"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> GETResource <FONT ID="Extends">extends</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesRequestProcessor.java.html">ResourcesRequestProcessor</A> {
+<A NAME="65"></A>
+<A NAME="66"></A>    Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/GETResource.java.html">GETResource</A>.<FONT ID="Class">class</FONT>);
+<A NAME="67"></A>
+<A NAME="68"></A>    <FONT ID="Private">private</FONT> Properties settings;
+<A NAME="69"></A>
+<A NAME="70"></A>    <FONT ID="FormalComment">/**
+<A NAME="71"></A>     * Constructs a Resource Request Processor for GET requests
+<A NAME="72"></A>     * using the module level configuration settings.
+<A NAME="73"></A>     * 
+<A NAME="74"></A>     * @param settings
+<A NAME="75"></A>     */</FONT>
+<A NAME="76"></A>    <FONT ID="Public">public</FONT> GETResource(Properties settings) {
+<A NAME="77"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="78"></A>        <FONT ID="This">this</FONT>.settings = settings;
+<A NAME="79"></A>    }
+<A NAME="80"></A>
+<A NAME="81"></A>    <FONT ID="FormalComment">/**
+<A NAME="82"></A>     * Processes the GET request.
+<A NAME="83"></A>     * Looks for the URI in the repository.
+<A NAME="84"></A>     * 
+<A NAME="85"></A>     * If the URI points to a directory, either
+<A NAME="86"></A>     * (a) redirects to the defaultDirPath within that directory OR
+<A NAME="87"></A>     * (b) fetches the defaultDirPath within that directory
+<A NAME="88"></A>     * 
+<A NAME="89"></A>     * If the URI is not existing in the repository, either
+<A NAME="90"></A>     * (a) redirects to the notFound file path
+<A NAME="91"></A>     * (b) fetches the notFound file path
+<A NAME="92"></A>     * 
+<A NAME="93"></A>     * If the repository is not connecting, raises a 404
+<A NAME="94"></A>     * 
+<A NAME="95"></A>     * @param request HTTPRequest object to read from
+<A NAME="96"></A>     * @param response HTTPResponse object to write to
+<A NAME="97"></A>     * @throws HttpError 40 Not Found if repo is not accessible OR if resource not found
+<A NAME="98"></A>     */</FONT>
+<A NAME="99"></A>    @Override
+<A NAME="100"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> processRequest(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="101"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="102"></A>        
+<A NAME="103"></A>        
+<A NAME="104"></A>        logger.debug(<FONT ID="StringLiteral">"Processing GET Resource request"</FONT>);
+<A NAME="105"></A>        String uri = <FONT ID="New">new</FONT> String(request.getURI());
+<A NAME="106"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="107"></A>            logger.debug(<FONT ID="StringLiteral">"GET URI : {}"</FONT>, uri);
+<A NAME="108"></A>
+<A NAME="109"></A>            String actualUri = Matcher.extract(uri, urlPattern);
+<A NAME="110"></A>            String contextPath = uri;
+<A NAME="111"></A>            <FONT ID="If">if</FONT>(uri.length() &gt; actualUri.length()) {
+<A NAME="112"></A>                contextPath = uri.substring(<FONT ID="IntegerLiteral">0</FONT>, uri.length()-actualUri.length());
+<A NAME="113"></A>            }
+<A NAME="114"></A>
+<A NAME="115"></A>            logger.debug(<FONT ID="StringLiteral">"GET URI after removing context path : {}"</FONT>, actualUri);
+<A NAME="116"></A>            logger.debug(<FONT ID="StringLiteral">"Context Path : {}"</FONT>, contextPath);
+<A NAME="117"></A>
+<A NAME="118"></A>            <FONT ID="If">if</FONT> (!repository.exists(actualUri)) {
+<A NAME="119"></A>                logger.error(<FONT ID="StringLiteral">"URI {} is not found in repository"</FONT>, actualUri);
+<A NAME="120"></A>                String notFound = settings.getProperty(ResourcesModule.SETTINGS.NOT_FOUND);
+<A NAME="121"></A>                
+<A NAME="122"></A>                <FONT ID="If">if</FONT> (notFound != <FONT ID="Null">null</FONT>) {
+<A NAME="123"></A>                    <FONT ID="SingleLineComment">// Either redirect or GET notFound resource instead
+<A NAME="124"></A></FONT>                    <FONT ID="If">if</FONT>(Boolean.parseBoolean(settings.getProperty(ResourcesModule.SETTINGS.REDIRECT_TO_NOT_FOUND))) {
+<A NAME="125"></A>                        redirectTo(request, response, contextPath+notFound);
+<A NAME="126"></A>                    }
+<A NAME="127"></A>                    <FONT ID="Else">else</FONT> {
+<A NAME="128"></A>                        <FONT ID="Try">try</FONT> {
+<A NAME="129"></A>                            write(response, notFound);
+<A NAME="130"></A>                        }
+<A NAME="131"></A>                        <FONT ID="Catch">catch</FONT>(IOException e) {
+<A NAME="132"></A>                            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>, String.format(<FONT ID="StringLiteral">"(%s) Not found"</FONT>, notFound));
+<A NAME="133"></A>                        }
+<A NAME="134"></A>                    }
+<A NAME="135"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="136"></A>                    <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>, String.format(<FONT ID="StringLiteral">"(%s) Not found"</FONT>, actualUri));
+<A NAME="137"></A>                }
+<A NAME="138"></A>                
+<A NAME="139"></A>            }
+<A NAME="140"></A>            <FONT ID="Else">else</FONT> {
+<A NAME="141"></A>                <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">Metadata</A> info = repository.getInfo(actualUri);
+<A NAME="142"></A>                <FONT ID="If">if</FONT> (!info.isLeafNode()) {
+<A NAME="143"></A>                    
+<A NAME="144"></A>                    logger.debug(<FONT ID="StringLiteral">"We are dealing with a directory here"</FONT>);
+<A NAME="145"></A>                    String defaultDirPath = settings.getProperty(ResourcesModule.SETTINGS.DEFAULT_DIR_PATH);
+<A NAME="146"></A>                    
+<A NAME="147"></A>                    <FONT ID="If">if</FONT> (defaultDirPath != <FONT ID="Null">null</FONT>) {
+<A NAME="148"></A>                    
+<A NAME="149"></A>                        <FONT ID="SingleLineComment">// Either redirect or GET defaultDirPath resource instead
+<A NAME="150"></A></FONT>                        <FONT ID="If">if</FONT>(Boolean.parseBoolean(settings.getProperty(ResourcesModule.SETTINGS.REDIRECT_TO_NOT_FOUND))) {
+<A NAME="151"></A>                            String newLocation = request.getURI() + <FONT ID="StringLiteral">"/"</FONT> + defaultDirPath;
+<A NAME="152"></A>                            redirectTo(request, response, newLocation);
+<A NAME="153"></A>                        }
+<A NAME="154"></A>                        <FONT ID="Else">else</FONT> {
+<A NAME="155"></A>                            <FONT ID="Try">try</FONT> {
+<A NAME="156"></A>                                write(response, actualUri + <FONT ID="StringLiteral">"/"</FONT> + defaultDirPath);
+<A NAME="157"></A>                            }
+<A NAME="158"></A>                            <FONT ID="Catch">catch</FONT>(IOException e) {
+<A NAME="159"></A>                                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>, String.format(<FONT ID="StringLiteral">"(%s) Not found"</FONT>, actualUri + <FONT ID="StringLiteral">"/"</FONT> + defaultDirPath));
+<A NAME="160"></A>                            }
+<A NAME="161"></A>                        }
+<A NAME="162"></A>                    }
+<A NAME="163"></A>                    <FONT ID="Else">else</FONT> {
+<A NAME="164"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>, String.format(<FONT ID="StringLiteral">"(%s) Not found"</FONT>, actualUri));
+<A NAME="165"></A>                    }
+<A NAME="166"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="167"></A>                    write(response, actualUri);
+<A NAME="168"></A>
+<A NAME="169"></A>                    <FONT ID="SingleLineComment">//send as attachment if query param for download is true
+<A NAME="170"></A></FONT>                    <FONT ID="If">if</FONT> (Boolean.parseBoolean(request.getParam(settings
+<A NAME="171"></A>                            .getProperty(ResourcesModule.SETTINGS.DOWNLOAD_PARAM)))) {
+<A NAME="172"></A>                        response.addHeader(Constants.HEADERS.CONTENT_DISPOSITION,
+<A NAME="173"></A>                                <FONT ID="StringLiteral">"attachment; filename=\""</FONT> + info.getName() + <FONT ID="StringLiteral">"\""</FONT>);
+<A NAME="174"></A>                    }
+<A NAME="175"></A>                }
+<A NAME="176"></A>            }
+<A NAME="177"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A> e) {
+<A NAME="178"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>,
+<A NAME="179"></A>                    String.format(<FONT ID="StringLiteral">"(Could not connect to repository)"</FONT>));
+<A NAME="180"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="181"></A>            logger.error(<FONT ID="StringLiteral">"Error while GET resource "</FONT> + uri, e);
+<A NAME="182"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>, String.format(<FONT ID="StringLiteral">"(%s) Not found"</FONT>, uri));
+<A NAME="183"></A>        }
+<A NAME="184"></A>    }
+<A NAME="185"></A>    
+<A NAME="186"></A>    <FONT ID="FormalComment">/**
+<A NAME="187"></A>     * Utility method to fetch a file from the repo and write it to the response.
+<A NAME="188"></A>     * 
+<A NAME="189"></A>     * @param response HttpResponse object to write to
+<A NAME="190"></A>     * @param file Full path of the file to look for in the repo
+<A NAME="191"></A>     * @throws IOException Raised when any error encountered while accessing the repo
+<A NAME="192"></A>     * OR looking up the file
+<A NAME="193"></A>     */</FONT>
+<A NAME="194"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> write(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response, String file) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="195"></A>        <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/Metadata.java.html">Metadata</A> info = repository.getInfo(file);
+<A NAME="196"></A>        FileInputStream fis = repository.lookup(file);
+<A NAME="197"></A>
+<A NAME="198"></A>        <FONT ID="SingleLineComment">// Write file to response stream
+<A NAME="199"></A></FONT>        response.append(fis);
+<A NAME="200"></A>        fis.close();
+<A NAME="201"></A>        <FONT ID="If">if</FONT>(info.getType() != <FONT ID="Null">null</FONT>) {
+<A NAME="202"></A>            response.addHeader(Constants.HEADERS.CONTENT_TYPE, info.getType()); 
+<A NAME="203"></A>        }
+<A NAME="204"></A>    }
+<A NAME="205"></A>    
+<A NAME="206"></A>    <FONT ID="FormalComment">/**
+<A NAME="207"></A>     * Private utility method to send a 301 redirect back to the user agent.
+<A NAME="208"></A>     * Sends the appropriate headers in the response to accomplish that.
+<A NAME="209"></A>     * 
+<A NAME="210"></A>     * @param request HttpRequest object to read from
+<A NAME="211"></A>     * @param response HttpResponse object to write to
+<A NAME="212"></A>     * @param relativeLocation New location to redirect to relative to the current
+<A NAME="213"></A>     * request URI.
+<A NAME="214"></A>     * @throws HttpError throws a 500 Internal Server error if unable to construct
+<A NAME="215"></A>     * a redirect construct.
+<A NAME="216"></A>     */</FONT>
+<A NAME="217"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> redirectTo(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response, String relativeLocation) <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="218"></A>        String host = request.getHeader(Constants.HEADERS.HOST);
+<A NAME="219"></A>        String newLocation = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="220"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="221"></A>            <FONT ID="New">new</FONT> URL(host);
+<A NAME="222"></A>            newLocation = host + <FONT ID="StringLiteral">"/"</FONT> + relativeLocation;
+<A NAME="223"></A>        } <FONT ID="Catch">catch</FONT> (MalformedURLException e) {
+<A NAME="224"></A>            host = <FONT ID="StringLiteral">"http://"</FONT> + host;
+<A NAME="225"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="226"></A>                <FONT ID="New">new</FONT> URL(host);
+<A NAME="227"></A>                newLocation = host + <FONT ID="StringLiteral">"/"</FONT> + relativeLocation;
+<A NAME="228"></A>            } <FONT ID="Catch">catch</FONT> (MalformedURLException ex) {
+<A NAME="229"></A>                newLocation = <FONT ID="StringLiteral">"http://"</FONT> + relativeLocation;
+<A NAME="230"></A>            }
+<A NAME="231"></A>        }
+<A NAME="232"></A>        
+<A NAME="233"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="234"></A>            <FONT ID="New">new</FONT> URL(newLocation);
+<A NAME="235"></A>        } <FONT ID="Catch">catch</FONT>(MalformedURLException e) {
+<A NAME="236"></A>            logger.error(<FONT ID="StringLiteral">"Unable to redirect. Host unavailable ro construct redirect URL."</FONT>);
+<A NAME="237"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">500</FONT>, <FONT ID="StringLiteral">"Unable to redirect. Host unavailable ro construct redirect URL."</FONT>);
+<A NAME="238"></A>        }
+<A NAME="239"></A>        
+<A NAME="240"></A>        logger.debug(<FONT ID="StringLiteral">"Redirecting to {}"</FONT>, newLocation);
+<A NAME="241"></A>        response.status(<FONT ID="IntegerLiteral">301</FONT>)
+<A NAME="242"></A>        .addHeader(Constants.HEADERS.LOCATION, newLocation)
+<A NAME="243"></A>        .addHeader(Constants.HEADERS.CONTENT_TYPE, <FONT ID="StringLiteral">"text/html"</FONT>)
+<A NAME="244"></A>        .append(String.format(Constants.REDIRECT_HTML, newLocation, newLocation));
+<A NAME="245"></A>    }
+<A NAME="246"></A>
+<A NAME="247"></A>}
+<A NAME="248"></A></pre>
+</BODY>
+</HTML>

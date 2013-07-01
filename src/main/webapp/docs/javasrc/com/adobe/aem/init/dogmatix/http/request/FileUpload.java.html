@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.request.FileUpload (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">FileUpload.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.request;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="FormalComment">/**
+<A NAME="20"></A> * Represents a file upload in POST requests
+<A NAME="21"></A> * 
+<A NAME="22"></A> * @author vnagpal
+<A NAME="23"></A> *
+<A NAME="24"></A> */</FONT>
+<A NAME="25"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> FileUpload {
+<A NAME="26"></A>    
+<A NAME="27"></A>    <FONT ID="Public">public</FONT> FileUpload(String fileName, String type, String tempFilePath,
+<A NAME="28"></A>            <FONT ID="Int">int</FONT> size) {
+<A NAME="29"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="30"></A>        <FONT ID="This">this</FONT>.fileName = fileName;
+<A NAME="31"></A>        <FONT ID="This">this</FONT>.type = type;
+<A NAME="32"></A>        <FONT ID="This">this</FONT>.tempFilePath = tempFilePath;
+<A NAME="33"></A>        <FONT ID="This">this</FONT>.size = size;
+<A NAME="34"></A>    }
+<A NAME="35"></A>
+<A NAME="36"></A>    <FONT ID="FormalComment">/**
+<A NAME="37"></A>     * Name of the uploaded file
+<A NAME="38"></A>     */</FONT>
+<A NAME="39"></A>    <FONT ID="Private">private</FONT> String fileName;
+<A NAME="40"></A>    
+<A NAME="41"></A>    <FONT ID="FormalComment">/**
+<A NAME="42"></A>     * Mime type of the uploaded file
+<A NAME="43"></A>     */</FONT>
+<A NAME="44"></A>    <FONT ID="Private">private</FONT> String type;
+<A NAME="45"></A>    
+<A NAME="46"></A>    <FONT ID="FormalComment">/**
+<A NAME="47"></A>     * Path of the temp file in which the contents are uploaded for the time being
+<A NAME="48"></A>     */</FONT>
+<A NAME="49"></A>    <FONT ID="Private">private</FONT> String tempFilePath;
+<A NAME="50"></A>    
+<A NAME="51"></A>    <FONT ID="FormalComment">/**
+<A NAME="52"></A>     * Size of the uploaded file in bytes
+<A NAME="53"></A>     */</FONT>
+<A NAME="54"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> size;
+<A NAME="55"></A>
+<A NAME="56"></A>    <FONT ID="Public">public</FONT> String getFileName() {
+<A NAME="57"></A>        <FONT ID="Return">return</FONT> fileName;
+<A NAME="58"></A>    }
+<A NAME="59"></A>
+<A NAME="60"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setFileName(String fileName) {
+<A NAME="61"></A>        <FONT ID="This">this</FONT>.fileName = fileName;
+<A NAME="62"></A>    }
+<A NAME="63"></A>
+<A NAME="64"></A>    <FONT ID="Public">public</FONT> String getType() {
+<A NAME="65"></A>        <FONT ID="Return">return</FONT> type;
+<A NAME="66"></A>    }
+<A NAME="67"></A>
+<A NAME="68"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setType(String type) {
+<A NAME="69"></A>        <FONT ID="This">this</FONT>.type = type;
+<A NAME="70"></A>    }
+<A NAME="71"></A>
+<A NAME="72"></A>    <FONT ID="Public">public</FONT> String getTempFilePath() {
+<A NAME="73"></A>        <FONT ID="Return">return</FONT> tempFilePath;
+<A NAME="74"></A>    }
+<A NAME="75"></A>
+<A NAME="76"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setTempFilePath(String tempFilePath) {
+<A NAME="77"></A>        <FONT ID="This">this</FONT>.tempFilePath = tempFilePath;
+<A NAME="78"></A>    }
+<A NAME="79"></A>
+<A NAME="80"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getSize() {
+<A NAME="81"></A>        <FONT ID="Return">return</FONT> size;
+<A NAME="82"></A>    }
+<A NAME="83"></A>
+<A NAME="84"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSize(<FONT ID="Int">int</FONT> size) {
+<A NAME="85"></A>        <FONT ID="This">this</FONT>.size = size;
+<A NAME="86"></A>    }
+<A NAME="87"></A>
+<A NAME="88"></A>}
+<A NAME="89"></A></pre>
+</BODY>
+</HTML>

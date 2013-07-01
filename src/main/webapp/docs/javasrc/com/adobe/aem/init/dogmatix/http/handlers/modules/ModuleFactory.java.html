@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleFactory (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ModuleFactory.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.ArrayList;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.util.HashMap;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.util.List;
+<A NAME="22"></A>
+<A NAME="23"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="24"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="25"></A>
+<A NAME="26"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">com.adobe.aem.init.dogmatix.config.ModuleConfig</A>;
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">com.adobe.aem.init.dogmatix.exceptions.InvalidModuleException</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/util/ReflectionUtils.java.html">com.adobe.aem.init.dogmatix.util.ReflectionUtils</A>;
+<A NAME="29"></A>
+<A NAME="30"></A><FONT ID="FormalComment">/**
+<A NAME="31"></A> * A Factory which provides module instances on demand. Maintains an internal
+<A NAME="32"></A> * pool of module instances for re-use, which saves module construction and
+<A NAME="33"></A> * destruction time. Loads the modules at server startup.
+<A NAME="34"></A> * 
+<A NAME="35"></A> * @author vnagpal
+<A NAME="36"></A> * 
+<A NAME="37"></A> */</FONT>
+<A NAME="38"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ModuleFactory {
+<A NAME="39"></A>
+<A NAME="40"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory
+<A NAME="41"></A>            .getLogger(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleFactory.java.html">ModuleFactory</A>.<FONT ID="Class">class</FONT>);
+<A NAME="42"></A>
+<A NAME="43"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> HashMap&lt;<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>, <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleInstancePool.java.html">ModuleInstancePool</A>&gt; moduleInstanceCache;
+<A NAME="44"></A>
+<A NAME="45"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> getModule(
+<A NAME="46"></A>            <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig) <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">Exception</A> {
+<A NAME="47"></A>        <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> module = moduleInstanceCache.get(
+<A NAME="48"></A>                moduleConfig).checkOut();
+<A NAME="49"></A>        <FONT ID="Return">return</FONT> module;
+<A NAME="50"></A>    }
+<A NAME="51"></A>
+<A NAME="52"></A>    <FONT ID="FormalComment">/**
+<A NAME="53"></A>     * Loads the modules instances. Must be called at server startup
+<A NAME="54"></A>     * &lt;b&gt;before&lt;/b&gt; the server starts listening. May be called again if we wish
+<A NAME="55"></A>     * to support config reload without server restart in future.
+<A NAME="56"></A>     * 
+<A NAME="57"></A>     * @throws InvalidModuleException
+<A NAME="58"></A>     */</FONT>
+<A NAME="59"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> load(List&lt;<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt; moduleConfigs)
+<A NAME="60"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">InvalidModuleException</A> {
+<A NAME="61"></A>        logger.debug(<FONT ID="StringLiteral">"Begin loading server modules"</FONT>);
+<A NAME="62"></A>        <FONT ID="If">if</FONT> (moduleInstanceCache == <FONT ID="Null">null</FONT>) {
+<A NAME="63"></A>            moduleInstanceCache = <FONT ID="New">new</FONT> HashMap&lt;<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>, <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleInstancePool.java.html">ModuleInstancePool</A>&gt;();
+<A NAME="64"></A>        }
+<A NAME="65"></A>        <FONT ID="For">for</FONT> (<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig : moduleConfigs) {
+<A NAME="66"></A>            <FONT ID="If">if</FONT> (!moduleInstanceCache.containsKey(moduleConfig)) {
+<A NAME="67"></A>                logger.debug(<FONT ID="StringLiteral">"Loading module {}"</FONT>, moduleConfig.getClassName());
+<A NAME="68"></A>                moduleInstanceCache.put(moduleConfig, <FONT ID="New">new</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleInstancePool.java.html">ModuleInstancePool</A>(
+<A NAME="69"></A>                        moduleConfig));
+<A NAME="70"></A>            }
+<A NAME="71"></A>        }
+<A NAME="72"></A>        logger.debug(<FONT ID="StringLiteral">"Finish loading server modules"</FONT>);
+<A NAME="73"></A>        logger.debug(<FONT ID="StringLiteral">"Generate URL mappings for all modules"</FONT>);
+<A NAME="74"></A>        URLMapping.map(moduleConfigs);
+<A NAME="75"></A>    }
+<A NAME="76"></A>
+<A NAME="77"></A>    <FONT ID="FormalComment">/**
+<A NAME="78"></A>     * Auto-detects and loads the modules in a specific path. Must be called at
+<A NAME="79"></A>     * server startup &lt;b&gt;before&lt;/b&gt; the server starts listening. Convenience
+<A NAME="80"></A>     * method to load all modules in a package path by annotating a class with
+<A NAME="81"></A>     * {@link @Module}. Inspired from Spring's Component Scan.
+<A NAME="82"></A>     * 
+<A NAME="83"></A>     * @param path
+<A NAME="84"></A>     *            package path under which to scan the modules for
+<A NAME="85"></A>     * @throws InvalidModuleException
+<A NAME="86"></A>     */</FONT>
+<A NAME="87"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> annotatedLoad(String path) <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleException.java.html">InvalidModuleException</A> {
+<A NAME="88"></A>        List&lt;Class&lt;?&gt;&gt; moduleClasses = ReflectionUtils
+<A NAME="89"></A>                .getClassesWithAnnotation(path, <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Module.java.html">Module</A>.<FONT ID="Class">class</FONT>);
+<A NAME="90"></A>        List&lt;<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt; moduleConfigs = <FONT ID="New">new</FONT> ArrayList&lt;<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt;();
+<A NAME="91"></A>        <FONT ID="For">for</FONT> (Class&lt;?&gt; clazz : moduleClasses) {
+<A NAME="92"></A>            String className = clazz.getName();
+<A NAME="93"></A>            <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Module.java.html">Module</A> annotation = clazz.getAnnotation(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Module.java.html">Module</A>.<FONT ID="Class">class</FONT>);
+<A NAME="94"></A>            String url = annotation.url();
+<A NAME="95"></A>            <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig = <FONT ID="New">new</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>(className, url);
+<A NAME="96"></A>
+<A NAME="97"></A>            <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Setting.java.html">Setting</A>[] settings = annotation.settings();
+<A NAME="98"></A>            <FONT ID="For">for</FONT> (<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Setting.java.html">Setting</A> setting : settings) {
+<A NAME="99"></A>                moduleConfig.addSetting(setting.name(), setting.value());
+<A NAME="100"></A>            }
+<A NAME="101"></A>            moduleConfigs.add(moduleConfig);
+<A NAME="102"></A>        }
+<A NAME="103"></A>        load(moduleConfigs);
+<A NAME="104"></A>    }
+<A NAME="105"></A>
+<A NAME="106"></A>}</pre>
+</BODY>
+</HTML>

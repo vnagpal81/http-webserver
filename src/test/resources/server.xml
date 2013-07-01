@@ -1,0 +1,168 @@
+<server>
+
+	<modules> 
+		
+		<!-- 
+		
+			 * This section instructs the server to load modules which will handle the HTTP requests.
+			 * Alternately, you can also specify a package in the <scan/> element under which the server
+			   will reflectively look for classes annotated with @Module java annotation.
+			 * A module is uniquely identified by its Class and URL. This implies that the same module can
+			   consume requests from 2 different URLs while still exhibiting separate handling behaviour.
+			   This is defined via the extra <property/> tags that follow.
+			 * Each <property /> XML tag is a String-String Key-Value pair which influences the module 
+			   implementation logic and hence, the keys are module dependent.
+			
+		-->
+				
+		<module>
+			<class>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</class>
+			
+			<!-- 
+				A regular expression of the path to be matched against request URI. 
+				All requests having URIs matching this pattern will be consumed by this module. 
+			-->
+			
+			<url>/**</url>
+			
+			<!-- 
+				Underlying storage strategy. 
+				One of local, remote, ftp, s3. 
+				May need extra settings depending on the repository value.
+				[OPTIONAL] If not specified defaults to 'local'
+			-->
+			<property name="repository">local</property>
+			
+			<!-- 
+				Base directory path in case local storage is used.
+				[OPTIONAL] If not specified defaults to 'resources' directory under server root
+			-->
+			<property name="baseDir">.</property>
+			
+			<!-- 
+				Max upload size in case of POST requests. Units are bytes.
+				[OPTIONAL] If not specified defaults to '5242880' (5MB)
+			-->
+			<!-- <property name="uploadLimit">5000</property> -->
+			
+			<!-- 
+				Tracks GET count if true.
+				[OPTIONAL] If not specified defaults to 'false'
+			-->
+			<property name="track">false</property>
+			
+			<!-- 
+				Query param to check in case response is to be sent as an attachment.
+				Request url should include ?<param>=true
+				[OPTIONAL] If not specified defaults to 'download'
+			-->
+			<property name="downloadParam">download</property>
+			
+			<!-- 
+				The file to default to in case requested resource is a directory.
+				Usually file servers have a default index.html in each folder.
+				[OPTIONAL] If not specified a 404 is raised
+			-->
+			<property name="defaultDirPath">index.html</property>
+			
+			<!-- 
+				The strategy to employ in case requested resource is a directory.
+				If true, send a redirect to the user-agent.
+				If false, fall back to response publishing the defaultDirPath. 
+				If defaultDirPath is not specified then this is ignored.
+				[OPTIONAL] If not specified defaults to 'true'
+			-->
+			<property name="redirectToDefault">false</property>
+			
+			<!-- 
+				The file to default to in case requested resource is not found.
+				Usually file servers have a default 404.html to be served globally.
+				[OPTIONAL] If not specified a 404 is raised
+			-->
+			<property name="notFound">404.html</property>
+			
+			<!-- 
+				The strategy to employ in case requested resource is not found.
+				If true, send a redirect to the user-agent.
+				If false, fall back to response publishing the notFound.
+				If notFound is not specified then this is ignored.
+				[OPTIONAL] If not specified defaults to 'true'
+			-->
+			<property name="redirectToNotFound">false</property>
+		</module>
+		
+		<!-- 
+			The package to scan for classes annotated with 
+			@com.adobe.aem.init.dogmatix.http.handlers.modules.Module
+		-->
+		<!-- <scan>com.adobe.aem.init.dogmatix.http.handlers.modules</scan> -->
+	</modules>
+
+	<configs>
+		<!-- 
+			A valid system port on which the server listens for incoming 
+			HTTP requests. It should be available at the time of startup.
+			[REQUIRED]
+		-->
+		<config name="HTTPPort" value="4444"></config>
+		
+		<!-- 
+			A valid system port on which the server listens for 
+			commands. Commands are actions requests sent as HTTP GETs. 
+			Upon receiving a command request the server is expected to 
+			perform an action. Currently, it is only used to instruct 
+			the server to shutdown.
+			[REQUIRED]
+		-->
+		<config name="CommandPort" value="1913"></config>
+		
+		<!-- 
+			Maximum number of threads allowed in the JVM instance that 
+			the server is running in before it starts rejecting further 
+			incoming requests. Very broadly, it translates into the 
+			concurrency limit. This should not be tampered with unless 
+			you know what you are doing. A low value might result in a 
+			high rate of request rejections. A high value might result 
+			in frequent OutOfMemory exceptions.
+			[REQUIRED]
+		-->
+		<config name="MaxThreads" value="1000"></config>
+		
+		<!-- 
+			The protocol to be adhered while serving requests and building responses.
+			[REQUIRED]
+		-->
+		<config name="HTTPVersion" value="1.1"></config>
+		
+		<!-- 
+			The waiting period in seconds, before halting the server 
+			forcefully. This time is to be utilized by threads to exit 
+			gracefully while releasing any blocked I/O resources.
+			May be increased if your application has frequent long 
+			I/O blocking operations, like 3rd party web service requests. 
+			If too high, will cause a delay in server shutdown and have 
+			no other effect on its operation whatsoever.
+			[REQUIRED]
+		-->
+		<config name="ShutdownGraceTime" value="60"></config>
+		
+		<!-- 
+			Linked to the CommandListener, the Stop command is the command
+			to look for in the GET request which will be received on the 
+			CommandPort for shutting down the server. This has been made 
+			configurable for an installation to have the flexibility in 
+			declaring its own protocol. It is case-insensitive.
+			[REQUIRED]
+		-->
+		<config name="StopCommand" value="STOP"></config>
+		
+		<!-- 
+			The timeout value in seconds when the server responds with a 
+			Keep-Alive header. Clients honouring persistent connections
+			will wait for this amount of time before closing the connection.
+			[REQUIRED]
+		-->
+		<config name="KeepAliveTimeout" value="10"></config>
+	</configs>
+	
+</server>

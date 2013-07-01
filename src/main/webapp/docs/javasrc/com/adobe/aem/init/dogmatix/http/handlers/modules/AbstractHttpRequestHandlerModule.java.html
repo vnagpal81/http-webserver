@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">AbstractHttpRequestHandlerModule.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">com.adobe.aem.init.dogmatix.config.ModuleConfig</A>;
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleConfigException.java.html">com.adobe.aem.init.dogmatix.exceptions.InvalidModuleConfigException</A>;
+<A NAME="23"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">com.adobe.aem.init.dogmatix.http.handlers.HttpContext</A>;
+<A NAME="24"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesModule.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.ResourcesModule</A>;
+<A NAME="25"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/rest/RESTModule.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.rest.RESTModule</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="FormalComment">/**
+<A NAME="28"></A> * Abstract base class representing a {@link Module} which consumes {@link HttpRequest}s
+<A NAME="29"></A> * and writes the appropriate {@link HttpResponse}. 
+<A NAME="30"></A> * 
+<A NAME="31"></A> * All server modules &lt;b&gt;must&lt;/b&gt; extend this class.
+<A NAME="32"></A> * 
+<A NAME="33"></A> * @see ResourcesModule
+<A NAME="34"></A> * @see EchoModule
+<A NAME="35"></A> * @see ProxyServerModule
+<A NAME="36"></A> * @see RESTModule
+<A NAME="37"></A> * 
+<A NAME="38"></A> * @author vnagpal
+<A NAME="39"></A> */</FONT>
+<A NAME="40"></A><FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Class">class</FONT> AbstractHttpRequestHandlerModule {
+<A NAME="41"></A>    
+<A NAME="42"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Static">static</FONT> Properties DEFAULTS = <FONT ID="New">new</FONT> Properties();
+<A NAME="43"></A>
+<A NAME="44"></A>    <FONT ID="FormalComment">/**
+<A NAME="45"></A>     * Each module is configured via XML or class-level Annotation. It is the
+<A NAME="46"></A>     * responsibility of the creator of a module instance to set the
+<A NAME="47"></A>     * corresponding config object without which the functioning of the module
+<A NAME="48"></A>     * would be impaired.
+<A NAME="49"></A>     */</FONT>
+<A NAME="50"></A>    <FONT ID="Protected">protected</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> config;
+<A NAME="51"></A>
+<A NAME="52"></A>    <FONT ID="Public">public</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> getConfig() {
+<A NAME="53"></A>        <FONT ID="Return">return</FONT> config;
+<A NAME="54"></A>    }
+<A NAME="55"></A>
+<A NAME="56"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setConfig(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> config) {
+<A NAME="57"></A>        <FONT ID="This">this</FONT>.config = config;
+<A NAME="58"></A>    }
+<A NAME="59"></A>
+<A NAME="60"></A>    <FONT ID="FormalComment">/**
+<A NAME="61"></A>     * Initialization hook. Can be invoked by child classes to initialize
+<A NAME="62"></A>     * resources using the module config, which is guaranteed to be set by this
+<A NAME="63"></A>     * time.
+<A NAME="64"></A>     * 
+<A NAME="65"></A>     * Different from the constructor because resources might need the
+<A NAME="66"></A>     * moduleConfig.
+<A NAME="67"></A>     * 
+<A NAME="68"></A>     * @throws Exception
+<A NAME="69"></A>     */</FONT>
+<A NAME="70"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> init() <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidModuleConfigException.java.html">InvalidModuleConfigException</A> {
+<A NAME="71"></A>        assert (config != <FONT ID="Null">null</FONT>);
+<A NAME="72"></A>        <FONT ID="SingleLineComment">// initialize child instance using module config
+<A NAME="73"></A></FONT>        Properties moduleSettings = <FONT ID="New">new</FONT> Properties(DEFAULTS);
+<A NAME="74"></A>        moduleSettings.putAll(config.getSettings());
+<A NAME="75"></A>        config.setSettings(moduleSettings);
+<A NAME="76"></A>    }
+<A NAME="77"></A>
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * abstract method. to be implemented by child classes of modules wishing to
+<A NAME="80"></A>     * consume the requests wrapped in context.
+<A NAME="81"></A>     * 
+<A NAME="82"></A>     * @param context
+<A NAME="83"></A>     *            Object wrapper for request and response
+<A NAME="84"></A>     * @return
+<A NAME="85"></A>     */</FONT>
+<A NAME="86"></A>    <FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Boolean">boolean</FONT> consume(<A HREF="../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> context);
+<A NAME="87"></A>
+<A NAME="88"></A>}
+<A NAME="89"></A></pre>
+</BODY>
+</HTML>

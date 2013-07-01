@@ -1,0 +1,275 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.POSTResource (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">POSTResource.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.ByteArrayInputStream;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.io.FileOutputStream;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="24"></A>
+<A NAME="25"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="26"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">com.adobe.aem.init.dogmatix.exceptions.HttpError</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.RepositoryNotAccessibleException</A>;
+<A NAME="30"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">com.adobe.aem.init.dogmatix.http.request.FileUpload</A>;
+<A NAME="31"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">com.adobe.aem.init.dogmatix.http.request.HttpRequest</A>;
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">com.adobe.aem.init.dogmatix.http.response.HttpResponse</A>;
+<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/util/Constants.java.html">com.adobe.aem.init.dogmatix.util.Constants</A>;
+<A NAME="34"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/util/IOUtils.java.html">com.adobe.aem.init.dogmatix.util.IOUtils</A>;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="FormalComment">/**
+<A NAME="37"></A> * A resource request processor which processes POST requests for a resources
+<A NAME="38"></A> * module.
+<A NAME="39"></A> * 
+<A NAME="40"></A> * Delegates the actual CRUD operations to a repository as configured in the
+<A NAME="41"></A> * module level settings.
+<A NAME="42"></A> * 
+<A NAME="43"></A> * @author vnagpal
+<A NAME="44"></A> * 
+<A NAME="45"></A> */</FONT>
+<A NAME="46"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> POSTResource <FONT ID="Extends">extends</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/ResourcesRequestProcessor.java.html">ResourcesRequestProcessor</A> {
+<A NAME="47"></A>
+<A NAME="48"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> String TEMP_DIR = System.getProperty(<FONT ID="StringLiteral">"java.io.tmpdir"</FONT>);
+<A NAME="49"></A>
+<A NAME="50"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> BUFFER_SIZE = <FONT ID="IntegerLiteral">65535</FONT>;
+<A NAME="51"></A>
+<A NAME="52"></A>    Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/POSTResource.java.html">POSTResource</A>.<FONT ID="Class">class</FONT>);
+<A NAME="53"></A>
+<A NAME="54"></A>    <FONT ID="Private">private</FONT> Properties settings;
+<A NAME="55"></A>
+<A NAME="56"></A>    <FONT ID="Public">public</FONT> POSTResource(Properties settings) {
+<A NAME="57"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="58"></A>        <FONT ID="This">this</FONT>.settings = settings;
+<A NAME="59"></A>    }
+<A NAME="60"></A>
+<A NAME="61"></A>    @Override
+<A NAME="62"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> processRequest(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response)
+<A NAME="63"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="64"></A>
+<A NAME="65"></A>        logger.debug(<FONT ID="StringLiteral">"Processing POST Resource request"</FONT>);
+<A NAME="66"></A>        String uri = request.getURI();
+<A NAME="67"></A>
+<A NAME="68"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="69"></A>            logger.debug(<FONT ID="StringLiteral">"POST URI : {}"</FONT>, uri);
+<A NAME="70"></A>
+<A NAME="71"></A>            <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">FileUpload</A> fileUpload = getFileUpload(request);
+<A NAME="72"></A>            String fileName = fileUpload.getFileName();
+<A NAME="73"></A>
+<A NAME="74"></A>            <FONT ID="If">if</FONT> (repository.exists(fileName)) {
+<A NAME="75"></A>                logger.error(<FONT ID="StringLiteral">"File {} already exists in repository"</FONT>, fileName);
+<A NAME="76"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, String.format(
+<A NAME="77"></A>                        <FONT ID="StringLiteral">"File with same name (%s) already exists"</FONT>, fileName));
+<A NAME="78"></A>            }
+<A NAME="79"></A>
+<A NAME="80"></A>            <FONT ID="Long">long</FONT> uploadLimit = Long.parseLong(settings
+<A NAME="81"></A>                    .getProperty(ResourcesModule.SETTINGS.UPLOAD_LIMIT));
+<A NAME="82"></A>            <FONT ID="If">if</FONT> (fileUpload.getSize() &gt; uploadLimit) {
+<A NAME="83"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">413</FONT>, <FONT ID="StringLiteral">"(Max Upload Limit is "</FONT> + uploadLimit + <FONT ID="StringLiteral">" bytes)"</FONT>);
+<A NAME="84"></A>            }
+<A NAME="85"></A>
+<A NAME="86"></A>            repository.create(fileUpload);
+<A NAME="87"></A>
+<A NAME="88"></A>            <FONT ID="SingleLineComment">// Write response
+<A NAME="89"></A></FONT>            response.status(<FONT ID="IntegerLiteral">201</FONT>).append(fileName + <FONT ID="StringLiteral">" saved successfully"</FONT>);
+<A NAME="90"></A>
+<A NAME="91"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/resources/storage/RepositoryNotAccessibleException.java.html">RepositoryNotAccessibleException</A> e) {
+<A NAME="92"></A>            logger.error(<FONT ID="StringLiteral">"Could not connect to repository"</FONT>);
+<A NAME="93"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>, <FONT ID="StringLiteral">"(Could not connect to repository)"</FONT>);
+<A NAME="94"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="95"></A>            logger.error(<FONT ID="StringLiteral">"Error while POSTing resource"</FONT>, e);
+<A NAME="96"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">500</FONT>);
+<A NAME="97"></A>        }
+<A NAME="98"></A>    }
+<A NAME="99"></A>
+<A NAME="100"></A>    <FONT ID="FormalComment">/**
+<A NAME="101"></A>     * Reads the byte buffer and constructs an Upload object.
+<A NAME="102"></A>     * Separates out file upload bytes into a temp file to be saved in the repository later.
+<A NAME="103"></A>     * 
+<A NAME="104"></A>     * Code borrowed from &lt;a href="http://www.prasannatech.net/2009/03/java-http-post-file-upload-server.html"&gt;
+<A NAME="105"></A>     * http://www.prasannatech.net/2009/03/java-http-post-file-upload-server.html&lt;/a&gt;
+<A NAME="106"></A>     * 
+<A NAME="107"></A>     * @param request HTTP Request object
+<A NAME="108"></A>     * @return FileUpload object containing the metadata for the file to be created and path 
+<A NAME="109"></A>     * of the temp file which contains the actual data
+<A NAME="110"></A>     * @throws IOException if any error while reading from request or writing to temp file
+<A NAME="111"></A>     *         HttpError if content type is wrongly set
+<A NAME="112"></A>     */</FONT>
+<A NAME="113"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">FileUpload</A> getFileUpload(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request) <FONT ID="Throws">throws</FONT> IOException, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> {
+<A NAME="114"></A>        ByteArrayInputStream inputStream = <FONT ID="New">new</FONT> ByteArrayInputStream(request.getEntity());
+<A NAME="115"></A>        <FONT ID="SingleLineComment">//BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+<A NAME="116"></A></FONT>        
+<A NAME="117"></A>        <FONT ID="SingleLineComment">//read boundary from multipart/form-data
+<A NAME="118"></A></FONT>        String contentType = request.getHeader(Constants.HEADERS.CONTENT_TYPE);
+<A NAME="119"></A>        logger.debug(<FONT ID="StringLiteral">"{}: {}"</FONT>, Constants.HEADERS.CONTENT_TYPE, contentType);
+<A NAME="120"></A>        <FONT ID="If">if</FONT>(contentType.indexOf(<FONT ID="StringLiteral">"multipart/form-data"</FONT>) == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="121"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Content Type should be 'multipart/form-data' for file uploads)"</FONT>);
+<A NAME="122"></A>        }
+<A NAME="123"></A>        <FONT ID="If">if</FONT>(contentType.indexOf(<FONT ID="StringLiteral">"boundary="</FONT>) == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="124"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(Content Type should include 'boundary' for file uploads)"</FONT>);
+<A NAME="125"></A>        }
+<A NAME="126"></A>        String boundary = <FONT ID="StringLiteral">"--"</FONT> + contentType.split(<FONT ID="StringLiteral">"boundary="</FONT>)[<FONT ID="IntegerLiteral">1</FONT>];
+<A NAME="127"></A>
+<A NAME="128"></A>        <FONT ID="SingleLineComment">//read filename from content-disposition
+<A NAME="129"></A></FONT>        String fileName = <FONT ID="Null">null</FONT>;
+<A NAME="130"></A>        <FONT ID="While">while</FONT>(<FONT ID="True">true</FONT>) {
+<A NAME="131"></A>            String currentLine = IOUtils.readLine(inputStream);<FONT ID="SingleLineComment">//ignore any encoded form data
+<A NAME="132"></A></FONT>            <FONT ID="If">if</FONT> (currentLine.indexOf(boundary) != -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="133"></A>                currentLine = IOUtils.readLine(inputStream);
+<A NAME="134"></A>                <FONT ID="If">if</FONT>(currentLine.indexOf(Constants.HEADERS.CONTENT_DISPOSITION) != -<FONT ID="IntegerLiteral">1</FONT> &amp;&amp; currentLine.indexOf(<FONT ID="StringLiteral">"filename=\""</FONT>) != -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="135"></A>                    String fileNameOnClient = currentLine.split(<FONT ID="StringLiteral">"filename="</FONT>)[<FONT ID="IntegerLiteral">1</FONT>].replaceAll(<FONT ID="StringLiteral">"\""</FONT>, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="136"></A>                    String[] filePath = fileNameOnClient.split(<FONT ID="StringLiteral">"\\"</FONT> + File.separator);
+<A NAME="137"></A>                    fileName = filePath[filePath.length - <FONT ID="IntegerLiteral">1</FONT>];
+<A NAME="138"></A>                    <FONT ID="Break">break</FONT>;                  
+<A NAME="139"></A>                }
+<A NAME="140"></A>            }
+<A NAME="141"></A>        }
+<A NAME="142"></A>        
+<A NAME="143"></A>        <FONT ID="If">if</FONT>(fileName == <FONT ID="Null">null</FONT>) {
+<A NAME="144"></A>            logger.error(<FONT ID="StringLiteral">"Filename missing in POST request entity"</FONT>);
+<A NAME="145"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">400</FONT>, <FONT ID="StringLiteral">"(filename missing)"</FONT>);
+<A NAME="146"></A>        }
+<A NAME="147"></A>        
+<A NAME="148"></A>        logger.debug(<FONT ID="StringLiteral">"File to be uploaded = {}"</FONT>, fileName);
+<A NAME="149"></A>
+<A NAME="150"></A>        <FONT ID="SingleLineComment">//read content type from next line
+<A NAME="151"></A></FONT>        String fileContentType = IOUtils.readLine(inputStream).split(<FONT ID="StringLiteral">" "</FONT>)[<FONT ID="IntegerLiteral">1</FONT>];
+<A NAME="152"></A>        logger.debug(<FONT ID="StringLiteral">"Uploaded file type {}"</FONT>, fileContentType);
+<A NAME="153"></A>
+<A NAME="154"></A>        <FONT ID="SingleLineComment">//skip a line
+<A NAME="155"></A></FONT>        IOUtils.readLine(inputStream); 
+<A NAME="156"></A>
+<A NAME="157"></A>        String tempFile = getTempFileName();
+<A NAME="158"></A>        logger.debug(<FONT ID="StringLiteral">"Saving the file temporarily at {}"</FONT>, tempFile);
+<A NAME="159"></A>        FileOutputStream tempFileOutputStream = <FONT ID="New">new</FONT> FileOutputStream(tempFile);
+<A NAME="160"></A>        <FONT ID="Int">int</FONT> fileSize = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="161"></A>
+<A NAME="162"></A>        <FONT ID="Byte">byte</FONT>[] buffer = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[BUFFER_SIZE];
+<A NAME="163"></A>        <FONT ID="Byte">byte</FONT>[] extendedArray;
+<A NAME="164"></A>        <FONT ID="Byte">byte</FONT>[] endFlag = (boundary + <FONT ID="StringLiteral">"--"</FONT>).getBytes();
+<A NAME="165"></A>                
+<A NAME="166"></A>        <FONT ID="Int">int</FONT> bytesRead, bytesAvailable;   
+<A NAME="167"></A>        
+<A NAME="168"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="169"></A>            <FONT ID="SingleLineComment">// Here we upload the actual file contents
+<A NAME="170"></A></FONT>            <FONT ID="While">while</FONT> ((bytesAvailable = inputStream.available()) &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="171"></A>
+<A NAME="172"></A>                bytesRead = inputStream.read(buffer, <FONT ID="IntegerLiteral">0</FONT>, BUFFER_SIZE);
+<A NAME="173"></A>                extendedArray = buffer;
+<A NAME="174"></A>                fileSize += bytesRead;
+<A NAME="175"></A>                <FONT ID="Int">int</FONT> endBytePos = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="176"></A>
+<A NAME="177"></A>                <FONT ID="SingleLineComment">// When number of bytes to be read in the stream &lt; BUFFER_SIZE
+<A NAME="178"></A></FONT>                <FONT ID="If">if</FONT> (bytesAvailable &lt; BUFFER_SIZE) {
+<A NAME="179"></A>
+<A NAME="180"></A>                    <FONT ID="SingleLineComment">// Case where part of POST Boundary comes in the last buffer
+<A NAME="181"></A></FONT>                    <FONT ID="If">if</FONT> (bytesAvailable &lt; endFlag.length) {
+<A NAME="182"></A>                        extendedArray = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[BUFFER_SIZE + bytesAvailable];
+<A NAME="183"></A>                        System.arraycopy(buffer, <FONT ID="IntegerLiteral">0</FONT>, extendedArray, <FONT ID="IntegerLiteral">0</FONT>, bytesRead);
+<A NAME="184"></A>                        bytesRead = inputStream.read(extendedArray, BUFFER_SIZE, bytesAvailable);
+<A NAME="185"></A>                        fileSize += bytesRead;
+<A NAME="186"></A>                    }
+<A NAME="187"></A>
+<A NAME="188"></A>                }
+<A NAME="189"></A>
+<A NAME="190"></A>                endBytePos = sub_array(extendedArray, endFlag);
+<A NAME="191"></A>
+<A NAME="192"></A>                <FONT ID="If">if</FONT> (endBytePos == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="193"></A>                    tempFileOutputStream.write(buffer, <FONT ID="IntegerLiteral">0</FONT>, bytesRead);
+<A NAME="194"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="195"></A>                    tempFileOutputStream.write(extendedArray, <FONT ID="IntegerLiteral">0</FONT>, endBytePos - <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="196"></A>                }
+<A NAME="197"></A>            }<FONT ID="SingleLineComment">// while
+<A NAME="198"></A></FONT>        }
+<A NAME="199"></A>        <FONT ID="Finally">finally</FONT> {
+<A NAME="200"></A>            tempFileOutputStream.close();
+<A NAME="201"></A>        }
+<A NAME="202"></A>        
+<A NAME="203"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/FileUpload.java.html">FileUpload</A>(fileName, fileContentType, tempFile, fileSize);
+<A NAME="204"></A>    }
+<A NAME="205"></A>    
+<A NAME="206"></A>    <FONT ID="FormalComment">/**
+<A NAME="207"></A>     * Generates a file location where the uploaded file will be temporary stored
+<A NAME="208"></A>     *  
+<A NAME="209"></A>     * @return the temp file path
+<A NAME="210"></A>     */</FONT>
+<A NAME="211"></A>    <FONT ID="Private">private</FONT> String getTempFileName() {
+<A NAME="212"></A>        <FONT ID="Return">return</FONT> TEMP_DIR + File.separator + Thread.currentThread().getName()
+<A NAME="213"></A>                + System.currentTimeMillis();
+<A NAME="214"></A>    }
+<A NAME="215"></A>
+<A NAME="216"></A>    <FONT ID="FormalComment">/**
+<A NAME="217"></A>     * A routine to find the array2 within array1
+<A NAME="218"></A>     * 
+<A NAME="219"></A>     * @param array1 array of bytes to search in
+<A NAME="220"></A>     * @param array2 array of bytes to search for
+<A NAME="221"></A>     * @return index of array1 in array2 if found, else -1
+<A NAME="222"></A>     */</FONT>
+<A NAME="223"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> sub_array(<FONT ID="Byte">byte</FONT>[] array1, <FONT ID="Byte">byte</FONT>[] array2) {
+<A NAME="224"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="225"></A>            <FONT ID="Int">int</FONT> i = array1.length - <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="226"></A>            <FONT ID="Int">int</FONT> j = array2.length - <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="227"></A>            <FONT ID="Boolean">boolean</FONT> found = <FONT ID="False">false</FONT>;
+<A NAME="228"></A>
+<A NAME="229"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> k = i; k &gt;= <FONT ID="IntegerLiteral">0</FONT>; k--) {
+<A NAME="230"></A>                <FONT ID="If">if</FONT> (array1[k] == array2[j]) {
+<A NAME="231"></A>                    found = <FONT ID="True">true</FONT>;
+<A NAME="232"></A>                    <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> l = j - <FONT ID="IntegerLiteral">1</FONT>; l &gt;= <FONT ID="IntegerLiteral">0</FONT>; l--) {
+<A NAME="233"></A>                        k = k - <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="234"></A>                        <FONT ID="If">if</FONT> (k &lt; <FONT ID="IntegerLiteral">0</FONT>)
+<A NAME="235"></A>                            <FONT ID="Return">return</FONT> -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="236"></A>                        <FONT ID="If">if</FONT> (array1[k] == array2[l])
+<A NAME="237"></A>                            <FONT ID="Continue">continue</FONT>;
+<A NAME="238"></A>                        <FONT ID="Else">else</FONT> {
+<A NAME="239"></A>                            found = <FONT ID="False">false</FONT>;
+<A NAME="240"></A>                            <FONT ID="Break">break</FONT>;
+<A NAME="241"></A>                        }
+<A NAME="242"></A>                    }
+<A NAME="243"></A>                    <FONT ID="If">if</FONT> (found == <FONT ID="True">true</FONT>)
+<A NAME="244"></A>                        <FONT ID="Return">return</FONT> k;
+<A NAME="245"></A>                }
+<A NAME="246"></A>            }
+<A NAME="247"></A>        }
+<A NAME="248"></A>        <FONT ID="Catch">catch</FONT>(Exception e) {
+<A NAME="249"></A>            logger.error(<FONT ID="StringLiteral">"Error in sub_array"</FONT>, e);
+<A NAME="250"></A>        }
+<A NAME="251"></A>        
+<A NAME="252"></A>        <FONT ID="Return">return</FONT> -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="253"></A>    }
+<A NAME="254"></A>
+<A NAME="255"></A>}
+<A NAME="256"></A></pre>
+</BODY>
+</HTML>

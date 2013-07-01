@@ -1,0 +1,32 @@
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<!-- general application log -->
+	<appender name="DogmatixLogFile" class="org.apache.log4j.FileAppender">
+		<param name="File" value="../log/dogmatix.log" />
+		<param name="Threshold" value="DEBUG" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p %t [%-40.40c] %x - %m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="consoleAppender" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="INFO" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%m%n"/>
+		</layout>
+   </appender>
+
+	<logger name="net.sf">
+		<level value="ERROR" />
+	</logger>
+	
+	<logger name="org.reflections">
+		<level value="ERROR" />
+	</logger>
+
+	<root>
+		<level value="DEBUG" />
+		<appender-ref ref="DogmatixLogFile" />
+		<appender-ref ref="consoleAppender" />
+	</root>
+</log4j:configuration>

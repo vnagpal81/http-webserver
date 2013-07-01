@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.request.Method (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Method.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.request;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="FormalComment">/**
+<A NAME="20"></A> * HTTP protocol defines a set of request methods. A client can use one of these
+<A NAME="21"></A> * request methods to send a request message to an HTTP server. The methods are:
+<A NAME="22"></A> * 
+<A NAME="23"></A> * GET: A client can use the GET request to get a web resource from the server.
+<A NAME="24"></A> * 
+<A NAME="25"></A> * HEAD: A client can use the HEAD request to get the header that a GET request
+<A NAME="26"></A> * would have obtained. Since the header contains the last-modified date of the
+<A NAME="27"></A> * data, this can be used to check against the local cache copy. 
+<A NAME="28"></A> * 
+<A NAME="29"></A> * POST: Used to post data up to the web server. 
+<A NAME="30"></A> * 
+<A NAME="31"></A> * PUT: Ask the server to store the data.
+<A NAME="32"></A> * 
+<A NAME="33"></A> * DELETE: Ask the server to delete the data. 
+<A NAME="34"></A> * 
+<A NAME="35"></A> * TRACE: Ask the server to return a diagnostic trace of the actions it takes. 
+<A NAME="36"></A> * 
+<A NAME="37"></A> * OPTIONS: Ask the server to return the list of request methods it supports. 
+<A NAME="38"></A> * 
+<A NAME="39"></A> * CONNECT: Used to tell a proxy to make a connection to another host and simply 
+<A NAME="40"></A> * reply the content, without attempting to parse or cache it. This is often used 
+<A NAME="41"></A> * to make SSL connection through the proxy. 
+<A NAME="42"></A> * 
+<A NAME="43"></A> * Other extension methods.
+<A NAME="44"></A> * 
+<A NAME="45"></A> * @author vnagpal
+<A NAME="46"></A> * 
+<A NAME="47"></A> */</FONT>
+<A NAME="48"></A><FONT ID="Public">public</FONT> enum Method {
+<A NAME="49"></A>
+<A NAME="50"></A>    GET, PUT, POST, DELETE, TRACE, CONNECT, HEAD, OPTIONS
+<A NAME="51"></A>
+<A NAME="52"></A>}
+<A NAME="53"></A></pre>
+</BODY>
+</HTML>

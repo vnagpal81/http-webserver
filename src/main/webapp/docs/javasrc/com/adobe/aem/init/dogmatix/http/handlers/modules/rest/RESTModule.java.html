@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.rest.RESTModule (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">RESTModule.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.rest;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.util.Map;
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">com.adobe.aem.init.dogmatix.exceptions.HttpError</A>;
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">com.adobe.aem.init.dogmatix.http.handlers.HttpContext</A>;
+<A NAME="23"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule</A>;
+<A NAME="24"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/Module.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.Module</A>;
+<A NAME="25"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">com.adobe.aem.init.dogmatix.http.request.HttpRequest</A>;
+<A NAME="26"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">com.adobe.aem.init.dogmatix.http.request.Method</A>;
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">com.adobe.aem.init.dogmatix.http.response.HttpResponse</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/util/Matcher.java.html">com.adobe.aem.init.dogmatix.util.Matcher</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/util/ReflectionUtils.java.html">com.adobe.aem.init.dogmatix.util.ReflectionUtils</A>;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="FormalComment">/**
+<A NAME="32"></A> * A module which acts like a front controller and delegates the actual
+<A NAME="33"></A> * request handling to an appropriate {@link Handler} determined by matching
+<A NAME="34"></A> * the request URI against a url mapping specified via the module settings.
+<A NAME="35"></A> * 
+<A NAME="36"></A> * Once a {@link Handler} is determined, the request method determines which
+<A NAME="37"></A> * method of the class is to be invoked and that is done reflectively.
+<A NAME="38"></A> * 
+<A NAME="39"></A> * This module offers an extension point where users can plugin their REST
+<A NAME="40"></A> * handlers. This is modeled on the SpringMVC framework.
+<A NAME="41"></A> * 
+<A NAME="42"></A> * @author vnagpal
+<A NAME="43"></A> *
+<A NAME="44"></A> */</FONT>
+<A NAME="45"></A>@<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">Module</A>(url=<FONT ID="StringLiteral">"rest/*"</FONT>)
+<A NAME="46"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> RESTModule <FONT ID="Extends">extends</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/AbstractHttpRequestHandlerModule.java.html">AbstractHttpRequestHandlerModule</A> {
+<A NAME="47"></A>
+<A NAME="48"></A>    <FONT ID="Private">private</FONT> Map&lt;String, <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/rest/Handler.java.html">Handler</A>&gt; urlMapping;
+<A NAME="49"></A>
+<A NAME="50"></A>    <FONT ID="Public">public</FONT> RESTModule() {
+<A NAME="51"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="52"></A>            init();
+<A NAME="53"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="54"></A>        }
+<A NAME="55"></A>        <FONT ID="SingleLineComment">//load url mapping from module config
+<A NAME="56"></A></FONT>    }
+<A NAME="57"></A>    
+<A NAME="58"></A>    <FONT ID="FormalComment">/**
+<A NAME="59"></A>     * Consumes the HTTP request.
+<A NAME="60"></A>     * 
+<A NAME="61"></A>     * (1) Gets a handler class based on url mapping.
+<A NAME="62"></A>     * (2) Determines the handler class method based on HTTP request method.
+<A NAME="63"></A>     * (3) Invokes the method reflectively.
+<A NAME="64"></A>     * (4) If no method found, invokes the default method handle()
+<A NAME="65"></A>     * (5) If no handler found, raise a 404.
+<A NAME="66"></A>     */</FONT>
+<A NAME="67"></A>    @Override
+<A NAME="68"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> consume(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/HttpContext.java.html">HttpContext</A> ctx) {
+<A NAME="69"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="70"></A>            <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/HttpRequest.java.html">HttpRequest</A> request = ctx.getRequest();
+<A NAME="71"></A>            <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/response/HttpResponse.java.html">HttpResponse</A> response = ctx.getResponse();
+<A NAME="72"></A>
+<A NAME="73"></A>            <FONT ID="SingleLineComment">// Deduce HTTP Method
+<A NAME="74"></A></FONT>            <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/request/Method.java.html">Method</A> httpMethod = request.getMethod();
+<A NAME="75"></A>
+<A NAME="76"></A>            <FONT ID="SingleLineComment">// Deduce Handler from URLMapping
+<A NAME="77"></A></FONT>            <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/rest/Handler.java.html">Handler</A> handler = getHandler(request.getURI());
+<A NAME="78"></A>
+<A NAME="79"></A>            <FONT ID="If">if</FONT> (handler != <FONT ID="Null">null</FONT>) {
+<A NAME="80"></A>                <FONT ID="SingleLineComment">// Invoke handler.method() if found, else invoke handler.handle()
+<A NAME="81"></A></FONT>                <FONT ID="Try">try</FONT> {
+<A NAME="82"></A>                    java.lang.reflect.Method target = ReflectionUtils
+<A NAME="83"></A>                            .getMethodWithExactName(handler.getClass(),
+<A NAME="84"></A>                                    request.getMethod().name());
+<A NAME="85"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="86"></A>                        target.invoke(handler, request, response);
+<A NAME="87"></A>                    } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="88"></A>                        <FONT ID="SingleLineComment">// raise 500 Internal Server Error
+<A NAME="89"></A></FONT>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">500</FONT>);
+<A NAME="90"></A>                    }
+<A NAME="91"></A>                } <FONT ID="Catch">catch</FONT> (NoSuchMethodException e) {
+<A NAME="92"></A>                    handler.handle(request, response);
+<A NAME="93"></A>                }
+<A NAME="94"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="95"></A>                <FONT ID="SingleLineComment">// raise 404
+<A NAME="96"></A></FONT>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A>(<FONT ID="IntegerLiteral">404</FONT>);
+<A NAME="97"></A>            }           
+<A NAME="98"></A>        }
+<A NAME="99"></A>        <FONT ID="Catch">catch</FONT>(<A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/exceptions/HttpError.java.html">HttpError</A> e) {
+<A NAME="100"></A>            
+<A NAME="101"></A>        }
+<A NAME="102"></A>        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="103"></A>    }
+<A NAME="104"></A>
+<A NAME="105"></A>    <FONT ID="FormalComment">/**
+<A NAME="106"></A>     * Determines a handler to handle a HTTP REST request using the URL mapping rules
+<A NAME="107"></A>     * 
+<A NAME="108"></A>     * @param uri the request URI to match against
+<A NAME="109"></A>     * @return the Handler class instance if found, else null
+<A NAME="110"></A>     */</FONT>
+<A NAME="111"></A>    <FONT ID="Protected">protected</FONT> <A HREF="../../../../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/rest/Handler.java.html">Handler</A> getHandler(String uri) {
+<A NAME="112"></A>        <FONT ID="For">for</FONT> (String pattern : urlMapping.keySet()) {
+<A NAME="113"></A>            <FONT ID="Boolean">boolean</FONT> matchFound = Matcher.matches(uri, pattern);
+<A NAME="114"></A>            <FONT ID="If">if</FONT> (matchFound) {
+<A NAME="115"></A>                <FONT ID="Return">return</FONT> urlMapping.get(pattern);
+<A NAME="116"></A>            }
+<A NAME="117"></A>        }
+<A NAME="118"></A>        <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="119"></A>    }
+<A NAME="120"></A>
+<A NAME="121"></A>}
+<A NAME="122"></A></pre>
+</BODY>
+</HTML>

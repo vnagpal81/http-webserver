@@ -1,0 +1,120 @@
+<html>
+	<head>
+		<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+		<script type="text/javascript" src="../js/jquery.js"></script>
+		<script type="text/javascript">
+			var getReadingMaterial = function(filename) {
+				$.ajax({
+					url:filename,
+					type:"GET",
+					dataType:"text",
+					async:false,
+					success:function(data) {
+						fillReader(data);
+					},
+					error:function(data) {
+						alert("Error connecting to server. Retry after some time.");
+					}
+				});
+			};
+
+			/*Code to convert text 2 HTML borrowed from http://stackoverflow.com/a/5047731*/
+			var charEncodings = {
+				"\t": "&nbsp;&nbsp;&nbsp;&nbsp;",
+				" ": "&nbsp;",
+				"&": "&amp;",
+				"<": "&lt;",
+				">": "&gt;",
+				"\n": "<br />",
+				"\r": "<br />"
+			};
+			var space = /[\t ]/;
+			var noWidthSpace = "&#8203;";
+			function textToHTML(text)
+			{
+				text = (text || "") + "";  // make sure it's a string;
+				text = text.replace(/\r\n/g, "\n");  // avoid adding two <br /> tags
+				var html = "";
+				var lastChar = "";
+				for (var i in text)
+				{
+					var char = text[i];
+					var charCode = text.charCodeAt(i);
+					if (space.test(char) && !space.test(lastChar) && space.test(text[i + 1] || ""))
+					{
+						html += noWidthSpace;
+					}
+					html += char in charEncodings ? charEncodings[char] :
+					charCode > 127 ? "&#" + charCode + ";" : char;
+					lastChar = char;
+				}
+				return html;
+			}  
+
+			var fillReader = function(txt, convert) {
+				$("#reader").html(textToHTML(txt));
+			};
+
+			$(document).ready(function() {
+				$("#rfc").click(function(e) {
+					e.preventDefault();
+					getReadingMaterial("rfc2616.txt");
+				});
+				$("#build").click(function(e) {
+					e.preventDefault();
+					getReadingMaterial("BUILDING.txt");
+				});
+				$("#config").click(function(e) {
+					e.preventDefault();
+					getReadingMaterial("CONFIGURING.txt");
+				});
+				$("#run").click(function(e) {
+					e.preventDefault();
+					getReadingMaterial("RUNNING.txt");
+				});
+			});
+		</script>
+	</head>
+	<body>
+
+		<h1 align="center">
+			
+			<a href="http://en.wikipedia.org/wiki/Dogmatix" target="_blank">
+				<img src="../images/Dogmatix.png" title="Dogmatix" alt="http://en.wikipedia.org/wiki/File:Dogmatix.png" style="border-style: none"/>
+			</a>
+			<br/>
+			Dogmatix 1.0 HTTP Web Server
+			<br/>
+
+		</h1>
+
+		<h2 align="center"> Welcome! </h2>
+
+		<table border="2" width="100%" >
+			<tr>
+				<td id="menu" width="15%">
+					<ul id="menulist">
+						<li>&gt;&gt; <a href="../index.html">Home</a></li>
+						<li>&gt;&gt; <a href="../admin.html">Administrative Console</a></li>
+						<li>&gt;&gt; <a href="../examples/">Examples</a></li>
+						<li class="current">&gt;&gt; <a href="../docs/">Documentation</a></li>
+						<li>&gt;&gt; <a href="../contact.html">Contact</a></li>
+					</ul>
+				</td>
+				<td id="submenu" width="15%">
+					<ul id="submenulist">
+						<li>&gt;&gt; <a id="rfc" href="#">RFC 2616</a></li>
+						<li>&gt;&gt; <a href="javasrc/index.html" target="_blank">Source Code</a></li>
+						<li>&gt;&gt; <a href="javadocs/index.html" target="_blank">Source Javadocs</a></li>
+						<li>&gt;&gt; <a id="build" href="#">Building the source code</a></li>
+						<li>&gt;&gt; <a id="config" href="#">Configuring the server</a></li>
+						<li>&gt;&gt; <a id="run" href="#">Running the server</a></li>
+					</ul>
+				</td>
+				<td class="center">
+					<div id="reader" width="100%"></div>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

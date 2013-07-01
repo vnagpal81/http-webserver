@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage.Metadata (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Metadata.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.http.handlers.modules.resources.storage;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="FormalComment">/**
+<A NAME="20"></A> * Metadata information about a path in a file system consisting of:
+<A NAME="21"></A> * 
+<A NAME="22"></A> * Name         :   The path which the metadata is about
+<A NAME="23"></A> * Size         :   If the path points to a file, size is set to a 
+<A NAME="24"></A> *                  non-zero value representing file size in bytes 
+<A NAME="25"></A> * Type         :   If the path points to a file, Mimetype of the file
+<A NAME="26"></A> * Owner        :   Creator's username in the file system
+<A NAME="27"></A> * Created On   :   Timestamp of creation in the file system
+<A NAME="28"></A> * Modified On  :   Timestamp of the last modification event
+<A NAME="29"></A> * Leaf Node    :   True, if the path represents a file.
+<A NAME="30"></A> *                  False, if the path represents a directory.
+<A NAME="31"></A> * 
+<A NAME="32"></A> * @author vnagpal
+<A NAME="33"></A> *
+<A NAME="34"></A> */</FONT>
+<A NAME="35"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> Metadata {
+<A NAME="36"></A>    
+<A NAME="37"></A>    <FONT ID="Private">private</FONT> String name;
+<A NAME="38"></A>
+<A NAME="39"></A>    <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> size;
+<A NAME="40"></A>    
+<A NAME="41"></A>    <FONT ID="Private">private</FONT> String type;
+<A NAME="42"></A>    
+<A NAME="43"></A>    <FONT ID="Private">private</FONT> String owner;
+<A NAME="44"></A>    
+<A NAME="45"></A>    <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> createdOn;
+<A NAME="46"></A>    
+<A NAME="47"></A>    <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> lastModifiedOn;
+<A NAME="48"></A>    
+<A NAME="49"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> leafNode;
+<A NAME="50"></A>    
+<A NAME="51"></A>    <FONT ID="Public">public</FONT> String getName() {
+<A NAME="52"></A>        <FONT ID="Return">return</FONT> name;
+<A NAME="53"></A>    }
+<A NAME="54"></A>
+<A NAME="55"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setName(String name) {
+<A NAME="56"></A>        <FONT ID="This">this</FONT>.name = name;
+<A NAME="57"></A>    }
+<A NAME="58"></A>
+<A NAME="59"></A>    <FONT ID="Public">public</FONT> <FONT ID="Long">long</FONT> getSize() {
+<A NAME="60"></A>        <FONT ID="Return">return</FONT> size;
+<A NAME="61"></A>    }
+<A NAME="62"></A>
+<A NAME="63"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSize(<FONT ID="Long">long</FONT> size) {
+<A NAME="64"></A>        <FONT ID="This">this</FONT>.size = size;
+<A NAME="65"></A>    }
+<A NAME="66"></A>
+<A NAME="67"></A>    <FONT ID="Public">public</FONT> String getType() {
+<A NAME="68"></A>        <FONT ID="Return">return</FONT> type;
+<A NAME="69"></A>    }
+<A NAME="70"></A>
+<A NAME="71"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setType(String type) {
+<A NAME="72"></A>        <FONT ID="This">this</FONT>.type = type;
+<A NAME="73"></A>    }
+<A NAME="74"></A>
+<A NAME="75"></A>    <FONT ID="Public">public</FONT> String getOwner() {
+<A NAME="76"></A>        <FONT ID="Return">return</FONT> owner;
+<A NAME="77"></A>    }
+<A NAME="78"></A>
+<A NAME="79"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setOwner(String owner) {
+<A NAME="80"></A>        <FONT ID="This">this</FONT>.owner = owner;
+<A NAME="81"></A>    }
+<A NAME="82"></A>
+<A NAME="83"></A>    <FONT ID="Public">public</FONT> <FONT ID="Long">long</FONT> getCreatedOn() {
+<A NAME="84"></A>        <FONT ID="Return">return</FONT> createdOn;
+<A NAME="85"></A>    }
+<A NAME="86"></A>
+<A NAME="87"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setCreatedOn(<FONT ID="Long">long</FONT> createdOn) {
+<A NAME="88"></A>        <FONT ID="This">this</FONT>.createdOn = createdOn;
+<A NAME="89"></A>    }
+<A NAME="90"></A>
+<A NAME="91"></A>    <FONT ID="Public">public</FONT> <FONT ID="Long">long</FONT> getLastModifiedOn() {
+<A NAME="92"></A>        <FONT ID="Return">return</FONT> lastModifiedOn;
+<A NAME="93"></A>    }
+<A NAME="94"></A>
+<A NAME="95"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setLastModifiedOn(<FONT ID="Long">long</FONT> lastModifiedOn) {
+<A NAME="96"></A>        <FONT ID="This">this</FONT>.lastModifiedOn = lastModifiedOn;
+<A NAME="97"></A>    }
+<A NAME="98"></A>
+<A NAME="99"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isLeafNode() {
+<A NAME="100"></A>        <FONT ID="Return">return</FONT> leafNode;
+<A NAME="101"></A>    }
+<A NAME="102"></A>
+<A NAME="103"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setLeafNode(<FONT ID="Boolean">boolean</FONT> leafNode) {
+<A NAME="104"></A>        <FONT ID="This">this</FONT>.leafNode = leafNode;
+<A NAME="105"></A>    }
+<A NAME="106"></A>    
+<A NAME="107"></A>}
+<A NAME="108"></A></pre>
+</BODY>
+</HTML>

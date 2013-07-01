@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.5">
+<TITLE>com.adobe.aem.init.dogmatix.listeners.Listener (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Listener.java</font>
+</td>
+<td align="right" colspan="2" width="33%">&nbsp;</td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Licensed to the Apache Software Foundation (ASF) under one or more
+<A NAME="3"></A> * contributor license agreements. The ASF licenses this file to You 
+<A NAME="4"></A> * under the Apache License, Version 2.0 (the "License"); you may not 
+<A NAME="5"></A> * use this file except in compliance with the License.  
+<A NAME="6"></A> * You may obtain a copy of the License at
+<A NAME="7"></A> * 
+<A NAME="8"></A> *      http://www.apache.org/licenses/LICENSE-2.0
+<A NAME="9"></A> * 
+<A NAME="10"></A> * Unless required by applicable law or agreed to in writing, software
+<A NAME="11"></A> * distributed under the License is distributed on an "AS IS" BASIS,
+<A NAME="12"></A> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<A NAME="13"></A> * See the License for the specific language governing permissions and
+<A NAME="14"></A> * limitations under the License.
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.listeners;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.net.ServerSocket;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="22"></A>
+<A NAME="23"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="24"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="25"></A>
+<A NAME="26"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/util/NetworkUtils.java.html">com.adobe.aem.init.dogmatix.util.NetworkUtils</A>;
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="FormalComment">/**
+<A NAME="29"></A> * A listener is defined by its capability to listen on a specified port.
+<A NAME="30"></A> * This is achieved by creating a {@link ServerSocket} on that port and 
+<A NAME="31"></A> * waiting for client connections.
+<A NAME="32"></A> * 
+<A NAME="33"></A> * A listener is a thread because each connection accepted on the {@link ServerSocket} must
+<A NAME="34"></A> * free up the port for further connections and hence, needs to be processed in a synchronous {@link Thread}
+<A NAME="35"></A> * 
+<A NAME="36"></A> * The actual processing is done in the abstract method process() which the {@link Listener} implementations
+<A NAME="37"></A> * need to provide.
+<A NAME="38"></A> * 
+<A NAME="39"></A> * Also exposes a stopListening() method for anyone to call to forcefully close the {@link ServerSocket}
+<A NAME="40"></A> * 
+<A NAME="41"></A> * @see CommandListener
+<A NAME="42"></A> * @see HttpListener
+<A NAME="43"></A> * 
+<A NAME="44"></A> * @author vnagpal
+<A NAME="45"></A> *
+<A NAME="46"></A> */</FONT>
+<A NAME="47"></A><FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Class">class</FONT> Listener <FONT ID="Extends">extends</FONT> Thread {
+<A NAME="48"></A>
+<A NAME="49"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Static">static</FONT> Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>.<FONT ID="Class">class</FONT>);
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> port;
+<A NAME="52"></A>    <FONT ID="Protected">protected</FONT> ServerSocket serverSocket;
+<A NAME="53"></A>
+<A NAME="54"></A>    <FONT ID="Public">public</FONT> Listener(<FONT ID="Int">int</FONT> port) {
+<A NAME="55"></A>        <FONT ID="This">this</FONT>.port = port;
+<A NAME="56"></A>    }
+<A NAME="57"></A>
+<A NAME="58"></A>    <FONT ID="FormalComment">/**
+<A NAME="59"></A>     * Accept incoming requests on the server socket until Thread is manually 
+<A NAME="60"></A>     * interrupted or an I/O error is encountered.
+<A NAME="61"></A>     */</FONT>
+<A NAME="62"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="63"></A>        listen(<FONT ID="This">this</FONT>.port);
+<A NAME="64"></A>
+<A NAME="65"></A>        <FONT ID="If">if</FONT> (serverSocket != <FONT ID="Null">null</FONT>) {
+<A NAME="66"></A>            <FONT ID="While">while</FONT>(!isInterrupted()) {
+<A NAME="67"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="68"></A>                    Socket socket = serverSocket.accept();
+<A NAME="69"></A>                    socket.setTcpNoDelay(<FONT ID="True">true</FONT>);
+<A NAME="70"></A>                    process(socket);
+<A NAME="71"></A>                } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="72"></A>                    logger.debug(<FONT ID="StringLiteral">"Intentionally closing socket listening on {}"</FONT>, <FONT ID="This">this</FONT>.port);
+<A NAME="73"></A>                    interrupt();
+<A NAME="74"></A>                } 
+<A NAME="75"></A>            }
+<A NAME="76"></A>            logger.debug(<FONT ID="StringLiteral">"Exiting listener thread"</FONT>);
+<A NAME="77"></A>        }
+<A NAME="78"></A>    }
+<A NAME="79"></A>
+<A NAME="80"></A>    <FONT ID="FormalComment">/**
+<A NAME="81"></A>     * Create a server side socket to listen for incoming transport on this port
+<A NAME="82"></A>     * @param port
+<A NAME="83"></A>     */</FONT>
+<A NAME="84"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> listen(<FONT ID="Int">int</FONT> port) {
+<A NAME="85"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="86"></A>            <FONT ID="If">if</FONT>(NetworkUtils.available(port)) {
+<A NAME="87"></A>                serverSocket = <FONT ID="New">new</FONT> ServerSocket(port);
+<A NAME="88"></A>                logger.debug(<FONT ID="StringLiteral">"Listening on port: "</FONT> + port);
+<A NAME="89"></A>            }
+<A NAME="90"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="91"></A>            logger.error(<FONT ID="StringLiteral">"Could not listen on port: "</FONT> + port);
+<A NAME="92"></A>        }
+<A NAME="93"></A>    }
+<A NAME="94"></A>
+<A NAME="95"></A>    <FONT ID="FormalComment">/**
+<A NAME="96"></A>     * Process the connection made on this socket
+<A NAME="97"></A>     * @param socket
+<A NAME="98"></A>     * @throws IOException
+<A NAME="99"></A>     */</FONT>
+<A NAME="100"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Void">void</FONT> process(Socket socket) <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="101"></A>
+<A NAME="102"></A>    <FONT ID="FormalComment">/**
+<A NAME="103"></A>     * Instruction to stop listening by closing the server side socket.
+<A NAME="104"></A>     */</FONT>
+<A NAME="105"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stopListening() {
+<A NAME="106"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="107"></A>            serverSocket.close();
+<A NAME="108"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="109"></A>            logger.debug(<FONT ID="StringLiteral">"Intentionally closing socket listening on {}"</FONT>, <FONT ID="This">this</FONT>.port);
+<A NAME="110"></A>        }
+<A NAME="111"></A>    }
+<A NAME="112"></A>}
+<A NAME="113"></A></pre>
+</BODY>
+</HTML>

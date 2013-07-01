@@ -1,0 +1,128 @@
+<html>
+	<head>
+		<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+		<script type="text/javascript" src="../js/jquery.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				var accordion = $("#accordion");
+				accordion.find("h3").click(function() {
+					var heading = $(this);
+					var content = heading.next();
+					if(heading.hasClass("open")) {
+						content.slideUp();
+						heading.removeClass("open");
+						return;
+					}
+					var open_heading = accordion.find("h3.open");
+					if(open_heading.length > 0) {
+						var open_content = open_heading.next();
+						open_content.slideUp();
+						open_heading.removeClass("open");
+					}
+					content.slideDown();
+					heading.addClass("open");
+				});
+				accordion.find("h3").first().click();
+				
+				$("#uploadForm").submit(function(){
+					var file = $(this).find("input[name=\"file\"]").val();
+					var filename = "";
+					if (file.indexOf("/") != -1) {
+						filename = file.substring(file.lastIndexOf("/") + 1, file.length);
+					}
+					else {
+						filename = file.substring(file.lastIndexOf("\\") + 1, file.length);
+					}
+					$("#uploadHistory").append("<li> <a href=\"/" + filename + "\" target=\"_blank\">" + filename + "</a> uploaded at " + new Date() + "</li>");
+					return true;
+				});
+			});
+		</script>
+	</head>
+	<body>
+
+		<h1 align="center">
+			
+			<a href="http://en.wikipedia.org/wiki/Dogmatix" target="_blank">
+				<img src="../images/Dogmatix.png" title="Dogmatix" alt="http://en.wikipedia.org/wiki/File:Dogmatix.png" style="border-style: none"/>
+			</a>
+			<br/>
+			Dogmatix 1.0 HTTP Web Server
+			<br/>
+
+		</h1>
+
+		<h2 align="center"> Welcome! </h2>
+
+		<table border="2" width="100%" >
+			<tr>
+				<td id="menu" width="25%">
+					<ul>
+						<li>&gt;&gt; <a href="../index.html">Home</a></li>
+						<li>&gt;&gt; <a href="../admin.html">Administrative Console</a></li>
+						<li class="current">&gt;&gt; <a href="../examples/">Examples</a></li>
+						<li>&gt;&gt; <a href="../docs/">Documentation</a></li>
+						<li>&gt;&gt; <a href="../contact.html">Contact</a></li>
+					</ul>
+				</td>
+				<td class="center">
+					<div id="accordion">
+						<h3>GET requests</h3>
+						<div>
+							<table id="assets" width="100%">
+								<thead align="left">
+									<tr><th>Asset</th><th>View Link</th><th>Download Link</th></tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Plain Text file (A sample text file generated with Lorem Ipsum text)</td>
+										<td><a href="assets/sample.txt">&#9658;</a></td>
+										<td><a href="assets/sample.txt?download=true">&#9660;</a></td>
+									</tr>
+									<tr>
+										<td>HTML/JS (A sample HTML page demonstrating drag and drop feature using Javascript)</td>
+										<td><a href="assets/drag-drop.html">&#9658;</a></td>
+										<td><a href="assets/drag-drop.html?download=true">&#9660;</a></td>
+									</tr>
+									<tr>
+										<td>Binary PDF file (A sample pdf generated with Lorem Ipsum text)</td>
+										<td><a href="assets/sample.pdf">&#9658;</a></td>
+										<td><a href="assets/sample.pdf?download=true">&#9660;</a></td>
+									</tr>
+									<tr>
+										<td>Binary Audio file (Originally from <a href="http://www.archive.org/download/MozartEineKleineNachtmusik/I.Allegro.mp3" target="_blank">Wolfgang Amadeus Mozart – “Eine kleine Nachtmusik” mp3</a>)</td>
+										<td><a href="assets/I.Allegro.mp3">&#9658;</a></td>
+										<td><a href="assets/I.Allegro.mp3?download=true">&#9660;</a></td>
+									</tr>
+									<tr>
+										<td>Binary Image file (The Adobe logo borrowed generously from the Adobe.com website)</td>
+										<td><a href="assets/logo.png">&#9658;</a></td>
+										<td><a href="assets/logo.png?download=true">&#9660;</a></td>
+									</tr>
+									<tr>
+										<td>Non-existent file (You will be redirected to a 404 page)</td>
+										<td><a href="assets/null">&#9658;</a></td>
+										<td><a href="assets/null?download=true">&#9660;</a></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<h3>POST requests</h3>
+						<div>
+							<form action="/" method="POST" enctype="multipart/form-data" id="uploadForm" target="_blank">
+								File Upload (max. 5MB)<br/>
+								<input name="file" type="file"/>
+								<input value="Upload" type="submit"/>
+							</form>
+							<div>
+								Upload History:
+								<ul id="uploadHistory">
+								</ul>
+							</div>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
