@@ -8,17 +8,6 @@
 	<description>A multi-threaded file based HTTP Web Server</description>
 	<packaging>jar</packaging>
 	<build>
-		<sourceDirectory>src</sourceDirectory>
-		<!-- 
-		<resources>
-			<resource>
-				<includes>
-					<include>log4j.xml</include>
-				</includes>
-				<directory>src/resources</directory>
-			</resource>
-		</resources>
-		-->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -53,7 +42,7 @@
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 					<appendAssemblyId>false</appendAssemblyId>
-					<descriptor>src/assembly/zip.xml</descriptor>
+					<descriptor>src/main/assembly/zip.xml</descriptor>
 				</configuration>
 				<executions>
 					<execution>
@@ -98,6 +87,12 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>3.2.3.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
