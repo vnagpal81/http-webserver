@@ -1,4 +1,4 @@
-			 ============================
+						 ============================
                          Domgatix 1.0 Patch Proposals
                          ============================
 
@@ -12,7 +12,7 @@ RELEASE SHOWSTOPPERS:
   JUnit based Test Cases to test existing server functionality
 
 * HTTP Methods support
-  Support to be added for PUT/POST/DELETE/HEAD/CONNECT within the ResourcesModule
+  Support to be added for PUT/DELETE/HEAD/CONNECT within the ResourcesModule
 
 
 PATCHES/ISSUES THAT ARE STALLED:

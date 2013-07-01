@@ -55,6 +55,6 @@ The server implementation (ver. 1.0) currently does NOT support the following:
 
 (1) Any of the modules except Resources or Echo
 
-(2) Any of the HTTP methods except GET Resource
+(2) Any of the HTTP methods except GET and POST Resource
 
 (3) Connection: Keep-Alive header implementation of persistent TCP connections.
