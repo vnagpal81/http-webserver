@@ -164,73 +164,72 @@
 <A NAME="147"></A>
 <A NAME="148"></A>        <FONT ID="If">if</FONT> (body.size()&gt;<FONT ID="IntegerLiteral">0</FONT> &amp;&amp; !headers.containsKey(Constants.HEADERS.CONTENT_TYPE)) {
 <A NAME="149"></A>            <FONT ID="Try">try</FONT> {
-<A NAME="150"></A>                headers.put(Constants.HEADERS.CONTENT_TYPE, Magic
-<A NAME="151"></A>                        .getMagicMatch(body.toString().getBytes())
-<A NAME="152"></A>                        .getMimeType());
-<A NAME="153"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
-<A NAME="154"></A>                logger.error(<FONT ID="StringLiteral">"Error while determining content type"</FONT>);
-<A NAME="155"></A>            }
-<A NAME="156"></A>        }
-<A NAME="157"></A>
-<A NAME="158"></A>        <FONT ID="For">for</FONT> (String name : headers.keySet()) {
-<A NAME="159"></A>            String headerLine = name + <FONT ID="StringLiteral">": "</FONT> + headers.get(name);
-<A NAME="160"></A>            stringResponse.append(headerLine);
-<A NAME="161"></A>            stringResponse.append(NEW_LINE);
-<A NAME="162"></A>        }
-<A NAME="163"></A>
-<A NAME="164"></A>        stringResponse.append(NEW_LINE);
-<A NAME="165"></A>        
-<A NAME="166"></A>        <FONT ID="Return">return</FONT> stringResponse.toString();
-<A NAME="167"></A>    }
-<A NAME="168"></A>
-<A NAME="169"></A>    <FONT ID="FormalComment">/**
-<A NAME="170"></A>     * Gets the bytes representing the response 
-<A NAME="171"></A>     * 
-<A NAME="172"></A>     * @return
-<A NAME="173"></A>     * @throws IOException
-<A NAME="174"></A>     */</FONT>
-<A NAME="175"></A>    <FONT ID="Public">public</FONT> <FONT ID="Byte">byte</FONT>[] getBytes() <FONT ID="Throws">throws</FONT> IOException {
-<A NAME="176"></A>        ByteArrayOutputStream finalResponse = <FONT ID="New">new</FONT> ByteArrayOutputStream();
-<A NAME="177"></A>        
-<A NAME="178"></A>        <FONT ID="Byte">byte</FONT>[] initial = toString().getBytes();
-<A NAME="179"></A>        
-<A NAME="180"></A>        finalResponse.write(initial, <FONT ID="IntegerLiteral">0</FONT>, initial.length);
-<A NAME="181"></A>
-<A NAME="182"></A>        <FONT ID="If">if</FONT>(body.size()&gt;<FONT ID="IntegerLiteral">0</FONT>) {
-<A NAME="183"></A>            finalResponse.write(body.toByteArray(), <FONT ID="IntegerLiteral">0</FONT>, body.size());
-<A NAME="184"></A>        }
-<A NAME="185"></A>        
-<A NAME="186"></A>        <FONT ID="Return">return</FONT> finalResponse.toByteArray();
-<A NAME="187"></A>    }
-<A NAME="188"></A>
-<A NAME="189"></A>    <FONT ID="FormalComment">/**
-<A NAME="190"></A>     * Writes the response to the socket output stream
-<A NAME="191"></A>     * 
-<A NAME="192"></A>     * @throws IOException
-<A NAME="193"></A>     */</FONT>
-<A NAME="194"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> flush() <FONT ID="Throws">throws</FONT> IOException {
-<A NAME="195"></A>        <FONT ID="If">if</FONT>(flushed) {
-<A NAME="196"></A>            <FONT ID="Return">return</FONT>;
-<A NAME="197"></A>        }
-<A NAME="198"></A>        <FONT ID="Try">try</FONT> {
-<A NAME="199"></A>            outputStream.write(getBytes());
-<A NAME="200"></A>        }
-<A NAME="201"></A>        <FONT ID="Catch">catch</FONT>(Exception e) {
-<A NAME="202"></A>            logger.error(<FONT ID="StringLiteral">"Error while flushing request"</FONT>, e);
-<A NAME="203"></A>            <FONT ID="Throw">throw</FONT> e;
-<A NAME="204"></A>        }
-<A NAME="205"></A>        <FONT ID="Finally">finally</FONT> {
-<A NAME="206"></A>            flushed = <FONT ID="True">true</FONT>;
-<A NAME="207"></A>        }
-<A NAME="208"></A>        logger.debug(<FONT ID="StringLiteral">"Response sent back"</FONT>);
-<A NAME="209"></A>        logger.debug(toString());
-<A NAME="210"></A>        logger.debug(<FONT ID="StringLiteral">"&lt;Response body&gt;"</FONT>);
-<A NAME="211"></A>    }
-<A NAME="212"></A>
-<A NAME="213"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getStatus() {
-<A NAME="214"></A>        <FONT ID="Return">return</FONT> status;
-<A NAME="215"></A>    }
-<A NAME="216"></A>}
-<A NAME="217"></A></pre>
+<A NAME="150"></A>                 String type = Magic.getMagicMatch(body.toString().getBytes()).getMimeType();
+<A NAME="151"></A>                 headers.put(Constants.HEADERS.CONTENT_TYPE, type);
+<A NAME="152"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="153"></A>                logger.error(<FONT ID="StringLiteral">"Error while determining content type"</FONT>);
+<A NAME="154"></A>            }
+<A NAME="155"></A>        }
+<A NAME="156"></A>
+<A NAME="157"></A>        <FONT ID="For">for</FONT> (String name : headers.keySet()) {
+<A NAME="158"></A>            String headerLine = name + <FONT ID="StringLiteral">": "</FONT> + headers.get(name);
+<A NAME="159"></A>            stringResponse.append(headerLine);
+<A NAME="160"></A>            stringResponse.append(NEW_LINE);
+<A NAME="161"></A>        }
+<A NAME="162"></A>
+<A NAME="163"></A>        stringResponse.append(NEW_LINE);
+<A NAME="164"></A>        
+<A NAME="165"></A>        <FONT ID="Return">return</FONT> stringResponse.toString();
+<A NAME="166"></A>    }
+<A NAME="167"></A>
+<A NAME="168"></A>    <FONT ID="FormalComment">/**
+<A NAME="169"></A>     * Gets the bytes representing the response 
+<A NAME="170"></A>     * 
+<A NAME="171"></A>     * @return
+<A NAME="172"></A>     * @throws IOException
+<A NAME="173"></A>     */</FONT>
+<A NAME="174"></A>    <FONT ID="Public">public</FONT> <FONT ID="Byte">byte</FONT>[] getBytes() <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="175"></A>        ByteArrayOutputStream finalResponse = <FONT ID="New">new</FONT> ByteArrayOutputStream();
+<A NAME="176"></A>        
+<A NAME="177"></A>        <FONT ID="Byte">byte</FONT>[] initial = toString().getBytes();
+<A NAME="178"></A>        
+<A NAME="179"></A>        finalResponse.write(initial, <FONT ID="IntegerLiteral">0</FONT>, initial.length);
+<A NAME="180"></A>
+<A NAME="181"></A>        <FONT ID="If">if</FONT>(body.size()&gt;<FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="182"></A>            finalResponse.write(body.toByteArray(), <FONT ID="IntegerLiteral">0</FONT>, body.size());
+<A NAME="183"></A>        }
+<A NAME="184"></A>        
+<A NAME="185"></A>        <FONT ID="Return">return</FONT> finalResponse.toByteArray();
+<A NAME="186"></A>    }
+<A NAME="187"></A>
+<A NAME="188"></A>    <FONT ID="FormalComment">/**
+<A NAME="189"></A>     * Writes the response to the socket output stream
+<A NAME="190"></A>     * 
+<A NAME="191"></A>     * @throws IOException
+<A NAME="192"></A>     */</FONT>
+<A NAME="193"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> flush() <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="194"></A>        <FONT ID="If">if</FONT>(flushed) {
+<A NAME="195"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="196"></A>        }
+<A NAME="197"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="198"></A>            outputStream.write(getBytes());
+<A NAME="199"></A>        }
+<A NAME="200"></A>        <FONT ID="Catch">catch</FONT>(Exception e) {
+<A NAME="201"></A>            logger.error(<FONT ID="StringLiteral">"Error while flushing request"</FONT>, e);
+<A NAME="202"></A>            <FONT ID="Throw">throw</FONT> e;
+<A NAME="203"></A>        }
+<A NAME="204"></A>        <FONT ID="Finally">finally</FONT> {
+<A NAME="205"></A>            flushed = <FONT ID="True">true</FONT>;
+<A NAME="206"></A>        }
+<A NAME="207"></A>        logger.debug(<FONT ID="StringLiteral">"Response sent back"</FONT>);
+<A NAME="208"></A>        logger.debug(toString());
+<A NAME="209"></A>        logger.debug(<FONT ID="StringLiteral">"&lt;Response body&gt;"</FONT>);
+<A NAME="210"></A>    }
+<A NAME="211"></A>
+<A NAME="212"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getStatus() {
+<A NAME="213"></A>        <FONT ID="Return">return</FONT> status;
+<A NAME="214"></A>    }
+<A NAME="215"></A>}
+<A NAME="216"></A></pre>
 </BODY>
 </HTML>

@@ -188,28 +188,28 @@
 <A NAME="171"></A>
 <A NAME="172"></A>                bytesRead = inputStream.read(buffer, <FONT ID="IntegerLiteral">0</FONT>, BUFFER_SIZE);
 <A NAME="173"></A>                extendedArray = buffer;
-<A NAME="174"></A>                fileSize += bytesRead;
-<A NAME="175"></A>                <FONT ID="Int">int</FONT> endBytePos = <FONT ID="IntegerLiteral">0</FONT>;
-<A NAME="176"></A>
-<A NAME="177"></A>                <FONT ID="SingleLineComment">// When number of bytes to be read in the stream &lt; BUFFER_SIZE
-<A NAME="178"></A></FONT>                <FONT ID="If">if</FONT> (bytesAvailable &lt; BUFFER_SIZE) {
-<A NAME="179"></A>
-<A NAME="180"></A>                    <FONT ID="SingleLineComment">// Case where part of POST Boundary comes in the last buffer
-<A NAME="181"></A></FONT>                    <FONT ID="If">if</FONT> (bytesAvailable &lt; endFlag.length) {
-<A NAME="182"></A>                        extendedArray = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[BUFFER_SIZE + bytesAvailable];
-<A NAME="183"></A>                        System.arraycopy(buffer, <FONT ID="IntegerLiteral">0</FONT>, extendedArray, <FONT ID="IntegerLiteral">0</FONT>, bytesRead);
-<A NAME="184"></A>                        bytesRead = inputStream.read(extendedArray, BUFFER_SIZE, bytesAvailable);
-<A NAME="185"></A>                        fileSize += bytesRead;
-<A NAME="186"></A>                    }
+<A NAME="174"></A>                <FONT ID="Int">int</FONT> endBytePos = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="175"></A>
+<A NAME="176"></A>                <FONT ID="SingleLineComment">// When number of bytes to be read in the stream &lt; BUFFER_SIZE
+<A NAME="177"></A></FONT>                <FONT ID="If">if</FONT> (bytesAvailable &lt; BUFFER_SIZE) {
+<A NAME="178"></A>
+<A NAME="179"></A>                    <FONT ID="SingleLineComment">// Case where part of POST Boundary comes in the last buffer
+<A NAME="180"></A></FONT>                    <FONT ID="If">if</FONT> (bytesAvailable &lt; endFlag.length) {
+<A NAME="181"></A>                        extendedArray = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[BUFFER_SIZE + bytesAvailable];
+<A NAME="182"></A>                        System.arraycopy(buffer, <FONT ID="IntegerLiteral">0</FONT>, extendedArray, <FONT ID="IntegerLiteral">0</FONT>, bytesRead);
+<A NAME="183"></A>                        bytesRead = inputStream.read(extendedArray, BUFFER_SIZE, bytesAvailable);
+<A NAME="184"></A>                    }
+<A NAME="185"></A>
+<A NAME="186"></A>                }
 <A NAME="187"></A>
-<A NAME="188"></A>                }
+<A NAME="188"></A>                endBytePos = sub_array(extendedArray, endFlag);
 <A NAME="189"></A>
-<A NAME="190"></A>                endBytePos = sub_array(extendedArray, endFlag);
-<A NAME="191"></A>
-<A NAME="192"></A>                <FONT ID="If">if</FONT> (endBytePos == -<FONT ID="IntegerLiteral">1</FONT>) {
-<A NAME="193"></A>                    tempFileOutputStream.write(buffer, <FONT ID="IntegerLiteral">0</FONT>, bytesRead);
-<A NAME="194"></A>                } <FONT ID="Else">else</FONT> {
-<A NAME="195"></A>                    tempFileOutputStream.write(extendedArray, <FONT ID="IntegerLiteral">0</FONT>, endBytePos - <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="190"></A>                <FONT ID="If">if</FONT> (endBytePos == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="191"></A>                    tempFileOutputStream.write(buffer, <FONT ID="IntegerLiteral">0</FONT>, bytesRead);
+<A NAME="192"></A>                    fileSize += bytesRead;
+<A NAME="193"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="194"></A>                    tempFileOutputStream.write(extendedArray, <FONT ID="IntegerLiteral">0</FONT>, endBytePos - <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="195"></A>                    fileSize += endBytePos - <FONT ID="IntegerLiteral">2</FONT>;
 <A NAME="196"></A>                }
 <A NAME="197"></A>            }<FONT ID="SingleLineComment">// while
 <A NAME="198"></A></FONT>        }

@@ -36,70 +36,75 @@
 <A NAME="19"></A><FONT ID="Import">import</FONT> java.util.ArrayList;
 <A NAME="20"></A><FONT ID="Import">import</FONT> java.util.List;
 <A NAME="21"></A>
-<A NAME="22"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
-<A NAME="23"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
-<A NAME="24"></A>
-<A NAME="25"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">com.adobe.aem.init.dogmatix.listeners.Listener</A>;
-<A NAME="26"></A>
-<A NAME="27"></A><FONT ID="FormalComment">/**
-<A NAME="28"></A> * A finisher thread whose responsibility is to halt the server 
-<A NAME="29"></A> * systematically by registering the threads listening in the server
-<A NAME="30"></A> * and asking each of them gracefully to stop listening.
-<A NAME="31"></A> * 
-<A NAME="32"></A> * A finisher should be used as a JVM instance exit hook provided by
-<A NAME="33"></A> * Runtime.getRuntime().addShutdownHook()
-<A NAME="34"></A> * 
-<A NAME="35"></A> * @author vnagpal
-<A NAME="36"></A> *
-<A NAME="37"></A> */</FONT>
-<A NAME="38"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> Finisher <FONT ID="Extends">extends</FONT> Thread {
-<A NAME="39"></A>    
-<A NAME="40"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/core/Finisher.java.html">Finisher</A>.<FONT ID="Class">class</FONT>);
-<A NAME="41"></A>    
-<A NAME="42"></A>    <FONT ID="FormalComment">/**
-<A NAME="43"></A>     * List of Listener threads which will be stopped when the finisher executes
-<A NAME="44"></A>     */</FONT>
-<A NAME="45"></A>    <FONT ID="Private">private</FONT> List&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>&gt; listeners;
-<A NAME="46"></A>    
-<A NAME="47"></A>    <FONT ID="FormalComment">/**
-<A NAME="48"></A>     * Construct a finisher with listener threads
-<A NAME="49"></A>     * @param listeners
-<A NAME="50"></A>     */</FONT>
-<A NAME="51"></A>    <FONT ID="Public">public</FONT> Finisher(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>... listeners) {
-<A NAME="52"></A>        logger.debug(<FONT ID="StringLiteral">"Created a Finisher"</FONT>);
-<A NAME="53"></A>        <FONT ID="If">if</FONT>(<FONT ID="This">this</FONT>.listeners == <FONT ID="Null">null</FONT>) {
-<A NAME="54"></A>            <FONT ID="This">this</FONT>.listeners = <FONT ID="New">new</FONT> ArrayList&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>&gt;();
-<A NAME="55"></A>        }
-<A NAME="56"></A>        <FONT ID="For">for</FONT>(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener : listeners) {
-<A NAME="57"></A>            registerListener(listener);
-<A NAME="58"></A>        }
-<A NAME="59"></A>    }
-<A NAME="60"></A>
-<A NAME="61"></A>    <FONT ID="FormalComment">/**
-<A NAME="62"></A>     * Register a listener with this finisher.
-<A NAME="63"></A>     * Each listener is stopped when the finisher executes.
-<A NAME="64"></A>     * 
-<A NAME="65"></A>     * @param listener A listener thread
-<A NAME="66"></A>     */</FONT>
-<A NAME="67"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> registerListener(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener) {
-<A NAME="68"></A>        logger.debug(<FONT ID="StringLiteral">"Register a listener with the finisher"</FONT>);
-<A NAME="69"></A>        <FONT ID="This">this</FONT>.listeners.add(listener);
-<A NAME="70"></A>    }
-<A NAME="71"></A>    
-<A NAME="72"></A>    <FONT ID="FormalComment">/**
-<A NAME="73"></A>     * When the finisher runs, it iterates over all registered listeners
-<A NAME="74"></A>     * instructing them to stop listening by invoking Listener.stopListening()
-<A NAME="75"></A>     */</FONT>
-<A NAME="76"></A>    @Override
-<A NAME="77"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
-<A NAME="78"></A>        logger.debug(<FONT ID="StringLiteral">"Invoked the finisher"</FONT>);
-<A NAME="79"></A>        <FONT ID="For">for</FONT>(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener : listeners) {
-<A NAME="80"></A>            logger.debug(<FONT ID="StringLiteral">"Telling listener {} to stop listening"</FONT>, listener);
-<A NAME="81"></A>            listener.stopListening();
-<A NAME="82"></A>        }
-<A NAME="83"></A>    }
-<A NAME="84"></A>    
-<A NAME="85"></A>}
-<A NAME="86"></A></pre>
+<A NAME="22"></A><FONT ID="Import">import</FONT> org.apache.log4j.LogManager;
+<A NAME="23"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="24"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="25"></A>
+<A NAME="26"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">com.adobe.aem.init.dogmatix.listeners.Listener</A>;
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="FormalComment">/**
+<A NAME="29"></A> * A finisher thread whose responsibility is to halt the server 
+<A NAME="30"></A> * systematically by registering the threads listening in the server
+<A NAME="31"></A> * and asking each of them gracefully to stop listening.
+<A NAME="32"></A> * 
+<A NAME="33"></A> * A finisher should be used as a JVM instance exit hook provided by
+<A NAME="34"></A> * Runtime.getRuntime().addShutdownHook()
+<A NAME="35"></A> * 
+<A NAME="36"></A> * @author vnagpal
+<A NAME="37"></A> *
+<A NAME="38"></A> */</FONT>
+<A NAME="39"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> Finisher <FONT ID="Extends">extends</FONT> Thread {
+<A NAME="40"></A>    
+<A NAME="41"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/core/Finisher.java.html">Finisher</A>.<FONT ID="Class">class</FONT>);
+<A NAME="42"></A>    
+<A NAME="43"></A>    <FONT ID="FormalComment">/**
+<A NAME="44"></A>     * List of Listener threads which will be stopped when the finisher executes
+<A NAME="45"></A>     */</FONT>
+<A NAME="46"></A>    <FONT ID="Private">private</FONT> List&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>&gt; listeners;
+<A NAME="47"></A>    
+<A NAME="48"></A>    <FONT ID="FormalComment">/**
+<A NAME="49"></A>     * Construct a finisher with listener threads
+<A NAME="50"></A>     * @param listeners
+<A NAME="51"></A>     */</FONT>
+<A NAME="52"></A>    <FONT ID="Public">public</FONT> Finisher(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>... listeners) {
+<A NAME="53"></A>        logger.debug(<FONT ID="StringLiteral">"Created a Finisher"</FONT>);
+<A NAME="54"></A>        <FONT ID="If">if</FONT>(<FONT ID="This">this</FONT>.listeners == <FONT ID="Null">null</FONT>) {
+<A NAME="55"></A>            <FONT ID="This">this</FONT>.listeners = <FONT ID="New">new</FONT> ArrayList&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A>&gt;();
+<A NAME="56"></A>        }
+<A NAME="57"></A>        <FONT ID="For">for</FONT>(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener : listeners) {
+<A NAME="58"></A>            registerListener(listener);
+<A NAME="59"></A>        }
+<A NAME="60"></A>    }
+<A NAME="61"></A>
+<A NAME="62"></A>    <FONT ID="FormalComment">/**
+<A NAME="63"></A>     * Register a listener with this finisher.
+<A NAME="64"></A>     * Each listener is stopped when the finisher executes.
+<A NAME="65"></A>     * 
+<A NAME="66"></A>     * @param listener A listener thread
+<A NAME="67"></A>     */</FONT>
+<A NAME="68"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> registerListener(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener) {
+<A NAME="69"></A>        logger.debug(<FONT ID="StringLiteral">"Register a listener with the finisher"</FONT>);
+<A NAME="70"></A>        <FONT ID="This">this</FONT>.listeners.add(listener);
+<A NAME="71"></A>    }
+<A NAME="72"></A>    
+<A NAME="73"></A>    <FONT ID="FormalComment">/**
+<A NAME="74"></A>     * When the finisher runs, it iterates over all registered listeners
+<A NAME="75"></A>     * instructing them to stop listening by invoking Listener.stopListening()
+<A NAME="76"></A>     */</FONT>
+<A NAME="77"></A>    @Override
+<A NAME="78"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="79"></A>        logger.debug(<FONT ID="StringLiteral">"Invoked the finisher"</FONT>);
+<A NAME="80"></A>        
+<A NAME="81"></A>        <FONT ID="For">for</FONT>(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/listeners/Listener.java.html">Listener</A> listener : listeners) {
+<A NAME="82"></A>            logger.debug(<FONT ID="StringLiteral">"Telling listener {} to stop listening"</FONT>, listener);
+<A NAME="83"></A>            listener.stopListening();
+<A NAME="84"></A>        }
+<A NAME="85"></A>        
+<A NAME="86"></A>        logger.debug(<FONT ID="StringLiteral">"Shutting down log daemon"</FONT>);
+<A NAME="87"></A>        LogManager.shutdown();
+<A NAME="88"></A>    }
+<A NAME="89"></A>    
+<A NAME="90"></A>}
+<A NAME="91"></A></pre>
 </BODY>
 </HTML>

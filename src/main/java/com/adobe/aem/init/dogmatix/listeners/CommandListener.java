@@ -82,6 +82,7 @@ public class CommandListener extends Listener {
 		if(command.toLowerCase().contains(serverConfig.stopCommand().toLowerCase())) {
 			OutputStream outputStream = socket.getOutputStream();
 			HttpResponse response = new HttpResponse(outputStream);
+			
 			response
 			.status(200)
 			.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
@@ -90,20 +91,18 @@ public class CommandListener extends Listener {
 			
 			cleanup(socket);
 			
-			//stopListening();
 			System.exit(0);
 		}
 		else if(command.toLowerCase().contains("stats")) {
-			String callbackFunc = command.split("\\?")[1];
-			//send server statistics in response
 			OutputStream outputStream = socket.getOutputStream();
 			HttpResponse response = new HttpResponse(outputStream);
+			
 			response
 			.status(200)
 			.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
 			.append("callbackServerStats("+ServerStatistics.getStatsAsJSON()+")")
 			.flush();
-			//out.close();
+			
 			cleanup(socket);
 		}
 
@@ -126,6 +125,6 @@ public class CommandListener extends Listener {
 	}
 	
 	private void cleanup(Socket socket) throws IOException {
-		socket.getOutputStream().close();
+		socket.close();
 	}
 }

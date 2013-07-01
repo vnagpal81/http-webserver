@@ -17,11 +17,11 @@
    </appender>
 
 	<logger name="net.sf">
-		<level value="NONE" />
+		<level value="ERROR" />
 	</logger>
 	
 	<logger name="org.reflections">
-		<level value="NONE" />
+		<level value="ERROR" />
 	</logger>
 
 	<root>

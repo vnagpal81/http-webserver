@@ -44,43 +44,47 @@
 <A NAME="27"></A> */</FONT>
 <A NAME="28"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> IOUtils {
 <A NAME="29"></A>    
-<A NAME="30"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Char">char</FONT> LF = <FONT ID="CharacerLiteral">'\n'</FONT>;
-<A NAME="31"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Char">char</FONT> CR = <FONT ID="CharacerLiteral">'\r'</FONT>;
-<A NAME="32"></A>    
-<A NAME="33"></A>    <FONT ID="FormalComment">/**
-<A NAME="34"></A>     * Read a line from an input stream. A line is ended with \n or \r\n
-<A NAME="35"></A>     *  
-<A NAME="36"></A>     * @param in the input stream to read from
-<A NAME="37"></A>     * @return the line as a string of characters
-<A NAME="38"></A>     * @throws IOException thrown if any error encountered while reading
-<A NAME="39"></A>     */</FONT>
-<A NAME="40"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String readLine(InputStream in) <FONT ID="Throws">throws</FONT> IOException {
-<A NAME="41"></A>        String line = <FONT ID="StringLiteral">""</FONT>;
-<A NAME="42"></A>
-<A NAME="43"></A>        <FONT ID="Int">int</FONT> b = in.read();
-<A NAME="44"></A>        <FONT ID="Char">char</FONT> c = (<FONT ID="Char">char</FONT>) b;
-<A NAME="45"></A>
-<A NAME="46"></A>        <FONT ID="While">while</FONT> (b != -<FONT ID="IntegerLiteral">1</FONT> &amp;&amp; c != LF) {
-<A NAME="47"></A>            line = line + Character.toString(c);
-<A NAME="48"></A>            c = (<FONT ID="Char">char</FONT>) (in.read());
-<A NAME="49"></A>        }
-<A NAME="50"></A>        <FONT ID="Return">return</FONT> line.substring(<FONT ID="IntegerLiteral">0</FONT>, line.lastIndexOf(CR));
-<A NAME="51"></A>    }
-<A NAME="52"></A>    
-<A NAME="53"></A>    <FONT ID="FormalComment">/**
-<A NAME="54"></A>     * Reads the specified number of bytes from an input stream
-<A NAME="55"></A>     * 
-<A NAME="56"></A>     * @param inputStream the input stream to read from
-<A NAME="57"></A>     * @param length the number of bytes to read
-<A NAME="58"></A>     * @return an array of bytes read
-<A NAME="59"></A>     * @throws IOException thrown if any error occurs while reading
-<A NAME="60"></A>     */</FONT>
-<A NAME="61"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Byte">byte</FONT>[] read(InputStream inputStream, <FONT ID="Int">int</FONT> length) <FONT ID="Throws">throws</FONT> IOException {
-<A NAME="62"></A>        <FONT ID="Byte">byte</FONT>[] buffer = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[length];
-<A NAME="63"></A>        inputStream.read(buffer, <FONT ID="IntegerLiteral">0</FONT>, length);
-<A NAME="64"></A>        <FONT ID="Return">return</FONT> buffer;
-<A NAME="65"></A>    }
-<A NAME="66"></A>}
-<A NAME="67"></A></pre>
+<A NAME="30"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Char">char</FONT> LF = <FONT ID="CharacerLiteral">'\n'</FONT>;
+<A NAME="31"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Char">char</FONT> CR = <FONT ID="CharacerLiteral">'\r'</FONT>;
+<A NAME="32"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> String CRLF = <FONT ID="StringLiteral">""</FONT> + CR + LF;
+<A NAME="33"></A>    
+<A NAME="34"></A>    <FONT ID="FormalComment">/**
+<A NAME="35"></A>     * Read a line from an input stream. A line is ended with \n or \r\n
+<A NAME="36"></A>     *  
+<A NAME="37"></A>     * @param in the input stream to read from
+<A NAME="38"></A>     * @return the line as a string of characters
+<A NAME="39"></A>     * @throws IOException thrown if any error encountered while reading
+<A NAME="40"></A>     */</FONT>
+<A NAME="41"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String readLine(InputStream in) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="42"></A>        String line = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="43"></A>
+<A NAME="44"></A>        <FONT ID="Int">int</FONT> b = in.read();
+<A NAME="45"></A>        <FONT ID="Char">char</FONT> c = (<FONT ID="Char">char</FONT>) b;
+<A NAME="46"></A>
+<A NAME="47"></A>        <FONT ID="While">while</FONT> (b != -<FONT ID="IntegerLiteral">1</FONT> &amp;&amp; c != LF) {
+<A NAME="48"></A>            line = line + Character.toString(c);
+<A NAME="49"></A>            c = (<FONT ID="Char">char</FONT>) (in.read());
+<A NAME="50"></A>        }
+<A NAME="51"></A>        <FONT ID="If">if</FONT>(line.lastIndexOf(CR) != -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="52"></A>            <FONT ID="Return">return</FONT> line.substring(<FONT ID="IntegerLiteral">0</FONT>, line.lastIndexOf(CR));
+<A NAME="53"></A>        }
+<A NAME="54"></A>        <FONT ID="Return">return</FONT> line;
+<A NAME="55"></A>    }
+<A NAME="56"></A>    
+<A NAME="57"></A>    <FONT ID="FormalComment">/**
+<A NAME="58"></A>     * Reads the specified number of bytes from an input stream
+<A NAME="59"></A>     * 
+<A NAME="60"></A>     * @param inputStream the input stream to read from
+<A NAME="61"></A>     * @param length the number of bytes to read
+<A NAME="62"></A>     * @return an array of bytes read
+<A NAME="63"></A>     * @throws IOException thrown if any error occurs while reading
+<A NAME="64"></A>     */</FONT>
+<A NAME="65"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Byte">byte</FONT>[] read(InputStream inputStream, <FONT ID="Int">int</FONT> length) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="66"></A>        <FONT ID="Byte">byte</FONT>[] buffer = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[length];
+<A NAME="67"></A>        inputStream.read(buffer, <FONT ID="IntegerLiteral">0</FONT>, length);
+<A NAME="68"></A>        <FONT ID="Return">return</FONT> buffer;
+<A NAME="69"></A>    }
+<A NAME="70"></A>}
+<A NAME="71"></A></pre>
 </BODY>
 </HTML>

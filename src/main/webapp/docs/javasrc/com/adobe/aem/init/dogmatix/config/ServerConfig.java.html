@@ -33,392 +33,396 @@
 <A NAME="16"></A>
 <A NAME="17"></A><FONT ID="Package">package</FONT> com.adobe.aem.init.dogmatix.config;
 <A NAME="18"></A>
-<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.FileInputStream;
-<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.InputStream;
-<A NAME="21"></A><FONT ID="Import">import</FONT> java.util.ArrayList;
-<A NAME="22"></A><FONT ID="Import">import</FONT> java.util.List;
-<A NAME="23"></A><FONT ID="Import">import</FONT> java.util.Properties;
-<A NAME="24"></A>
-<A NAME="25"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
-<A NAME="26"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
-<A NAME="27"></A><FONT ID="Import">import</FONT> org.w3c.dom.Document;
-<A NAME="28"></A><FONT ID="Import">import</FONT> org.w3c.dom.Element;
-<A NAME="29"></A><FONT ID="Import">import</FONT> org.w3c.dom.NodeList;
-<A NAME="30"></A>
-<A NAME="31"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">com.adobe.aem.init.dogmatix.exceptions.InvalidConfigException</A>;
-<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleFactory.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleFactory</A>;
-<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/request/Version.java.html">com.adobe.aem.init.dogmatix.http.request.Version</A>;
-<A NAME="34"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/util/XmlUtils.java.html">com.adobe.aem.init.dogmatix.util.XmlUtils</A>;
-<A NAME="35"></A>
-<A NAME="36"></A><FONT ID="FormalComment">/**
-<A NAME="37"></A> * A singleton Server Config holder. Single point of access for all classes in
-<A NAME="38"></A> * the server. &lt;b&gt;Must&lt;/b&gt; be loaded before server threads start listening.
-<A NAME="39"></A> * 
-<A NAME="40"></A> * Currently does not support update of properties once server is up and running
-<A NAME="41"></A> * 
-<A NAME="42"></A> * @author vnagpal
-<A NAME="43"></A> * 
-<A NAME="44"></A> */</FONT>
-<A NAME="45"></A>@SuppressWarnings(<FONT ID="StringLiteral">"serial"</FONT>)
-<A NAME="46"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ServerConfig <FONT ID="Extends">extends</FONT> Properties {
-<A NAME="47"></A>
-<A NAME="48"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>.<FONT ID="Class">class</FONT>);
-<A NAME="49"></A>
-<A NAME="50"></A>    <FONT ID="FormalComment">/**
-<A NAME="51"></A>     * Single instance shared across the application.
-<A NAME="52"></A>     */</FONT>
-<A NAME="53"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> serverConfigInstance = <FONT ID="Null">null</FONT>;
-<A NAME="54"></A>
-<A NAME="55"></A>    <FONT ID="FormalComment">/**
-<A NAME="56"></A>     * Possible configuration keys in the server XML settings file
-<A NAME="57"></A>     * 
-<A NAME="58"></A>     */</FONT>
-<A NAME="59"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Interface">interface</FONT> CONFIGS {
-<A NAME="60"></A>        <FONT ID="FormalComment">/**
-<A NAME="61"></A>         * A valid system port on which the server listens for incoming 
-<A NAME="62"></A>         * HTTP requests. It should be available at the time of startup.
-<A NAME="63"></A>         * [REQUIRED]
-<A NAME="64"></A>         */</FONT>
-<A NAME="65"></A>        String HTTPPort = <FONT ID="StringLiteral">"HTTPPort"</FONT>;
-<A NAME="66"></A>        
-<A NAME="67"></A>        <FONT ID="FormalComment">/**
-<A NAME="68"></A>         * A valid system port on which the server listens for commands. 
-<A NAME="69"></A>         * Commands are actions requests sent as HTTP GETs. Upon receiving 
-<A NAME="70"></A>         * a command request the server is expected to perform an action. 
-<A NAME="71"></A>         * Currently, it is only used to instruct the server to shutdown and
-<A NAME="72"></A>         * fetch the server runtime statistics.
-<A NAME="73"></A>         * [REQUIRED]
-<A NAME="74"></A>         */</FONT>
-<A NAME="75"></A>        String CommandPort = <FONT ID="StringLiteral">"CommandPort"</FONT>;
-<A NAME="76"></A>        
-<A NAME="77"></A>        <FONT ID="FormalComment">/**
-<A NAME="78"></A>         * Maximum number of threads allowed in the JVM instance that the server 
-<A NAME="79"></A>         * is running in before it starts rejecting further incoming requests. 
-<A NAME="80"></A>         * Very broadly, it translates into the concurrency limit. 
-<A NAME="81"></A>         * This should not be tampered with unless you know what you are doing. 
-<A NAME="82"></A>         * A low value might result in a high rate of request rejections. 
-<A NAME="83"></A>         * A high value might result in frequent OutOfMemory exceptions.
-<A NAME="84"></A>         * [REQUIRED]
-<A NAME="85"></A>         */</FONT>
-<A NAME="86"></A>        String MaxThreads = <FONT ID="StringLiteral">"MaxThreads"</FONT>;
-<A NAME="87"></A>        
-<A NAME="88"></A>        <FONT ID="FormalComment">/**
-<A NAME="89"></A>         * The protocol to be adhered while serving requests and building responses.
-<A NAME="90"></A>         * [REQUIRED]
-<A NAME="91"></A>         */</FONT>
-<A NAME="92"></A>        String HTTPVersion = <FONT ID="StringLiteral">"HTTPVersion"</FONT>;
-<A NAME="93"></A>        
-<A NAME="94"></A>        <FONT ID="FormalComment">/**
-<A NAME="95"></A>         * The waiting period in seconds, before halting the server forcefully. 
-<A NAME="96"></A>         * This time is utilized by threads to exit gracefully while releasing 
-<A NAME="97"></A>         * any blocked I/O resources. May be increased if your application has 
-<A NAME="98"></A>         * frequent long I/O blocking operations, like 3rd party web service requests. 
-<A NAME="99"></A>         * If too high, will cause a delay in server shutdown and have no other effect 
-<A NAME="100"></A>         * on its operation whatsoever.
-<A NAME="101"></A>         * [REQUIRED]
-<A NAME="102"></A>         */</FONT>
-<A NAME="103"></A>        String ShutdownGraceTime = <FONT ID="StringLiteral">"ShutdownGraceTime"</FONT>;
-<A NAME="104"></A>        
-<A NAME="105"></A>        <FONT ID="FormalComment">/**
-<A NAME="106"></A>         * Linked to the CommandListener, the Stop command is the command 
-<A NAME="107"></A>         * to look for in the GET request which will be received on the 
-<A NAME="108"></A>         * CommandPort for shutting down the server. This has been made 
-<A NAME="109"></A>         * configurable for an installation to have the flexibility in 
-<A NAME="110"></A>         * declaring its own protocol. It is case-insensitive.
-<A NAME="111"></A>         * [REQUIRED]
-<A NAME="112"></A>         */</FONT>
-<A NAME="113"></A>        String StopCommand = <FONT ID="StringLiteral">"StopCommand"</FONT>;
-<A NAME="114"></A>        
-<A NAME="115"></A>        <FONT ID="FormalComment">/**
-<A NAME="116"></A>         * The timeout value in seconds when the server responds with a Keep-Alive header. 
-<A NAME="117"></A>         * Clients having the capability to persist connections will wait for this amount
-<A NAME="118"></A>         * of time before closing the connection.
-<A NAME="119"></A>         * [REQUIRED]
-<A NAME="120"></A>         */</FONT>
-<A NAME="121"></A>        String KeepAliveTimeout = <FONT ID="StringLiteral">"KeepAliveTimeout"</FONT>;
-<A NAME="122"></A>    }
-<A NAME="123"></A>
-<A NAME="124"></A>    <FONT ID="FormalComment">/**
-<A NAME="125"></A>     * Make constructor private to enforce singleton behaviour.
-<A NAME="126"></A>     * Can now only be created from within.
-<A NAME="127"></A>     */</FONT>
-<A NAME="128"></A>    <FONT ID="Private">private</FONT> ServerConfig() {
-<A NAME="129"></A>
-<A NAME="130"></A>    }
-<A NAME="131"></A>    
-<A NAME="132"></A>    <FONT ID="FormalComment">/**
-<A NAME="133"></A>     * Gets the created ServerConfig instance
-<A NAME="134"></A>     * 
-<A NAME="135"></A>     * @return ServerConfig instance
-<A NAME="136"></A>     */</FONT>
-<A NAME="137"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> getInstance() {
-<A NAME="138"></A>        <FONT ID="Return">return</FONT> serverConfigInstance;
-<A NAME="139"></A>    }
-<A NAME="140"></A>
-<A NAME="141"></A>    <FONT ID="FormalComment">/**
-<A NAME="142"></A>     * Get the ServerConfig instance, creating it if not already done.
-<A NAME="143"></A>     * Allows the caller to specify a custom config file location.
-<A NAME="144"></A>     * 
-<A NAME="145"></A>     * @param filename An alternate server.xml location
-<A NAME="146"></A>     * @return ServerConfig instance
-<A NAME="147"></A>     * @throws InvalidConfigException thrown if encountered any error 
-<A NAME="148"></A>     * during reading, parsing, validating the config
-<A NAME="149"></A>     */</FONT>
-<A NAME="150"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> getInstance(String filename)
-<A NAME="151"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A> {
-<A NAME="152"></A>
-<A NAME="153"></A>        <FONT ID="If">if</FONT> (serverConfigInstance == <FONT ID="Null">null</FONT>) {
-<A NAME="154"></A>            buildServerConfig(filename);
-<A NAME="155"></A>        }
-<A NAME="156"></A>
-<A NAME="157"></A>        <FONT ID="Return">return</FONT> serverConfigInstance;
-<A NAME="158"></A>
-<A NAME="159"></A>    }
-<A NAME="160"></A>
-<A NAME="161"></A>    <FONT ID="FormalComment">/**
-<A NAME="162"></A>     * Builds the server config object in the following steps:
-<A NAME="163"></A>     * 
-<A NAME="164"></A>     * 1) If specified, reads the filename XML
-<A NAME="165"></A>     * 2) Else, tries to locate a server.xml in the classpath
-<A NAME="166"></A>     * 3) Reads the file into a String and validates the XML against the schema in server.xsd
-<A NAME="167"></A>     * 4) Parses the String into a W3C DOM object
-<A NAME="168"></A>     * 5) Looks for &lt;modules&gt;&lt;/modules&gt; and constructs ModuleConfig for each module
-<A NAME="169"></A>     * 6) Module definitions may be via XML or through Annotation, in which case there should be a package scan path
-<A NAME="170"></A>     * 7) ModuleConfigs are loaded into a module Cache against a re-usable Object Pool of each module class
-<A NAME="171"></A>     * 8) URL mappings are built and cached for each module. This is referred to at runtime to resolve modules per request.
-<A NAME="172"></A>     * 9) Looks for &lt;configs&gt;&lt;/configs&gt; and stores the server-level configurations while validating each value.
-<A NAME="173"></A>     * 
-<A NAME="174"></A>     * At any point during processing, if ANY error is encountered an InvalidConfigException with a brief message is thrown
-<A NAME="175"></A>     * 
-<A NAME="176"></A>     * @source http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
-<A NAME="177"></A>     * 
-<A NAME="178"></A>     */</FONT>
-<A NAME="179"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> buildServerConfig(String filename)
-<A NAME="180"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A> {
-<A NAME="181"></A>        <FONT ID="SingleLineComment">// read server.xml
-<A NAME="182"></A></FONT>        <FONT ID="Try">try</FONT> {
-<A NAME="183"></A>            logger.debug(<FONT ID="StringLiteral">"Create ServerConfig Object"</FONT>);
-<A NAME="184"></A>            serverConfigInstance = <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>();
-<A NAME="185"></A>
-<A NAME="186"></A>            InputStream xmlStream;
-<A NAME="187"></A>            <FONT ID="If">if</FONT> (filename == <FONT ID="Null">null</FONT>) {
-<A NAME="188"></A>                logger.debug(<FONT ID="StringLiteral">"Read server.xml from classpath"</FONT>);
-<A NAME="189"></A>                xmlStream = <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>.<FONT ID="Class">class</FONT>.getClassLoader()
-<A NAME="190"></A>                        .getResourceAsStream(<FONT ID="StringLiteral">"server.xml"</FONT>);
-<A NAME="191"></A>            } <FONT ID="Else">else</FONT> {
-<A NAME="192"></A>                logger.debug(<FONT ID="StringLiteral">"Read server.xml from {}"</FONT>, filename);
-<A NAME="193"></A>                xmlStream = <FONT ID="New">new</FONT> FileInputStream(filename);
-<A NAME="194"></A>            }
-<A NAME="195"></A>            String inputXml = XmlUtils.read(xmlStream);
-<A NAME="196"></A>
-<A NAME="197"></A>            logger.debug(<FONT ID="StringLiteral">"Read server.xsd from classpath"</FONT>);
-<A NAME="198"></A>            InputStream xsdStream = <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>.<FONT ID="Class">class</FONT>.getClassLoader()
-<A NAME="199"></A>                    .getResourceAsStream(<FONT ID="StringLiteral">"server.xsd"</FONT>);
+<A NAME="19"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="20"></A><FONT ID="Import">import</FONT> java.io.FileInputStream;
+<A NAME="21"></A><FONT ID="Import">import</FONT> java.io.InputStream;
+<A NAME="22"></A><FONT ID="Import">import</FONT> java.util.ArrayList;
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.util.List;
+<A NAME="24"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="25"></A>
+<A NAME="26"></A><FONT ID="Import">import</FONT> org.slf4j.Logger;
+<A NAME="27"></A><FONT ID="Import">import</FONT> org.slf4j.LoggerFactory;
+<A NAME="28"></A><FONT ID="Import">import</FONT> org.w3c.dom.Document;
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.w3c.dom.Element;
+<A NAME="30"></A><FONT ID="Import">import</FONT> org.w3c.dom.NodeList;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">com.adobe.aem.init.dogmatix.exceptions.InvalidConfigException</A>;
+<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/handlers/modules/ModuleFactory.java.html">com.adobe.aem.init.dogmatix.http.handlers.modules.ModuleFactory</A>;
+<A NAME="34"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/http/request/Version.java.html">com.adobe.aem.init.dogmatix.http.request.Version</A>;
+<A NAME="35"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/util/XmlUtils.java.html">com.adobe.aem.init.dogmatix.util.XmlUtils</A>;
+<A NAME="36"></A>
+<A NAME="37"></A><FONT ID="FormalComment">/**
+<A NAME="38"></A> * A singleton Server Config holder. Single point of access for all classes in
+<A NAME="39"></A> * the server. &lt;b&gt;Must&lt;/b&gt; be loaded before server threads start listening.
+<A NAME="40"></A> * 
+<A NAME="41"></A> * Currently does not support update of properties once server is up and running
+<A NAME="42"></A> * 
+<A NAME="43"></A> * @author vnagpal
+<A NAME="44"></A> * 
+<A NAME="45"></A> */</FONT>
+<A NAME="46"></A>@SuppressWarnings(<FONT ID="StringLiteral">"serial"</FONT>)
+<A NAME="47"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ServerConfig <FONT ID="Extends">extends</FONT> Properties {
+<A NAME="48"></A>
+<A NAME="49"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger logger = LoggerFactory.getLogger(<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>.<FONT ID="Class">class</FONT>);
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="FormalComment">/**
+<A NAME="52"></A>     * Single instance shared across the application.
+<A NAME="53"></A>     */</FONT>
+<A NAME="54"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> serverConfigInstance = <FONT ID="Null">null</FONT>;
+<A NAME="55"></A>
+<A NAME="56"></A>    <FONT ID="FormalComment">/**
+<A NAME="57"></A>     * Possible configuration keys in the server XML settings file
+<A NAME="58"></A>     * 
+<A NAME="59"></A>     */</FONT>
+<A NAME="60"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Interface">interface</FONT> CONFIGS {
+<A NAME="61"></A>        <FONT ID="FormalComment">/**
+<A NAME="62"></A>         * A valid system port on which the server listens for incoming 
+<A NAME="63"></A>         * HTTP requests. It should be available at the time of startup.
+<A NAME="64"></A>         * [REQUIRED]
+<A NAME="65"></A>         */</FONT>
+<A NAME="66"></A>        String HTTPPort = <FONT ID="StringLiteral">"HTTPPort"</FONT>;
+<A NAME="67"></A>        
+<A NAME="68"></A>        <FONT ID="FormalComment">/**
+<A NAME="69"></A>         * A valid system port on which the server listens for commands. 
+<A NAME="70"></A>         * Commands are actions requests sent as HTTP GETs. Upon receiving 
+<A NAME="71"></A>         * a command request the server is expected to perform an action. 
+<A NAME="72"></A>         * Currently, it is only used to instruct the server to shutdown and
+<A NAME="73"></A>         * fetch the server runtime statistics.
+<A NAME="74"></A>         * [REQUIRED]
+<A NAME="75"></A>         */</FONT>
+<A NAME="76"></A>        String CommandPort = <FONT ID="StringLiteral">"CommandPort"</FONT>;
+<A NAME="77"></A>        
+<A NAME="78"></A>        <FONT ID="FormalComment">/**
+<A NAME="79"></A>         * Maximum number of threads allowed in the JVM instance that the server 
+<A NAME="80"></A>         * is running in before it starts rejecting further incoming requests. 
+<A NAME="81"></A>         * Very broadly, it translates into the concurrency limit. 
+<A NAME="82"></A>         * This should not be tampered with unless you know what you are doing. 
+<A NAME="83"></A>         * A low value might result in a high rate of request rejections. 
+<A NAME="84"></A>         * A high value might result in frequent OutOfMemory exceptions.
+<A NAME="85"></A>         * [REQUIRED]
+<A NAME="86"></A>         */</FONT>
+<A NAME="87"></A>        String MaxThreads = <FONT ID="StringLiteral">"MaxThreads"</FONT>;
+<A NAME="88"></A>        
+<A NAME="89"></A>        <FONT ID="FormalComment">/**
+<A NAME="90"></A>         * The protocol to be adhered while serving requests and building responses.
+<A NAME="91"></A>         * [REQUIRED]
+<A NAME="92"></A>         */</FONT>
+<A NAME="93"></A>        String HTTPVersion = <FONT ID="StringLiteral">"HTTPVersion"</FONT>;
+<A NAME="94"></A>        
+<A NAME="95"></A>        <FONT ID="FormalComment">/**
+<A NAME="96"></A>         * The waiting period in seconds, before halting the server forcefully. 
+<A NAME="97"></A>         * This time is utilized by threads to exit gracefully while releasing 
+<A NAME="98"></A>         * any blocked I/O resources. May be increased if your application has 
+<A NAME="99"></A>         * frequent long I/O blocking operations, like 3rd party web service requests. 
+<A NAME="100"></A>         * If too high, will cause a delay in server shutdown and have no other effect 
+<A NAME="101"></A>         * on its operation whatsoever.
+<A NAME="102"></A>         * [REQUIRED]
+<A NAME="103"></A>         */</FONT>
+<A NAME="104"></A>        String ShutdownGraceTime = <FONT ID="StringLiteral">"ShutdownGraceTime"</FONT>;
+<A NAME="105"></A>        
+<A NAME="106"></A>        <FONT ID="FormalComment">/**
+<A NAME="107"></A>         * Linked to the CommandListener, the Stop command is the command 
+<A NAME="108"></A>         * to look for in the GET request which will be received on the 
+<A NAME="109"></A>         * CommandPort for shutting down the server. This has been made 
+<A NAME="110"></A>         * configurable for an installation to have the flexibility in 
+<A NAME="111"></A>         * declaring its own protocol. It is case-insensitive.
+<A NAME="112"></A>         * [REQUIRED]
+<A NAME="113"></A>         */</FONT>
+<A NAME="114"></A>        String StopCommand = <FONT ID="StringLiteral">"StopCommand"</FONT>;
+<A NAME="115"></A>        
+<A NAME="116"></A>        <FONT ID="FormalComment">/**
+<A NAME="117"></A>         * The timeout value in seconds when the server responds with a Keep-Alive header. 
+<A NAME="118"></A>         * Clients having the capability to persist connections will wait for this amount
+<A NAME="119"></A>         * of time before closing the connection.
+<A NAME="120"></A>         * [REQUIRED]
+<A NAME="121"></A>         */</FONT>
+<A NAME="122"></A>        String KeepAliveTimeout = <FONT ID="StringLiteral">"KeepAliveTimeout"</FONT>;
+<A NAME="123"></A>    }
+<A NAME="124"></A>
+<A NAME="125"></A>    <FONT ID="FormalComment">/**
+<A NAME="126"></A>     * Make constructor private to enforce singleton behaviour.
+<A NAME="127"></A>     * Can now only be created from within.
+<A NAME="128"></A>     */</FONT>
+<A NAME="129"></A>    <FONT ID="Private">private</FONT> ServerConfig() {
+<A NAME="130"></A>
+<A NAME="131"></A>    }
+<A NAME="132"></A>    
+<A NAME="133"></A>    <FONT ID="FormalComment">/**
+<A NAME="134"></A>     * Gets the created ServerConfig instance
+<A NAME="135"></A>     * 
+<A NAME="136"></A>     * @return ServerConfig instance
+<A NAME="137"></A>     */</FONT>
+<A NAME="138"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> getInstance() {
+<A NAME="139"></A>        <FONT ID="Return">return</FONT> serverConfigInstance;
+<A NAME="140"></A>    }
+<A NAME="141"></A>
+<A NAME="142"></A>    <FONT ID="FormalComment">/**
+<A NAME="143"></A>     * Get the ServerConfig instance, creating it if not already done.
+<A NAME="144"></A>     * Allows the caller to specify a custom config file location.
+<A NAME="145"></A>     * 
+<A NAME="146"></A>     * @param filename An alternate server.xml location
+<A NAME="147"></A>     * @return ServerConfig instance
+<A NAME="148"></A>     * @throws InvalidConfigException thrown if encountered any error 
+<A NAME="149"></A>     * during reading, parsing, validating the config
+<A NAME="150"></A>     */</FONT>
+<A NAME="151"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A> getInstance(String filename)
+<A NAME="152"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A> {
+<A NAME="153"></A>
+<A NAME="154"></A>        <FONT ID="If">if</FONT> (serverConfigInstance == <FONT ID="Null">null</FONT>) {
+<A NAME="155"></A>            buildServerConfig(filename);
+<A NAME="156"></A>        }
+<A NAME="157"></A>
+<A NAME="158"></A>        <FONT ID="Return">return</FONT> serverConfigInstance;
+<A NAME="159"></A>
+<A NAME="160"></A>    }
+<A NAME="161"></A>
+<A NAME="162"></A>    <FONT ID="FormalComment">/**
+<A NAME="163"></A>     * Builds the server config object in the following steps:
+<A NAME="164"></A>     * 
+<A NAME="165"></A>     * 1) If specified, reads the filename XML
+<A NAME="166"></A>     * 2) Else, tries to locate a server.xml in the classpath
+<A NAME="167"></A>     * 3) Reads the file into a String and validates the XML against the schema in server.xsd
+<A NAME="168"></A>     * 4) Parses the String into a W3C DOM object
+<A NAME="169"></A>     * 5) Looks for &lt;modules&gt;&lt;/modules&gt; and constructs ModuleConfig for each module
+<A NAME="170"></A>     * 6) Module definitions may be via XML or through Annotation, in which case there should be a package scan path
+<A NAME="171"></A>     * 7) ModuleConfigs are loaded into a module Cache against a re-usable Object Pool of each module class
+<A NAME="172"></A>     * 8) URL mappings are built and cached for each module. This is referred to at runtime to resolve modules per request.
+<A NAME="173"></A>     * 9) Looks for &lt;configs&gt;&lt;/configs&gt; and stores the server-level configurations while validating each value.
+<A NAME="174"></A>     * 
+<A NAME="175"></A>     * At any point during processing, if ANY error is encountered an InvalidConfigException with a brief message is thrown
+<A NAME="176"></A>     * 
+<A NAME="177"></A>     * @source http://www.mkyong.com/java/how-to-read-xml-file-in-java-dom-parser
+<A NAME="178"></A>     * 
+<A NAME="179"></A>     */</FONT>
+<A NAME="180"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> buildServerConfig(String filename)
+<A NAME="181"></A>            <FONT ID="Throws">throws</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A> {
+<A NAME="182"></A>        <FONT ID="SingleLineComment">// read server.xml
+<A NAME="183"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="184"></A>            logger.debug(<FONT ID="StringLiteral">"Create ServerConfig Object"</FONT>);
+<A NAME="185"></A>            serverConfigInstance = <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>();
+<A NAME="186"></A>
+<A NAME="187"></A>            InputStream xmlStream;
+<A NAME="188"></A>            <FONT ID="If">if</FONT> (filename == <FONT ID="Null">null</FONT>) {
+<A NAME="189"></A>                logger.debug(<FONT ID="StringLiteral">"Read server.xml from conf"</FONT>);
+<A NAME="190"></A>                xmlStream = <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>.<FONT ID="Class">class</FONT>.getClassLoader().getResourceAsStream(<FONT ID="StringLiteral">"../conf/server.xml"</FONT>);
+<A NAME="191"></A>                <FONT ID="If">if</FONT>(xmlStream == <FONT ID="Null">null</FONT>) {
+<A NAME="192"></A>                    logger.debug(<FONT ID="StringLiteral">"Read server.xml from classpath"</FONT>);
+<A NAME="193"></A>                    xmlStream = <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>.<FONT ID="Class">class</FONT>.getClassLoader().getResourceAsStream(<FONT ID="StringLiteral">"server.xml"</FONT>);
+<A NAME="194"></A>                }
+<A NAME="195"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="196"></A>                logger.debug(<FONT ID="StringLiteral">"Read server.xml from {}"</FONT>, filename);
+<A NAME="197"></A>                xmlStream = <FONT ID="New">new</FONT> FileInputStream(filename);
+<A NAME="198"></A>            }
+<A NAME="199"></A>            String inputXml = XmlUtils.read(xmlStream);
 <A NAME="200"></A>
-<A NAME="201"></A>            logger.debug(<FONT ID="StringLiteral">"Validate XML against server.xsd"</FONT>);
-<A NAME="202"></A>            <FONT ID="If">if</FONT> (!XmlUtils.validate(inputXml.toString(), xsdStream)) {
-<A NAME="203"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Xml not well formed"</FONT>);
-<A NAME="204"></A>            }
-<A NAME="205"></A>
-<A NAME="206"></A>            logger.debug(<FONT ID="StringLiteral">"Parse XML into Document object"</FONT>);
-<A NAME="207"></A>            Document doc = XmlUtils.parse(inputXml, <FONT ID="True">true</FONT>);
-<A NAME="208"></A>            
-<A NAME="209"></A>            logger.debug(<FONT ID="StringLiteral">"Read module scan path from xml"</FONT>);
-<A NAME="210"></A>            List&lt;String&gt; scanPaths = XmlUtils.text(doc, <FONT ID="StringLiteral">"modules&gt;scan"</FONT>, <FONT ID="StringLiteral">"&gt;"</FONT>);
-<A NAME="211"></A>            <FONT ID="For">for</FONT> (String scanPath : scanPaths) {
-<A NAME="212"></A>                logger.debug(<FONT ID="StringLiteral">"Scan for modules at {}"</FONT>, scanPath);
-<A NAME="213"></A>                ModuleFactory.annotatedLoad(scanPath);
-<A NAME="214"></A>            }
-<A NAME="215"></A>
-<A NAME="216"></A>            logger.debug(<FONT ID="StringLiteral">"Read modules from xml"</FONT>);
-<A NAME="217"></A>            NodeList modules = XmlUtils.lookup(doc, <FONT ID="StringLiteral">"modules&gt;module"</FONT>, <FONT ID="StringLiteral">"&gt;"</FONT>);
-<A NAME="218"></A>            List&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt; moduleConfigs = <FONT ID="New">new</FONT> ArrayList&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt;();
-<A NAME="219"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; modules.getLength(); i++) {
-<A NAME="220"></A>                logger.debug(<FONT ID="StringLiteral">"Reading module.."</FONT>);
-<A NAME="221"></A>                Element module = (Element) modules.item(i);
-<A NAME="222"></A>                String className = XmlUtils.text(module, <FONT ID="StringLiteral">"class"</FONT>, <FONT ID="Null">null</FONT>).get(<FONT ID="IntegerLiteral">0</FONT>);
-<A NAME="223"></A>                logger.debug(<FONT ID="StringLiteral">"Classname : {}"</FONT>, className);
-<A NAME="224"></A>                String url = XmlUtils.text(module, <FONT ID="StringLiteral">"url"</FONT>, <FONT ID="Null">null</FONT>).get(<FONT ID="IntegerLiteral">0</FONT>);
-<A NAME="225"></A>                logger.debug(<FONT ID="StringLiteral">"URL : {}"</FONT>, url);
-<A NAME="226"></A>                <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig = <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>(className, url);
-<A NAME="227"></A>                <FONT ID="SingleLineComment">// read module level settings
-<A NAME="228"></A></FONT>                Properties settings = XmlUtils.importProperties(XmlUtils
-<A NAME="229"></A>                        .lookup(module, <FONT ID="StringLiteral">"property"</FONT>, <FONT ID="Null">null</FONT>));
-<A NAME="230"></A>                moduleConfig.setSettings(settings);
-<A NAME="231"></A>                <FONT ID="If">if</FONT> (logger.isDebugEnabled()) {
-<A NAME="232"></A>                    <FONT ID="For">for</FONT> (String name : settings.stringPropertyNames()) {
-<A NAME="233"></A>                        logger.debug(<FONT ID="StringLiteral">"Setting : {} = {}"</FONT>, name,
-<A NAME="234"></A>                                settings.getProperty(name));
-<A NAME="235"></A>                    }
-<A NAME="236"></A>                }
-<A NAME="237"></A>                moduleConfigs.add(moduleConfig);
-<A NAME="238"></A>            }
-<A NAME="239"></A>            <FONT ID="If">if</FONT> (moduleConfigs.size() &gt; <FONT ID="IntegerLiteral">0</FONT>) {
-<A NAME="240"></A>                logger.debug(<FONT ID="StringLiteral">"Load module classes"</FONT>);
-<A NAME="241"></A>                ModuleFactory.load(moduleConfigs);
+<A NAME="201"></A>            logger.debug(<FONT ID="StringLiteral">"Read server.xsd from classpath"</FONT>);
+<A NAME="202"></A>            InputStream xsdStream = <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ServerConfig.java.html">ServerConfig</A>.<FONT ID="Class">class</FONT>.getClassLoader()
+<A NAME="203"></A>                    .getResourceAsStream(<FONT ID="StringLiteral">"server.xsd"</FONT>);
+<A NAME="204"></A>
+<A NAME="205"></A>            logger.debug(<FONT ID="StringLiteral">"Validate XML against server.xsd"</FONT>);
+<A NAME="206"></A>            <FONT ID="If">if</FONT> (!XmlUtils.validate(inputXml.toString(), xsdStream)) {
+<A NAME="207"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Xml not well formed"</FONT>);
+<A NAME="208"></A>            }
+<A NAME="209"></A>
+<A NAME="210"></A>            logger.debug(<FONT ID="StringLiteral">"Parse XML into Document object"</FONT>);
+<A NAME="211"></A>            Document doc = XmlUtils.parse(inputXml, <FONT ID="True">true</FONT>);
+<A NAME="212"></A>            
+<A NAME="213"></A>            logger.debug(<FONT ID="StringLiteral">"Read module scan path from xml"</FONT>);
+<A NAME="214"></A>            List&lt;String&gt; scanPaths = XmlUtils.text(doc, <FONT ID="StringLiteral">"modules&gt;scan"</FONT>, <FONT ID="StringLiteral">"&gt;"</FONT>);
+<A NAME="215"></A>            <FONT ID="For">for</FONT> (String scanPath : scanPaths) {
+<A NAME="216"></A>                logger.debug(<FONT ID="StringLiteral">"Scan for modules at {}"</FONT>, scanPath);
+<A NAME="217"></A>                ModuleFactory.annotatedLoad(scanPath);
+<A NAME="218"></A>            }
+<A NAME="219"></A>
+<A NAME="220"></A>            logger.debug(<FONT ID="StringLiteral">"Read modules from xml"</FONT>);
+<A NAME="221"></A>            NodeList modules = XmlUtils.lookup(doc, <FONT ID="StringLiteral">"modules&gt;module"</FONT>, <FONT ID="StringLiteral">"&gt;"</FONT>);
+<A NAME="222"></A>            List&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt; moduleConfigs = <FONT ID="New">new</FONT> ArrayList&lt;<A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>&gt;();
+<A NAME="223"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; modules.getLength(); i++) {
+<A NAME="224"></A>                logger.debug(<FONT ID="StringLiteral">"Reading module.."</FONT>);
+<A NAME="225"></A>                Element module = (Element) modules.item(i);
+<A NAME="226"></A>                String className = XmlUtils.text(module, <FONT ID="StringLiteral">"class"</FONT>, <FONT ID="Null">null</FONT>).get(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="227"></A>                logger.debug(<FONT ID="StringLiteral">"Classname : {}"</FONT>, className);
+<A NAME="228"></A>                String url = XmlUtils.text(module, <FONT ID="StringLiteral">"url"</FONT>, <FONT ID="Null">null</FONT>).get(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="229"></A>                logger.debug(<FONT ID="StringLiteral">"URL : {}"</FONT>, url);
+<A NAME="230"></A>                <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A> moduleConfig = <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/config/ModuleConfig.java.html">ModuleConfig</A>(className, url);
+<A NAME="231"></A>                <FONT ID="SingleLineComment">// read module level settings
+<A NAME="232"></A></FONT>                Properties settings = XmlUtils.importProperties(XmlUtils
+<A NAME="233"></A>                        .lookup(module, <FONT ID="StringLiteral">"property"</FONT>, <FONT ID="Null">null</FONT>));
+<A NAME="234"></A>                moduleConfig.setSettings(settings);
+<A NAME="235"></A>                <FONT ID="If">if</FONT> (logger.isDebugEnabled()) {
+<A NAME="236"></A>                    <FONT ID="For">for</FONT> (String name : settings.stringPropertyNames()) {
+<A NAME="237"></A>                        logger.debug(<FONT ID="StringLiteral">"Setting : {} = {}"</FONT>, name,
+<A NAME="238"></A>                                settings.getProperty(name));
+<A NAME="239"></A>                    }
+<A NAME="240"></A>                }
+<A NAME="241"></A>                moduleConfigs.add(moduleConfig);
 <A NAME="242"></A>            }
-<A NAME="243"></A>
-<A NAME="244"></A>            logger.debug(<FONT ID="StringLiteral">"Read configs from xml"</FONT>);
-<A NAME="245"></A>            NodeList configs = XmlUtils.lookup(doc, <FONT ID="StringLiteral">"configs&gt;config"</FONT>, <FONT ID="StringLiteral">"&gt;"</FONT>);
-<A NAME="246"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; configs.getLength(); i++) {
-<A NAME="247"></A>                Element config = (Element) configs.item(i);
-<A NAME="248"></A>                String name = config.getAttribute(<FONT ID="StringLiteral">"name"</FONT>);
-<A NAME="249"></A>                String value = config.getAttribute(<FONT ID="StringLiteral">"value"</FONT>);
-<A NAME="250"></A>                <FONT ID="Switch">switch</FONT> (name) {
-<A NAME="251"></A>                <FONT ID="Case">case</FONT> CONFIGS.HTTPVersion:
-<A NAME="252"></A>                    <FONT ID="Try">try</FONT> {
-<A NAME="253"></A>                        Version.getVersion(value);
-<A NAME="254"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
-<A NAME="255"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
-<A NAME="256"></A>                                <FONT ID="StringLiteral">"Invalid HTTPVersion {}"</FONT>, value));
-<A NAME="257"></A>                    }
-<A NAME="258"></A>                    serverConfigInstance
-<A NAME="259"></A>                            .setProperty(CONFIGS.HTTPVersion, value);
-<A NAME="260"></A>                    logger.debug(<FONT ID="StringLiteral">"HTTPVersion set to {}"</FONT>, value);
-<A NAME="261"></A>                    <FONT ID="Break">break</FONT>;
-<A NAME="262"></A>                <FONT ID="Case">case</FONT> CONFIGS.CommandPort:
-<A NAME="263"></A>                    <FONT ID="Try">try</FONT> {
-<A NAME="264"></A>                        Integer.parseInt(value);
-<A NAME="265"></A>                    } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
-<A NAME="266"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Invalid Command Port"</FONT>);
-<A NAME="267"></A>                    }
-<A NAME="268"></A>                    serverConfigInstance
-<A NAME="269"></A>                            .setProperty(CONFIGS.CommandPort, value);
-<A NAME="270"></A>                    logger.debug(<FONT ID="StringLiteral">"CommandPort set to {}"</FONT>, value);
-<A NAME="271"></A>                    <FONT ID="Break">break</FONT>;
-<A NAME="272"></A>                <FONT ID="Case">case</FONT> CONFIGS.HTTPPort:
-<A NAME="273"></A>                    <FONT ID="Try">try</FONT> {
-<A NAME="274"></A>                        Integer.parseInt(value);
-<A NAME="275"></A>                    } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
-<A NAME="276"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Invalid HTTP Port"</FONT>);
-<A NAME="277"></A>                    }
-<A NAME="278"></A>                    serverConfigInstance.setProperty(CONFIGS.HTTPPort, value);
-<A NAME="279"></A>                    logger.debug(<FONT ID="StringLiteral">"HTTPPort set to {}"</FONT>, value);
-<A NAME="280"></A>                    <FONT ID="Break">break</FONT>;
-<A NAME="281"></A>                <FONT ID="Case">case</FONT> CONFIGS.MaxThreads:
-<A NAME="282"></A>                    <FONT ID="Try">try</FONT> {
-<A NAME="283"></A>                        Integer.parseInt(value);
-<A NAME="284"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
-<A NAME="285"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
-<A NAME="286"></A>                                <FONT ID="StringLiteral">"Invalid Max Threads {}"</FONT>, value));
-<A NAME="287"></A>                    }
-<A NAME="288"></A>                    serverConfigInstance.setProperty(CONFIGS.MaxThreads, value);
-<A NAME="289"></A>                    logger.debug(<FONT ID="StringLiteral">"MaxThreads set to {}"</FONT>, value);
-<A NAME="290"></A>                    <FONT ID="Break">break</FONT>;
-<A NAME="291"></A>                <FONT ID="Case">case</FONT> CONFIGS.ShutdownGraceTime:
-<A NAME="292"></A>                    <FONT ID="Try">try</FONT> {
-<A NAME="293"></A>                        Integer.parseInt(value);
-<A NAME="294"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
-<A NAME="295"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
-<A NAME="296"></A>                                <FONT ID="StringLiteral">"Invalid Shutdown Grace Time {}"</FONT>, value));
-<A NAME="297"></A>                    }
-<A NAME="298"></A>                    serverConfigInstance.setProperty(CONFIGS.ShutdownGraceTime,
-<A NAME="299"></A>                            value);
-<A NAME="300"></A>                    logger.debug(<FONT ID="StringLiteral">"ShutdownGraceTime set to {} seconds"</FONT>, value);
-<A NAME="301"></A>                    <FONT ID="Break">break</FONT>;
-<A NAME="302"></A>                <FONT ID="Case">case</FONT> CONFIGS.StopCommand:
-<A NAME="303"></A>                    serverConfigInstance
-<A NAME="304"></A>                            .setProperty(CONFIGS.StopCommand, value);
-<A NAME="305"></A>                    logger.debug(<FONT ID="StringLiteral">"StopCommand set to {}"</FONT>, value);
-<A NAME="306"></A>                    <FONT ID="Break">break</FONT>;
-<A NAME="307"></A>                <FONT ID="Case">case</FONT> CONFIGS.KeepAliveTimeout:
-<A NAME="308"></A>                    <FONT ID="Try">try</FONT> {
-<A NAME="309"></A>                        Integer.parseInt(value);
-<A NAME="310"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
-<A NAME="311"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
-<A NAME="312"></A>                                <FONT ID="StringLiteral">"Invalid Keep Alive Timeout {}"</FONT>, value));
-<A NAME="313"></A>                    }
-<A NAME="314"></A>                    serverConfigInstance
-<A NAME="315"></A>                            .setProperty(CONFIGS.KeepAliveTimeout, value);
-<A NAME="316"></A>                    logger.debug(<FONT ID="StringLiteral">"KeepAliveTimeout set to {}"</FONT>, value);
-<A NAME="317"></A>                    <FONT ID="Break">break</FONT>;
-<A NAME="318"></A>                <FONT ID="Default">default</FONT>:
-<A NAME="319"></A>                    <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
-<A NAME="320"></A>                            <FONT ID="StringLiteral">"Unknown config parameter {}"</FONT>, name));
-<A NAME="321"></A>                }
-<A NAME="322"></A>            }
-<A NAME="323"></A>
-<A NAME="324"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A> e) {
-<A NAME="325"></A>            logger.error(<FONT ID="StringLiteral">"Invalid configuration"</FONT>, e);
-<A NAME="326"></A>            <FONT ID="Throw">throw</FONT> e;
-<A NAME="327"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
-<A NAME="328"></A>            logger.error(<FONT ID="StringLiteral">"Unknown error while configuring server"</FONT>, e);
-<A NAME="329"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Unknown error"</FONT>);
-<A NAME="330"></A>        }
-<A NAME="331"></A>    }
-<A NAME="332"></A>
-<A NAME="333"></A>    <FONT ID="SingleLineComment">// Convenience short-cut methods follow to fetch specific config properties
-<A NAME="334"></A></FONT>    
-<A NAME="335"></A>    <FONT ID="SingleLineComment">// HTTP Port
-<A NAME="336"></A></FONT>    <FONT ID="SingleLineComment">// Command Port
-<A NAME="337"></A></FONT>    <FONT ID="SingleLineComment">// Max threads
-<A NAME="338"></A></FONT>    <FONT ID="SingleLineComment">// HTTP version
-<A NAME="339"></A></FONT>    <FONT ID="SingleLineComment">// Graceful Shutdown time
-<A NAME="340"></A></FONT>    <FONT ID="SingleLineComment">// Stop Command
-<A NAME="341"></A></FONT>    
-<A NAME="342"></A>    <FONT ID="FormalComment">/**
-<A NAME="343"></A>     * Gets the HTTP port server is listening on
-<A NAME="344"></A>     * 
-<A NAME="345"></A>     * @return http port
-<A NAME="346"></A>     */</FONT>
-<A NAME="347"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> httpPort() {
-<A NAME="348"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.HTTPPort));
-<A NAME="349"></A>    }
-<A NAME="350"></A>
-<A NAME="351"></A>    <FONT ID="FormalComment">/**
-<A NAME="352"></A>     * Gets the port server is listening on for Command requests
-<A NAME="353"></A>     * 
-<A NAME="354"></A>     * @return command port
-<A NAME="355"></A>     */</FONT>
-<A NAME="356"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> commandPort() {
-<A NAME="357"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.CommandPort));
-<A NAME="358"></A>    }
-<A NAME="359"></A>
-<A NAME="360"></A>    <FONT ID="FormalComment">/**
-<A NAME="361"></A>     * Gets the maximum number of threads allowed in the system simultaneously
-<A NAME="362"></A>     * 
-<A NAME="363"></A>     * @return max threads
-<A NAME="364"></A>     */</FONT>
-<A NAME="365"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> maxThreads() {
-<A NAME="366"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.MaxThreads));
-<A NAME="367"></A>    }
-<A NAME="368"></A>
-<A NAME="369"></A>    <FONT ID="FormalComment">/**
-<A NAME="370"></A>     * Gets the HTTP versoin the server is running on
-<A NAME="371"></A>     * 
-<A NAME="372"></A>     * @return http version
-<A NAME="373"></A>     */</FONT>
-<A NAME="374"></A>    <FONT ID="Public">public</FONT> String httpVersion() {
-<A NAME="375"></A>        <FONT ID="Return">return</FONT> getProperty(CONFIGS.HTTPVersion);
-<A NAME="376"></A>    }
-<A NAME="377"></A>
-<A NAME="378"></A>    <FONT ID="FormalComment">/**
-<A NAME="379"></A>     * Gets the shutdown grace time given to existing threads to wrap up in the scenario of a server halt
-<A NAME="380"></A>     * 
-<A NAME="381"></A>     * @return shutdown grace time
-<A NAME="382"></A>     */</FONT>
-<A NAME="383"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> shutdownGraceTime() {
-<A NAME="384"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.ShutdownGraceTime));
-<A NAME="385"></A>    }
-<A NAME="386"></A>
-<A NAME="387"></A>    <FONT ID="FormalComment">/**
-<A NAME="388"></A>     * Gets the stop command which if sent to the command port will halt the server instance
-<A NAME="389"></A>     * 
-<A NAME="390"></A>     * @return stop command
-<A NAME="391"></A>     */</FONT>
-<A NAME="392"></A>    <FONT ID="Public">public</FONT> String stopCommand() {
-<A NAME="393"></A>        <FONT ID="Return">return</FONT> getProperty(CONFIGS.StopCommand);
-<A NAME="394"></A>    }
-<A NAME="395"></A>
-<A NAME="396"></A>    <FONT ID="FormalComment">/**
-<A NAME="397"></A>     * Convenience method which constructs the entire URL to hit for a server halt
-<A NAME="398"></A>     * 
-<A NAME="399"></A>     * @return stop URL
-<A NAME="400"></A>     */</FONT>
-<A NAME="401"></A>    <FONT ID="Public">public</FONT> String stopURL() {
-<A NAME="402"></A>        <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"http://localhost:"</FONT> + commandPort() + <FONT ID="StringLiteral">"/"</FONT> + stopCommand();
-<A NAME="403"></A>    }
-<A NAME="404"></A>}
-<A NAME="405"></A></pre>
+<A NAME="243"></A>            <FONT ID="If">if</FONT> (moduleConfigs.size() &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="244"></A>                logger.debug(<FONT ID="StringLiteral">"Load module classes"</FONT>);
+<A NAME="245"></A>                ModuleFactory.load(moduleConfigs);
+<A NAME="246"></A>            }
+<A NAME="247"></A>
+<A NAME="248"></A>            logger.debug(<FONT ID="StringLiteral">"Read configs from xml"</FONT>);
+<A NAME="249"></A>            NodeList configs = XmlUtils.lookup(doc, <FONT ID="StringLiteral">"configs&gt;config"</FONT>, <FONT ID="StringLiteral">"&gt;"</FONT>);
+<A NAME="250"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; configs.getLength(); i++) {
+<A NAME="251"></A>                Element config = (Element) configs.item(i);
+<A NAME="252"></A>                String name = config.getAttribute(<FONT ID="StringLiteral">"name"</FONT>);
+<A NAME="253"></A>                String value = config.getAttribute(<FONT ID="StringLiteral">"value"</FONT>);
+<A NAME="254"></A>                <FONT ID="Switch">switch</FONT> (name) {
+<A NAME="255"></A>                <FONT ID="Case">case</FONT> CONFIGS.HTTPVersion:
+<A NAME="256"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="257"></A>                        Version.getVersion(value);
+<A NAME="258"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
+<A NAME="259"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
+<A NAME="260"></A>                                <FONT ID="StringLiteral">"Invalid HTTPVersion {}"</FONT>, value));
+<A NAME="261"></A>                    }
+<A NAME="262"></A>                    serverConfigInstance
+<A NAME="263"></A>                            .setProperty(CONFIGS.HTTPVersion, value);
+<A NAME="264"></A>                    logger.debug(<FONT ID="StringLiteral">"HTTPVersion set to {}"</FONT>, value);
+<A NAME="265"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="266"></A>                <FONT ID="Case">case</FONT> CONFIGS.CommandPort:
+<A NAME="267"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="268"></A>                        Integer.parseInt(value);
+<A NAME="269"></A>                    } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="270"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Invalid Command Port"</FONT>);
+<A NAME="271"></A>                    }
+<A NAME="272"></A>                    serverConfigInstance
+<A NAME="273"></A>                            .setProperty(CONFIGS.CommandPort, value);
+<A NAME="274"></A>                    logger.debug(<FONT ID="StringLiteral">"CommandPort set to {}"</FONT>, value);
+<A NAME="275"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="276"></A>                <FONT ID="Case">case</FONT> CONFIGS.HTTPPort:
+<A NAME="277"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="278"></A>                        Integer.parseInt(value);
+<A NAME="279"></A>                    } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="280"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Invalid HTTP Port"</FONT>);
+<A NAME="281"></A>                    }
+<A NAME="282"></A>                    serverConfigInstance.setProperty(CONFIGS.HTTPPort, value);
+<A NAME="283"></A>                    logger.debug(<FONT ID="StringLiteral">"HTTPPort set to {}"</FONT>, value);
+<A NAME="284"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="285"></A>                <FONT ID="Case">case</FONT> CONFIGS.MaxThreads:
+<A NAME="286"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="287"></A>                        Integer.parseInt(value);
+<A NAME="288"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
+<A NAME="289"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
+<A NAME="290"></A>                                <FONT ID="StringLiteral">"Invalid Max Threads {}"</FONT>, value));
+<A NAME="291"></A>                    }
+<A NAME="292"></A>                    serverConfigInstance.setProperty(CONFIGS.MaxThreads, value);
+<A NAME="293"></A>                    logger.debug(<FONT ID="StringLiteral">"MaxThreads set to {}"</FONT>, value);
+<A NAME="294"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="295"></A>                <FONT ID="Case">case</FONT> CONFIGS.ShutdownGraceTime:
+<A NAME="296"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="297"></A>                        Integer.parseInt(value);
+<A NAME="298"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
+<A NAME="299"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
+<A NAME="300"></A>                                <FONT ID="StringLiteral">"Invalid Shutdown Grace Time {}"</FONT>, value));
+<A NAME="301"></A>                    }
+<A NAME="302"></A>                    serverConfigInstance.setProperty(CONFIGS.ShutdownGraceTime,
+<A NAME="303"></A>                            value);
+<A NAME="304"></A>                    logger.debug(<FONT ID="StringLiteral">"ShutdownGraceTime set to {} seconds"</FONT>, value);
+<A NAME="305"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="306"></A>                <FONT ID="Case">case</FONT> CONFIGS.StopCommand:
+<A NAME="307"></A>                    serverConfigInstance
+<A NAME="308"></A>                            .setProperty(CONFIGS.StopCommand, value);
+<A NAME="309"></A>                    logger.debug(<FONT ID="StringLiteral">"StopCommand set to {}"</FONT>, value);
+<A NAME="310"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="311"></A>                <FONT ID="Case">case</FONT> CONFIGS.KeepAliveTimeout:
+<A NAME="312"></A>                    <FONT ID="Try">try</FONT> {
+<A NAME="313"></A>                        Integer.parseInt(value);
+<A NAME="314"></A>                    } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
+<A NAME="315"></A>                        <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
+<A NAME="316"></A>                                <FONT ID="StringLiteral">"Invalid Keep Alive Timeout {}"</FONT>, value));
+<A NAME="317"></A>                    }
+<A NAME="318"></A>                    serverConfigInstance
+<A NAME="319"></A>                            .setProperty(CONFIGS.KeepAliveTimeout, value);
+<A NAME="320"></A>                    logger.debug(<FONT ID="StringLiteral">"KeepAliveTimeout set to {}"</FONT>, value);
+<A NAME="321"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="322"></A>                <FONT ID="Default">default</FONT>:
+<A NAME="323"></A>                    <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(String.format(
+<A NAME="324"></A>                            <FONT ID="StringLiteral">"Unknown config parameter {}"</FONT>, name));
+<A NAME="325"></A>                }
+<A NAME="326"></A>            }
+<A NAME="327"></A>
+<A NAME="328"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A> e) {
+<A NAME="329"></A>            logger.error(<FONT ID="StringLiteral">"Invalid configuration"</FONT>, e);
+<A NAME="330"></A>            <FONT ID="Throw">throw</FONT> e;
+<A NAME="331"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">Exception</A> e) {
+<A NAME="332"></A>            logger.error(<FONT ID="StringLiteral">"Unknown error while configuring server"</FONT>, e);
+<A NAME="333"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> <A HREF="../../../../../../com/adobe/aem/init/dogmatix/exceptions/InvalidConfigException.java.html">InvalidConfigException</A>(<FONT ID="StringLiteral">"Unknown error"</FONT>);
+<A NAME="334"></A>        }
+<A NAME="335"></A>    }
+<A NAME="336"></A>
+<A NAME="337"></A>    <FONT ID="SingleLineComment">// Convenience short-cut methods follow to fetch specific config properties
+<A NAME="338"></A></FONT>    
+<A NAME="339"></A>    <FONT ID="SingleLineComment">// HTTP Port
+<A NAME="340"></A></FONT>    <FONT ID="SingleLineComment">// Command Port
+<A NAME="341"></A></FONT>    <FONT ID="SingleLineComment">// Max threads
+<A NAME="342"></A></FONT>    <FONT ID="SingleLineComment">// HTTP version
+<A NAME="343"></A></FONT>    <FONT ID="SingleLineComment">// Graceful Shutdown time
+<A NAME="344"></A></FONT>    <FONT ID="SingleLineComment">// Stop Command
+<A NAME="345"></A></FONT>    
+<A NAME="346"></A>    <FONT ID="FormalComment">/**
+<A NAME="347"></A>     * Gets the HTTP port server is listening on
+<A NAME="348"></A>     * 
+<A NAME="349"></A>     * @return http port
+<A NAME="350"></A>     */</FONT>
+<A NAME="351"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> httpPort() {
+<A NAME="352"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.HTTPPort));
+<A NAME="353"></A>    }
+<A NAME="354"></A>
+<A NAME="355"></A>    <FONT ID="FormalComment">/**
+<A NAME="356"></A>     * Gets the port server is listening on for Command requests
+<A NAME="357"></A>     * 
+<A NAME="358"></A>     * @return command port
+<A NAME="359"></A>     */</FONT>
+<A NAME="360"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> commandPort() {
+<A NAME="361"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.CommandPort));
+<A NAME="362"></A>    }
+<A NAME="363"></A>
+<A NAME="364"></A>    <FONT ID="FormalComment">/**
+<A NAME="365"></A>     * Gets the maximum number of threads allowed in the system simultaneously
+<A NAME="366"></A>     * 
+<A NAME="367"></A>     * @return max threads
+<A NAME="368"></A>     */</FONT>
+<A NAME="369"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> maxThreads() {
+<A NAME="370"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.MaxThreads));
+<A NAME="371"></A>    }
+<A NAME="372"></A>
+<A NAME="373"></A>    <FONT ID="FormalComment">/**
+<A NAME="374"></A>     * Gets the HTTP versoin the server is running on
+<A NAME="375"></A>     * 
+<A NAME="376"></A>     * @return http version
+<A NAME="377"></A>     */</FONT>
+<A NAME="378"></A>    <FONT ID="Public">public</FONT> String httpVersion() {
+<A NAME="379"></A>        <FONT ID="Return">return</FONT> getProperty(CONFIGS.HTTPVersion);
+<A NAME="380"></A>    }
+<A NAME="381"></A>
+<A NAME="382"></A>    <FONT ID="FormalComment">/**
+<A NAME="383"></A>     * Gets the shutdown grace time given to existing threads to wrap up in the scenario of a server halt
+<A NAME="384"></A>     * 
+<A NAME="385"></A>     * @return shutdown grace time
+<A NAME="386"></A>     */</FONT>
+<A NAME="387"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> shutdownGraceTime() {
+<A NAME="388"></A>        <FONT ID="Return">return</FONT> Integer.parseInt(getProperty(CONFIGS.ShutdownGraceTime));
+<A NAME="389"></A>    }
+<A NAME="390"></A>
+<A NAME="391"></A>    <FONT ID="FormalComment">/**
+<A NAME="392"></A>     * Gets the stop command which if sent to the command port will halt the server instance
+<A NAME="393"></A>     * 
+<A NAME="394"></A>     * @return stop command
+<A NAME="395"></A>     */</FONT>
+<A NAME="396"></A>    <FONT ID="Public">public</FONT> String stopCommand() {
+<A NAME="397"></A>        <FONT ID="Return">return</FONT> getProperty(CONFIGS.StopCommand);
+<A NAME="398"></A>    }
+<A NAME="399"></A>
+<A NAME="400"></A>    <FONT ID="FormalComment">/**
+<A NAME="401"></A>     * Convenience method which constructs the entire URL to hit for a server halt
+<A NAME="402"></A>     * 
+<A NAME="403"></A>     * @return stop URL
+<A NAME="404"></A>     */</FONT>
+<A NAME="405"></A>    <FONT ID="Public">public</FONT> String stopURL() {
+<A NAME="406"></A>        <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"http://localhost:"</FONT> + commandPort() + <FONT ID="StringLiteral">"/"</FONT> + stopCommand();
+<A NAME="407"></A>    }
+<A NAME="408"></A>}
+<A NAME="409"></A></pre>
 </BODY>
 </HTML>

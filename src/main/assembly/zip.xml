@@ -27,6 +27,10 @@
 			<source>${basedir}/docs/RUNNING.txt</source>
 			<outputDirectory>/resources/docs/</outputDirectory>
 		</file>
+		<file>
+			<source>${project.build.directory}/${project.artifactId}-${project.version}-sources.jar</source>
+			<outputDirectory>/src</outputDirectory>
+		</file>
 	</files>
 	<fileSets>
 		<fileSet>
@@ -61,7 +65,7 @@
 			</includes>
 		</fileSet>
 		<fileSet>
-			<outputDirectory>/docs/javadocs</outputDirectory>
+			<outputDirectory>/resources/docs/javadocs</outputDirectory>
 			<directory>${project.build.directory}/site/apidocs</directory>
 			<includes>
 				<include>**</include>
