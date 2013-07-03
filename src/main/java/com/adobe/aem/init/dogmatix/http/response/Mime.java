@@ -15,6 +15,7 @@ public interface Mime {
 	@SuppressWarnings("serial")
 	Map<String, String> Mapping = new HashMap<String, String>() {{
 		put("css","text/css");
+		put("ico", "image/x-icon");
 	}};
 
 }

@@ -87,8 +87,10 @@ public class Dogmatix {
 			Runtime.getRuntime().addShutdownHook(new Finisher(cmd));
 
 			http.start();
+			logger.info("Listening for requests on port {}", config.httpPort());
 			cmd.start();
-
+			logger.info("Listening for commands on port {}", config.commandPort());
+			
 			ServerStatistics.serverStarted();
 			
 			logger.info("Woof Woof.. Dogmatix at your service!");

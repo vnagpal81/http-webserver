@@ -17,11 +17,15 @@
    </appender>
 
 	<logger name="net.sf">
-		<level value="ERROR" />
+		<level value="WARN" />
+		<appender-ref ref="DogmatixLogFile"/>
+		<appender-ref ref="consoleAppender"/>
 	</logger>
 	
 	<logger name="org.reflections">
-		<level value="ERROR" />
+		<level value="WARN" />
+		<appender-ref ref="DogmatixLogFile"/>
+		<appender-ref ref="consoleAppender"/>
 	</logger>
 
 	<root>

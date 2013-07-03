@@ -73,39 +73,61 @@ public class CommandListener extends Listener {
 		BufferedReader in = new BufferedReader(
 					new InputStreamReader(
 					socket.getInputStream()));
+		OutputStream outputStream = socket.getOutputStream();
+		HttpResponse response = new HttpResponse(outputStream);
 
 		String inputLine = in.readLine();
-		String[] cmd = inputLine.split("\\s");
-		String command = cmd[1].substring(1);
-		logger.debug("Received command {}", command);
-		
-		if(command.toLowerCase().contains(serverConfig.stopCommand().toLowerCase())) {
-			OutputStream outputStream = socket.getOutputStream();
-			HttpResponse response = new HttpResponse(outputStream);
-			
+		if(inputLine.isEmpty()) {
 			response
-			.status(200)
-			.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
-			.append("callbackShutdown({})")
-			.flush();
-			
-			cleanup(socket);
-			
-			System.exit(0);
-		}
-		else if(command.toLowerCase().contains("stats")) {
-			OutputStream outputStream = socket.getOutputStream();
-			HttpResponse response = new HttpResponse(outputStream);
-			
-			response
-			.status(200)
-			.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
-			.append("callbackServerStats("+ServerStatistics.getStatsAsJSON()+")")
+			.status(400)
+			.append("Invalid Empty Request")
+			.addHeader(Constants.HEADERS.CONTENT_TYPE, "text/plain")
+			.addHeader(Constants.HEADERS.CONNECTION, "close")
 			.flush();
 			
 			cleanup(socket);
 		}
-
+		else {
+			String[] cmd = inputLine.split("\\s");
+			String command = cmd[1].substring(1);
+			logger.debug("Received command {}", command);
+			
+			if(command.toLowerCase().contains(serverConfig.stopCommand().toLowerCase())) {
+				response
+				.status(200)
+				.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
+				.append("callbackShutdown({})")
+				.flush();
+				
+				cleanup(socket);
+				
+				System.exit(0);
+			}
+			else if(command.toLowerCase().contains("stats")) {
+				response
+				.status(200)
+				.addHeader(Constants.HEADERS.CONTENT_TYPE, "application/json")
+				.addHeader(Constants.HEADERS.CONNECTION, "close")
+				.append("callbackServerStats("+ServerStatistics.getStatsAsJSON()+")")
+				.flush();
+				
+				cleanup(socket);
+			}
+			else {
+				String defaultHTML = 	"Usage: <br/>";
+				defaultHTML += 			"<a href=\"stop\">stop</a> STOP the server <br/>";
+				defaultHTML += 			"<a href=\"stats\">stats</a> Fetch server runtime statistics <br/>";
+			
+				response
+				.status(200)
+				.addHeader(Constants.HEADERS.CONTENT_TYPE, "text/html")
+				.addHeader(Constants.HEADERS.CONNECTION, "close")
+				.append(defaultHTML)
+				.flush();
+				
+				cleanup(socket);
+			}
+		}
 	}	
 	
 	public void registerListener(Listener listener) {

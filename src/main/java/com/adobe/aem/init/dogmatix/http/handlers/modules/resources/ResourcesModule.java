@@ -190,7 +190,7 @@ public class ResourcesModule extends AbstractHttpRequestHandlerModule {
 				
 			} else {
 				// raise 404
-				response.err(new HttpError(404, String.format("Unsupported HTTP method %s", request.getMethod())));
+				response.err(new HttpError(501, String.format("Unsupported HTTP method %s", request.getMethod())));
 			}			
 		}
 		catch(HttpError e) {

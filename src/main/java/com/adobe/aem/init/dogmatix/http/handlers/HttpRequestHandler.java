@@ -117,7 +117,7 @@ public class HttpRequestHandler implements Runnable {
 					ModuleConfig config = URLMapping.getModuleConfig(url);
 
 					if (config == null) {
-						throw new HttpError(404);
+						throw new HttpError(404, url);
 					}
 
 					// Get Module Instance from ModuleFactory
@@ -299,11 +299,11 @@ public class HttpRequestHandler implements Runnable {
 		Hashtable<String, String> headers = new Hashtable<String, String>();
 		
 		while(true) {
-			String line;
+			String line = null;
 			try {
 				line = IOUtils.readLine(inputStream);
 			} catch (IOException e) {
-				throw new HttpError(400);
+				throw new HttpError(400, "(Invalid request line " + line + ")");
 			}
 			
 			if(line.isEmpty()) {
