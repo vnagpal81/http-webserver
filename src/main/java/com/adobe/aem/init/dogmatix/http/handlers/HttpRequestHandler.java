@@ -81,8 +81,8 @@ public class HttpRequestHandler implements Runnable {
 			try {
 				HttpContext ctx = new HttpContext();
 				
-				OutputStream out = this.socket.getOutputStream();
-				InputStream in = this.socket.getInputStream();
+				OutputStream out = socket.getOutputStream();
+				InputStream in = socket.getInputStream();
 				
 				//wait till client starts transmitting or connection times out
 				try {
@@ -105,7 +105,7 @@ public class HttpRequestHandler implements Runnable {
 	
 					ctx.setRequest(request);
 					ctx.setResponse(response);
-					ctx.setSocket(this.socket);
+					ctx.setSocket(socket);
 	
 					HeaderInterceptor[] headerInterceptors = {new KeepAlive()};
 					boolean processed = false;
@@ -172,25 +172,25 @@ public class HttpRequestHandler implements Runnable {
 					logger.error("Unable to close socket connection");
 				}
 			}
-		} while(this.socket.isPersist());
+		} while(socket.isPersist());
 	}
 
 	private void cleanup() throws IOException {
 		if(!socket.isPersist()) {
 			if(!socket.getSocket().isClosed()) {
 				logger.debug("Closing socket");
-				this.socket.close();
+				socket.close();
 			}
 		}
 		else {
-			logger.debug("Persisting the socket : Count - {}", this.socket.getCount()+1);
-			this.socket.accessed();
-			this.socket.getOutputStream().flush();
+			logger.debug("Persisting the socket : Count - {}", socket.getCount()+1);
+			socket.accessed();
+			socket.getOutputStream().flush();
 			try {
-				this.socket.getSocket().setKeepAlive(true);
+				socket.getSocket().setKeepAlive(true);
 			} catch (SocketException e) {
 				logger.error("Error keeping socket alive. Closing now..");
-				this.socket.close();
+				socket.close();
 			}
 		}
 	}

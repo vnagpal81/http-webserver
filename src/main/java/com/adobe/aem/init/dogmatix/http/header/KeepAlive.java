@@ -201,13 +201,15 @@ public class KeepAlive implements HeaderInterceptor {
 			try {
 				long idleTime = (System.currentTimeMillis() - socket.getLastAccess()) / 1000;
 				if (idleTime >= timeout) {
-					logger.debug("Connection {} has been idle for {} seconds", socket.getSocket().getInetAddress(), idleTime);
-					logger.debug("Closing connection {}", socket.getSocket().getInetAddress());
-					socket.close();
+					if(!socket.getSocket().isClosed()) {
+						logger.debug("Connection {}:{} has been idle for {} seconds", socket.getSocket().getInetAddress(), socket.getSocket().getPort(), idleTime);
+						logger.debug("Closing connection {}:{}", socket.getSocket().getInetAddress(), socket.getSocket().getPort());
+						socket.close();
+					}
 				}
 				
 			} catch (IOException e) {
-				logger.error("Error closing connection {}", socket.getSocket().getInetAddress());
+				logger.error("Error closing connection {}:{}", socket.getSocket().getInetAddress(), socket.getSocket().getPort());
 			}
 		}
 		
