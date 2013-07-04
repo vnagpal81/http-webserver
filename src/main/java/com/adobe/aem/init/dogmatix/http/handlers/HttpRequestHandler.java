@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.Hashtable;
 
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.adobe.aem.init.dogmatix.config.ModuleConfig;
 import com.adobe.aem.init.dogmatix.core.ReusableSocket;
+import com.adobe.aem.init.dogmatix.exceptions.ConnectionTimeOut;
 import com.adobe.aem.init.dogmatix.exceptions.HttpError;
 import com.adobe.aem.init.dogmatix.exceptions.InvalidHeaderException;
 import com.adobe.aem.init.dogmatix.http.handlers.modules.AbstractHttpRequestHandlerModule;
@@ -75,101 +77,121 @@ public class HttpRequestHandler implements Runnable {
 	}
 
 	public void run() {
-
-		try {
-			logger.debug("Incoming Request...");
-
-			HttpContext ctx = new HttpContext();
-
-			OutputStream out = this.socket.getOutputStream();
-			InputStream in = this.socket.getInputStream();
-
-			// Parse Request and create Response
-			HttpResponse response = new HttpResponse(out);
+		do {//continue handling requests on this connection till socket is closed
 			try {
-				logger.debug("Trying to parse the request");
-				HttpRequest request = parseRequest(in);
-
-				ctx.setRequest(request);
-				ctx.setResponse(response);
-				ctx.setSocket(this.socket);
-
-				HeaderInterceptor[] headerInterceptors = {new KeepAlive()};
-				boolean processed = false;
-
-				// Pre process the request
-				for (int i = 0; i < headerInterceptors.length; i++) {
-					processed = headerInterceptors[i].preProcess(ctx);
-					if (processed) {
-						break;
+				HttpContext ctx = new HttpContext();
+				
+				OutputStream out = this.socket.getOutputStream();
+				InputStream in = this.socket.getInputStream();
+				
+				//wait till client starts transmitting or connection times out
+				try {
+					while(in.available() == 0) {
+						Thread.sleep(50);
 					}
 				}
-
-				if (!processed) {
-					// Determine URL
-					String url = request.getURI();
-					
-					if(url.startsWith("..") || url.startsWith("./")) {
-						throw new HttpError(403, "(Don't act smart. Relative paths not allowed)");
-					}
-
-					// Map from config and get Module
-					ModuleConfig config = URLMapping.getModuleConfig(url);
-
-					if (config == null) {
-						throw new HttpError(404, url);
-					}
-
-					// Get Module Instance from ModuleFactory
-					AbstractHttpRequestHandlerModule module = ModuleFactory
-							.getModule(config);
-
-					// Delegate Request handling to module.consume() which will
-					// also build the Response
-					processed = module.consume(ctx);
+				catch(IOException e) {
+					//socket has been closed.. connection timed out
+					throw new ConnectionTimeOut();
 				}
-
-				if (!processed) {
-					// Post process the request
+				
+				logger.debug("Incoming Request...");
+	
+				// Parse Request and create Response
+				HttpResponse response = new HttpResponse(out);
+				try {
+					logger.debug("Trying to parse the request");
+					HttpRequest request = parseRequest(in);
+	
+					ctx.setRequest(request);
+					ctx.setResponse(response);
+					ctx.setSocket(this.socket);
+	
+					HeaderInterceptor[] headerInterceptors = {new KeepAlive()};
+					boolean processed = false;
+	
+					// Pre process the request
 					for (int i = 0; i < headerInterceptors.length; i++) {
-						processed = headerInterceptors[i].postProcess(ctx);
+						processed = headerInterceptors[i].preProcess(ctx);
 						if (processed) {
 							break;
 						}
 					}
+	
+					if (!processed) {
+						// Determine URL
+						String url = request.getURI();
+						
+						if(url.startsWith("..") || url.startsWith("./")) {
+							throw new HttpError(403, "(Don't act smart. Relative paths not allowed)");
+						}
+	
+						// Map from config and get Module
+						ModuleConfig config = URLMapping.getModuleConfig(url);
+	
+						if (config == null) {
+							throw new HttpError(404, url);
+						}
+	
+						// Get Module Instance from ModuleFactory
+						AbstractHttpRequestHandlerModule module = ModuleFactory
+								.getModule(config);
+	
+						// Delegate Request handling to module.consume() which will
+						// also build the Response
+						processed = module.consume(ctx);
+					}
+	
+					if (!processed) {
+						// Post process the request
+						for (int i = 0; i < headerInterceptors.length; i++) {
+							processed = headerInterceptors[i].postProcess(ctx);
+							if (processed) {
+								break;
+							}
+						}
+					}
+				} catch (HttpError e) {
+					response.err(e);
+				} catch(Exception e) {
+					logger.error("Internal server error", e);
+					response.err(new HttpError(500, e.getMessage()));
+			    } finally {
+			    	response.flush();
 				}
-			} catch (HttpError e) {
-				response.err(e);
-			} catch(Exception e) {
-				logger.error("Internal server error", e);
-				response.err(new HttpError(500, e.getMessage()));
-		    } finally {
-		    	response.addHeader(Constants.HEADERS.CONNECTION, "Close");
-				response.flush();
+			} catch (ConnectionTimeOut e) {
+				logger.info("Connection timed out");
+				socket.setPersist(false);
+			} catch (Exception e) {
+				logger.error("Error while handling HTTP request", e);
+				socket.setPersist(false);
+			} finally {
+				try {
+					cleanup();
+				} catch (IOException e) {
+					logger.error("Unable to close socket connection");
+				}
 			}
-		} catch (Exception e) {
-			logger.error("Error while handling HTTP request", e);
-			
-		} finally {
-			try {
-				//cleanup();
-				logger.debug("Closing socket");
-				this.socket.close();
-			} catch (IOException e) {
-				logger.error("Unable to close socket connection");
-			}
-		}
+		} while(this.socket.isPersist());
 	}
 
 	private void cleanup() throws IOException {
-		if(!this.socket.isPersist()) {
-			logger.debug("Closing socket");
-			this.socket.close();
+		if(!socket.isPersist()) {
+			if(!socket.getSocket().isClosed()) {
+				logger.debug("Closing socket");
+				this.socket.close();
+			}
 		}
 		else {
 			logger.debug("Persisting the socket : Count - {}", this.socket.getCount()+1);
-			this.socket.setCount(this.socket.getCount()+1);
-			this.socket.setLastAccess(System.currentTimeMillis());
+			this.socket.accessed();
+			this.socket.getOutputStream().flush();
+			try {
+				this.socket.getSocket().setKeepAlive(true);
+			} catch (SocketException e) {
+				logger.error("Error keeping socket alive. Closing now..");
+				this.socket.close();
+			}
 		}
 	}
 

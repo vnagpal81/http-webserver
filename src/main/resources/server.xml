@@ -162,7 +162,7 @@
 			will wait for this amount of time before closing the connection.
 			[REQUIRED]
 		-->
-		<config name="KeepAliveTimeout" value="10"></config>
+		<config name="KeepAliveTimeout" value="50"></config>
 	</configs>
 	
 </server>

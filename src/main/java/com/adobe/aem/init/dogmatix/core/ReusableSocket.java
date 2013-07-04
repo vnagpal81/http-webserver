@@ -61,20 +61,12 @@ public class ReusableSocket {
 		this.socket = socket;
 	}
 
-	public int getCount() {
+	public synchronized int getCount() {
 		return count;
 	}
 
-	public void setCount(int count) {
-		this.count = count;
-	}
-	
-	public long getLastAccess() {
+	public synchronized long getLastAccess() {
 		return lastAccess;
-	}
-
-	public void setLastAccess(long lastAccess) {
-		this.lastAccess = lastAccess;
 	}
 
 	public OutputStream getOutputStream() throws IOException {
@@ -97,5 +89,8 @@ public class ReusableSocket {
 		this.persist = persist;
 	}
 	
-	
+	public synchronized void accessed() {
+		this.count++;
+		this.lastAccess = System.currentTimeMillis();
+	}
 }

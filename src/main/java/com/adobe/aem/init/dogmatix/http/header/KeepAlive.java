@@ -16,12 +16,23 @@
 
 package com.adobe.aem.init.dogmatix.http.header;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import com.adobe.aem.init.dogmatix.config.ServerConfig;
 import com.adobe.aem.init.dogmatix.core.ReusableSocket;
 import com.adobe.aem.init.dogmatix.http.handlers.HttpContext;
+import com.adobe.aem.init.dogmatix.http.request.HttpRequest;
 import com.adobe.aem.init.dogmatix.http.request.Version;
+import com.adobe.aem.init.dogmatix.http.response.HttpResponse;
 import com.adobe.aem.init.dogmatix.util.Constants;
 
 /**
@@ -33,6 +44,9 @@ import com.adobe.aem.init.dogmatix.util.Constants;
  * 
  */
 public class KeepAlive implements HeaderInterceptor {
+	
+	private static final ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor();
+	private static final Logger logger = LoggerFactory.getLogger(KeepAlive.class);
 	
 	private int timeout = -1;
 	private int max = -1;
@@ -47,55 +61,76 @@ public class KeepAlive implements HeaderInterceptor {
 
 	@Override
 	public boolean postProcess(HttpContext ctx) {
-		if (!applicable(ctx))
-			return false;
+		ReusableSocket socket = ctx.getSocket();
+		HttpRequest request = ctx.getRequest();
+		HttpResponse response = ctx.getResponse();
+		
+		if (applicable(ctx)) {
+			logger.debug("Checking keep-alive behaviour");
+			String connection = request.getHeader(Constants.HEADERS.CONNECTION);
+			boolean keepAlive = connection != null && connection.equalsIgnoreCase("Keep-Alive");
 
-		ReusableSocket socket = (ReusableSocket) ctx.getSocket();
-		String connection = ctx.getRequest().getHeader(
-				Constants.HEADERS.CONNECTION);
-		boolean keepAlive = connection != null
-				&& connection.equalsIgnoreCase("Keep-Alive");
+			ServerConfig serverConfig = ServerConfig.getInstance();
+			Version version = Version.getVersion(serverConfig.httpVersion());
 
-		ServerConfig serverConfig = ServerConfig.getInstance();
-		Version version = Version.getVersion(serverConfig.httpVersion());
-
-		//keep alive behaviour is protocol version specific
-		switch (version) {
-		case VERSION_0_9:
-			break;
-		case VERSION_1_0:
-			if (keepAlive) {
-				ctx.getResponse().addHeader(Constants.HEADERS.CONNECTION, "Keep-Alive");
-				socket.setPersist(true);
-			}
-			break;
-		case VERSION_1_1:
-			if (keepAlive) {
-				if (max == -1) {
+			//keep alive behaviour is protocol version specific
+			switch (version) {
+			case VERSION_0_9:
+				break;
+			case VERSION_1_0:
+				if (keepAlive) {
+					logger.debug("{} Keeping connection alive", version);
 					socket.setPersist(true);
-				} else if (socket.getCount() == max) {
-					socket.setPersist(false);
 				}
-				if (timeout == -1) {
-					socket.setPersist(true);
-				} else {
-					long idleTime = (System.currentTimeMillis() - socket
-							.getLastAccess()) / 1000;
-					if (idleTime >= timeout) {
+				break;
+			case VERSION_1_1:
+				if (keepAlive) {
+					if (max == -1) {//if max is not set then always persist
+						socket.setPersist(true);
+					} else if (socket.getCount() >= max) {//if max is set, persist only if max is not reached
+						logger.debug("{} Not keeping connection alive because max={} is reached", version, max);
 						socket.setPersist(false);
 					} else {
 						socket.setPersist(true);
 					}
+					
+					if(socket.isPersist()) {
+						if (timeout == -1) {//if timeout is not set then always persist till server keepAliveTimeout occurs
+							int to = serverConfig.keepAliveTimeout();
+							logger.debug("{} Keeping connection alive. Will timeout after {} seconds", version, to);
+							socket.setPersist(true);
+							try {
+								socket.getSocket().setSoTimeout(to);
+							} catch (SocketException e) {
+							}
+							worker.schedule(new KeepAliveTimeoutCleaner(socket, to), to, TimeUnit.SECONDS);
+						} else {//if timeout is set, persist only if timeout is not reached
+							logger.debug("{} Keeping connection alive. Will timeout after {} seconds", version, timeout);
+							socket.setPersist(true);
+							try {
+								socket.getSocket().setSoTimeout(timeout);
+							} catch (SocketException e) {
+							}
+							worker.schedule(new KeepAliveTimeoutCleaner(socket, timeout), timeout, TimeUnit.SECONDS);
+						}
+					}
 				}
-				
-				if(socket.isPersist()) {
-					ctx.getResponse().addHeader(Constants.HEADERS.CONNECTION, "Keep-Alive");
-				}
+				break;
+			default:
+				break;
 			}
-			break;
-		default:
-			break;
 		}
+		
+		
+		if(socket.isPersist()) {
+			logger.debug("Requesting client to keep connection alive");
+			response.addHeader(Constants.HEADERS.CONNECTION, "Keep-Alive");
+		}
+		else {
+			logger.debug("Requesting client to close the connection");
+			response.addHeader(Constants.HEADERS.CONNECTION, "Close");
+		}
+		
 		return false;
 	}
 
@@ -149,4 +184,32 @@ public class KeepAlive implements HeaderInterceptor {
 		return true;
 	}
 
+	
+	public static class KeepAliveTimeoutCleaner implements Runnable {
+		private static final Logger logger = LoggerFactory.getLogger(KeepAliveTimeoutCleaner.class);
+		private ReusableSocket socket;
+		private int timeout;
+
+		public KeepAliveTimeoutCleaner(ReusableSocket socket, int timeout) {
+			super();
+			this.socket = socket;
+			this.timeout = timeout;
+		}
+
+		@Override
+		public void run() {
+			try {
+				long idleTime = (System.currentTimeMillis() - socket.getLastAccess()) / 1000;
+				if (idleTime >= timeout) {
+					logger.debug("Connection {} has been idle for {} seconds", socket.getSocket().getInetAddress(), idleTime);
+					logger.debug("Closing connection {}", socket.getSocket().getInetAddress());
+					socket.close();
+				}
+				
+			} catch (IOException e) {
+				logger.error("Error closing connection {}", socket.getSocket().getInetAddress());
+			}
+		}
+		
+	}
 }

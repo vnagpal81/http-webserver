@@ -342,6 +342,7 @@ public class ServerConfig extends Properties {
 	// HTTP version
 	// Graceful Shutdown time
 	// Stop Command
+	// Keep-Alive Timeout
 	
 	/**
 	 * Gets the HTTP port server is listening on
@@ -404,5 +405,9 @@ public class ServerConfig extends Properties {
 	 */
 	public String stopURL() {
 		return "http://localhost:" + commandPort() + "/" + stopCommand();
+	}
+	
+	public int keepAliveTimeout() {
+		return Integer.parseInt(getProperty(CONFIGS.KeepAliveTimeout));
 	}
 }
